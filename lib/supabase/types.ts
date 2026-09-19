@@ -1,0 +1,60 @@
+export type UserRole = 'user' | 'admin';
+
+export type DbCondition = 'new' | 'like_new' | 'used';
+export type DbProductStatus = 'draft' | 'active' | 'sold' | 'hidden' | 'removed';
+export type DbReportStatus = 'pending' | 'reviewed' | 'resolved';
+
+export interface DbProfile {
+  id: string;
+  name: string;
+  username: string;
+  email: string | null;
+  avatar_url: string | null;
+  phone: string | null;
+  instagram: string | null;
+  role: UserRole;
+  created_at: string;
+}
+
+export interface DbProductImage {
+  id: string;
+  product_id: string;
+  image_url: string;
+  sort_order: number;
+}
+
+export interface DbProduct {
+  id: string;
+  seller_id: string;
+  title: string;
+  description: string;
+  price: number;
+  category: string;
+  condition: DbCondition;
+  location?: string | null;
+  status: DbProductStatus;
+  created_at: string;
+  updated_at: string;
+  // Joins
+  seller?: DbProfile;
+  product_images?: DbProductImage[];
+}
+
+export interface DbFavorite {
+  id: string;
+  user_id: string;
+  product_id: string;
+  created_at: string;
+  // Joins
+  product?: DbProduct;
+}
+
+export interface DbReport {
+  id: string;
+  reporter_id: string;
+  product_id: string;
+  reason: string;
+  description: string | null;
+  status: DbReportStatus;
+  created_at: string;
+}

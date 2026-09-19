@@ -1,0 +1,6 @@
+{
+  "name": "Nepal Market",
+  "description": "Marketplace C2C lokal untuk jual beli barang antar anggota komunitas dengan mudah dan aman.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
