@@ -21,7 +21,7 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
   if (!isOpen) return null;
 
   const seller = product.seller;
-  const phoneNumber = seller.whatsapp || '6281234567890';
+  const phoneNumber = seller.whatsapp || '';
   const instagramHandle = seller.instagram || '';
 
   const defaultWaMessage = `Halo ${seller.name}, saya tertarik dengan barang "${product.title}" seharga ${formatRupiah(product.price)} di Nepal Market. Apakah masih ada?`;
@@ -84,7 +84,7 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
 
           <div className="space-y-2.5 pt-1">
             {/* Opsi WhatsApp */}
-            <a
+            {phoneNumber && <a
               id="link-contact-whatsapp"
               href={whatsappUrl}
               target="_blank"
@@ -96,7 +96,7 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
                 <span>Chat via WhatsApp</span>
               </div>
               <ExternalLink className="w-4 h-4 opacity-80 group-hover:opacity-100" />
-            </a>
+            </a>}
 
             {/* Opsi Instagram jika ada */}
             {instagramUrl && (
@@ -116,7 +116,7 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
             )}
 
             {/* Salin Nomor HP/WA */}
-            <div className="flex items-center gap-2 pt-1">
+            {phoneNumber && <div className="flex items-center gap-2 pt-1">
               <div className="flex-1 px-3 py-2 bg-slate-100 rounded-lg text-xs font-mono text-slate-700 truncate border border-slate-200">
                 +{phoneNumber}
               </div>
@@ -138,7 +138,8 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
                   </>
                 )}
               </button>
-            </div>
+            </div>}
+            {!phoneNumber && !instagramUrl && <p className="text-sm text-slate-600">Penjual belum menambahkan kontak.</p>}
           </div>
         </div>
 

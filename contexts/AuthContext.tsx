@@ -45,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, name, username, avatar_url, phone, instagram, role, created_at')
         .eq('id', userId)
         .single();
 
@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data) {
-        setProfile(data as DbProfile);
+        setProfile({ ...(data as Omit<DbProfile, 'email'>), email: currentUser?.email ?? null });
       } else if (currentUser) {
         // Fallback profile dari user auth metadata jika trigger belum selesai
         const fallbackProfile: DbProfile = {
@@ -70,8 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         setProfile(fallbackProfile);
 
-        // Coba insert profile jika belum ada
-        supabase.from('profiles').upsert(fallbackProfile, { onConflict: 'id' }).then(() => {});
+        // Trigger auth.users membuat profil. Jangan membuat profil langsung dari browser.
       }
     } catch (err) {
       console.error('Error saat fetchProfile:', err);

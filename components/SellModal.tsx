@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { X, Check, LogIn, Loader2, AlertCircle } from 'lucide-react';
 import { CategorySlug, Product, ProductCondition } from '@/types/market';
 import { CATEGORIES } from '@/data/products';
 import { useAuth } from '@/contexts/AuthContext';
 import { createProductInDb } from '@/lib/supabase/products';
+import { ProductPhotoPicker } from '@/components/ProductPhotoPicker';
 
 interface SellModalProps {
   isOpen: boolean;
@@ -15,32 +15,7 @@ interface SellModalProps {
   onAddProduct: (newProduct: Product) => void;
 }
 
-const SAMPLE_PHOTO_PRESETS = [
-  {
-    label: 'Elektronik / Gadget',
-    url: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80',
-  },
-  {
-    label: 'Fashion / Pakaian',
-    url: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=600&auto=format&fit=crop&q=80',
-  },
-  {
-    label: 'Buku / Catatan',
-    url: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80',
-  },
-  {
-    label: 'Aksesori / Barang Sehari-hari',
-    url: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&auto=format&fit=crop&q=80',
-  },
-  {
-    label: 'Hobi / Olahraga',
-    url: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=600&auto=format&fit=crop&q=80',
-  },
-  {
-    label: 'Makanan / Camilan',
-    url: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=600&auto=format&fit=crop&q=80',
-  }
-];
+
 
 export const SellModal: React.FC<SellModalProps> = ({
   isOpen,
@@ -64,8 +39,7 @@ export const SellModal: React.FC<SellModalProps> = ({
   const sellerName = customSellerName !== null ? customSellerName : defaultSellerName;
   const whatsapp = customWhatsapp !== null ? customWhatsapp : defaultWhatsapp;
 
-  const [selectedPhoto, setSelectedPhoto] = useState(SAMPLE_PHOTO_PRESETS[1].url);
-  const [customPhotoUrl, setCustomPhotoUrl] = useState('');
+  const [photos, setPhotos] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -74,11 +48,14 @@ export const SellModal: React.FC<SellModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !price) return;
+    if (!title.trim() || !price || !user) return;
     setErrorMessage(null);
 
     const numPrice = parseInt(price.replace(/\D/g, ''), 10) || 10000;
-    const finalImageUrl = customPhotoUrl.trim() || selectedPhoto;
+    if (!isConfigured || photos.length === 0) {
+      setErrorMessage(!isConfigured ? 'Supabase belum terhubung.' : 'Tambahkan minimal satu foto barang.');
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -92,7 +69,8 @@ export const SellModal: React.FC<SellModalProps> = ({
         category,
         condition,
         location: location.trim() || 'Kantin Utama',
-        images: [finalImageUrl],
+        images: photos,
+        contactPhone: whatsapp || undefined,
       });
 
       if (result.error) {
@@ -104,29 +82,6 @@ export const SellModal: React.FC<SellModalProps> = ({
       if (result.product) {
         onAddProduct(result.product);
       }
-    } else {
-      // Fallback local jika belum ada koneksi db
-      const newProd: Product = {
-        id: `prod-user-${Date.now()}`,
-        title: title.trim(),
-        price: numPrice,
-        category,
-        condition,
-        imageUrl: finalImageUrl,
-        images: [finalImageUrl],
-        location: location.trim() || 'Kantin Utama',
-        postedAt: 'Baru saja',
-        seller: {
-          id: user?.id,
-          name: sellerName.trim() || profile?.name || 'Saya (Penjual)',
-          location: location.trim() || 'Area Sekitar',
-          whatsapp: whatsapp.trim() || '6281234567890',
-          isVerified: true,
-        },
-        description: description.trim() || 'Barang milik pribadi, kondisi terawat. Silakan hubungi langsung untuk janjian ketemuan/COD.',
-        isAvailable: true,
-      };
-      onAddProduct(newProd);
     }
 
     setIsSubmitting(false);
@@ -137,7 +92,7 @@ export const SellModal: React.FC<SellModalProps> = ({
       setTitle('');
       setPrice('');
       setDescription('');
-      setCustomPhotoUrl('');
+      setPhotos([]);
       setCustomSellerName(null);
       setCustomWhatsapp(null);
     }, 900);
@@ -301,42 +256,7 @@ export const SellModal: React.FC<SellModalProps> = ({
               </div>
             </div>
 
-            {/* Pilihan Foto Produk */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Pilih Foto Sampul (Atau Tempel URL Foto)
-              </label>
-              <div className="grid grid-cols-3 gap-2 mb-2">
-                {SAMPLE_PHOTO_PRESETS.map((item, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => {
-                      setSelectedPhoto(item.url);
-                      setCustomPhotoUrl('');
-                    }}
-                    className={`relative aspect-4/3 rounded-lg overflow-hidden border text-[11px] font-medium transition-all ${
-                      selectedPhoto === item.url && !customPhotoUrl
-                        ? 'border-blue-600 ring-2 ring-blue-600/30'
-                        : 'border-slate-200 opacity-75 hover:opacity-100'
-                    }`}
-                  >
-                    <Image src={item.url} alt={item.label} fill sizes="120px" className="object-cover" referrerPolicy="no-referrer" />
-                    <span className="absolute inset-x-0 bottom-0 bg-slate-900/75 text-white py-0.5 px-1 text-[10px] truncate block z-10">
-                      {item.label}
-                    </span>
-                  </button>
-                ))}
-              </div>
-              <input
-                id="input-sell-photo-url"
-                type="url"
-                placeholder="Atau tempel URL foto kustom (opsional)"
-                value={customPhotoUrl}
-                onChange={(e) => setCustomPhotoUrl(e.target.value)}
-                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 placeholder:text-slate-400"
-              />
-            </div>
+            <ProductPhotoPicker files={photos} onChange={setPhotos} />
 
             {/* Deskripsi */}
             <div>

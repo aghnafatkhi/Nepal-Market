@@ -182,10 +182,7 @@ USING (auth.uid() = id)
 WITH CHECK (auth.uid() = id);
 
 -- Pengguna boleh membuat profilnya sendiri (jika trigger belum jalan)
-CREATE POLICY "Pengguna boleh membuat profil miliknya sendiri"
-ON public.profiles
-FOR INSERT
-WITH CHECK (auth.uid() = id);
+-- Profil baru dibuat oleh trigger auth.users; client tidak mendapat izin INSERT.
 
 -- B. PRODUCTS
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;

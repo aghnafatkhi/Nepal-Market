@@ -179,10 +179,7 @@ FOR UPDATE
 USING (auth.uid() = id)
 WITH CHECK (auth.uid() = id);
 
-CREATE POLICY "Pengguna boleh membuat profil miliknya sendiri"
-ON public.profiles
-FOR INSERT
-WITH CHECK (auth.uid() = id);
+-- Profil baru dibuat oleh trigger auth.users; client tidak mendapat izin INSERT.
 
 -- B. PRODUCTS
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;

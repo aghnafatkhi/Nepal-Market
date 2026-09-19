@@ -64,7 +64,7 @@ export function mapDbProductToUi(db: DbProduct): Product {
       location: db.location || 'Area Sekitar',
       joinedDate: db.seller?.created_at ? new Date(db.seller.created_at).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : '2024',
       activeListingsCount: 1,
-      whatsapp: db.seller?.phone || '6281234567890',
+      whatsapp: db.seller?.phone || undefined,
       instagram: db.seller?.instagram || undefined,
       isVerified: db.seller?.role === 'admin' || false,
     },
@@ -96,7 +96,7 @@ export async function fetchActiveProducts(): Promise<{ products: Product[]; erro
         status,
         created_at,
         updated_at,
-        seller:profiles!seller_id(id, name, username, email, avatar_url, phone, instagram, role, created_at),
+        seller:profiles!seller_id(id, name, username, avatar_url, phone, instagram, role, created_at),
         product_images(id, product_id, image_url, sort_order)
       `)
       .eq('status', 'active')
@@ -136,7 +136,7 @@ export async function fetchProductById(id: string): Promise<{ product: Product |
         status,
         created_at,
         updated_at,
-        seller:profiles!seller_id(id, name, username, email, avatar_url, phone, instagram, role, created_at),
+        seller:profiles!seller_id(id, name, username, avatar_url, phone, instagram, role, created_at),
         product_images(id, product_id, image_url, sort_order)
       `)
       .eq('id', id)
@@ -172,7 +172,7 @@ export async function fetchProductsBySellerId(sellerId: string): Promise<{ produ
         status,
         created_at,
         updated_at,
-        seller:profiles!seller_id(id, name, username, email, avatar_url, phone, instagram, role, created_at),
+        seller:profiles!seller_id(id, name, username, avatar_url, phone, instagram, role, created_at),
         product_images(id, product_id, image_url, sort_order)
       `)
       .eq('seller_id', sellerId)
@@ -194,7 +194,8 @@ export interface CreateProductInput {
   category: CategorySlug;
   condition: ProductCondition;
   location: string;
-  images: string[];
+  images: File[];
+  contactPhone?: string;
 }
 
 export async function createProductInDb(input: CreateProductInput): Promise<{ product: Product | null; error: Error | null }> {
@@ -204,6 +205,28 @@ export async function createProductInDb(input: CreateProductInput): Promise<{ pr
   }
 
   try {
+    if (input.images.length < 1 || input.images.length > 5 ||
+        input.images.some((file) => !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024)) {
+      return { product: null, error: new Error('Pilih 1–5 foto JPG, PNG, atau WebP (maksimal 5 MB per foto).') };
+    }
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user || authData.user.id !== input.sellerId) {
+      return { product: null, error: new Error('Masuk kembali sebelum menjual barang.') };
+    }
+    const { data: sellerProfile, error: sellerError } = await supabase.from('profiles')
+      .select('phone, instagram').eq('id', input.sellerId).single();
+    if (sellerError) return { product: null, error: sellerError };
+    const phone = input.contactPhone?.trim().replace(/\D/g, '').replace(/^0/, '62') || sellerProfile?.phone;
+    if (!phone && !sellerProfile?.instagram) {
+      return { product: null, error: new Error('Isi nomor WhatsApp agar pembeli bisa menghubungimu.') };
+    }
+    if (phone && !/^62\d{8,13}$/.test(phone)) {
+      return { product: null, error: new Error('Masukkan nomor WhatsApp yang valid, misalnya 081234567890.') };
+    }
+    if (phone && phone !== sellerProfile?.phone) {
+      const { error: contactError } = await supabase.from('profiles').update({ phone }).eq('id', input.sellerId);
+      if (contactError) return { product: null, error: contactError };
+    }
     // 1. Insert ke tabel products
     const { data: productData, error: productError } = await supabase
       .from('products')
@@ -215,7 +238,7 @@ export async function createProductInDb(input: CreateProductInput): Promise<{ pr
         category: input.category,
         condition: mapUiConditionToDb(input.condition),
         location: input.location.trim() || 'Kantin Utama',
-        status: 'active',
+        status: 'draft',
       })
       .select()
       .single();
@@ -224,21 +247,32 @@ export async function createProductInDb(input: CreateProductInput): Promise<{ pr
       return { product: null, error: productError };
     }
 
-    // 2. Insert ke tabel product_images
-    const imageRows = input.images.map((url, idx) => ({
-      product_id: productData.id,
-      image_url: url,
-      sort_order: idx,
-    }));
-
-    if (imageRows.length > 0) {
-      const { error: imagesError } = await supabase
-        .from('product_images')
-        .insert(imageRows);
-
-      if (imagesError) {
-        console.warn('Gagal menyimpan foto produk:', imagesError.message);
+    // Foto diunggah ke folder milik seller dan produk ini.
+    const uploadedPaths: string[] = [];
+    const imageRows: { product_id: string; image_url: string; sort_order: number }[] = [];
+    for (const [index, file] of input.images.entries()) {
+      const extension = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+      const path = `${input.sellerId}/${productData.id}/${crypto.randomUUID()}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from('product-images').upload(path, file, { contentType: file.type, upsert: false });
+      if (uploadError) {
+        await supabase.storage.from('product-images').remove(uploadedPaths);
+        await supabase.from('products').delete().eq('id', productData.id);
+        return { product: null, error: uploadError };
       }
+      uploadedPaths.push(path);
+      imageRows.push({ product_id: productData.id, image_url: supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl, sort_order: index });
+    }
+    const { error: imagesError } = await supabase.from('product_images').insert(imageRows);
+    if (imagesError) {
+      await supabase.storage.from('product-images').remove(uploadedPaths);
+      await supabase.from('products').delete().eq('id', productData.id);
+      return { product: null, error: imagesError };
+    }
+    const { error: publishError } = await supabase.from('products').update({ status: 'active' }).eq('id', productData.id);
+    if (publishError) {
+      await supabase.storage.from('product-images').remove(uploadedPaths);
+      await supabase.from('products').delete().eq('id', productData.id);
+      return { product: null, error: publishError };
     }
 
     // 3. Ambil produk lengkap dengan join
@@ -272,12 +306,32 @@ export async function deleteProductFromDb(productId: string): Promise<{ success:
   if (!supabase) return { success: false, error: new Error('Supabase belum dikonfigurasi') };
 
   try {
-    const { error } = await supabase
+    const { data: authData } = await supabase.auth.getUser();
+    const sellerId = authData.user?.id;
+    if (!sellerId) return { success: false, error: new Error('Masuk kembali sebelum menghapus barang.') };
+    const { data: ownedProduct } = await supabase.from('products').select('id')
+      .eq('id', productId).eq('seller_id', sellerId).maybeSingle();
+    if (!ownedProduct) return { success: false, error: new Error('Barang ini bukan milikmu.') };
+    const { data: imageRows, error: imageError } = await supabase.from('product_images')
+      .select('image_url').eq('product_id', productId);
+    if (imageError) return { success: false, error: imageError };
+    const marker = '/storage/v1/object/public/product-images/';
+    const paths = (imageRows ?? []).flatMap(({ image_url }) => {
+      const path = image_url.split(marker)[1]?.split('?')[0];
+      return path?.startsWith(`${sellerId}/${productId}/`) ? [decodeURIComponent(path)] : [];
+    });
+    if (paths.length) {
+      const { error: storageError } = await supabase.storage.from('product-images').remove(paths);
+      if (storageError) return { success: false, error: storageError };
+    }
+    const { data: deleted, error } = await supabase
       .from('products')
       .delete()
-      .eq('id', productId);
+      .eq('id', productId)
+      .eq('seller_id', sellerId)
+      .select('id');
 
-    if (error) return { success: false, error };
+    if (error || !deleted?.length) return { success: false, error: error ?? new Error('Barang tidak berhasil dihapus.') };
     return { success: true, error: null };
   } catch (err: unknown) {
     return { success: false, error: err as Error };
