@@ -114,7 +114,6 @@ export default function AdminPage() {
             'Content-Type': 'application/json',
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({ userId: user.id }),
         });
 
         const data = await res.json();
@@ -124,23 +123,13 @@ export default function AdminPage() {
         if (res.ok && data.isAdmin) {
           setIsServerVerified(true);
         } else {
-          // Jika di client profile menyatakan admin tetapi verifikasi server gagal karena config env
-          if (profile?.role === 'admin') {
-            setIsServerVerified(true);
-          } else {
-            setIsServerVerified(false);
-            setServerVerifyError(data.error || 'Akses ditolak: Hanya akun Administrator yang diizinkan.');
-          }
+          setIsServerVerified(false);
+          setServerVerifyError(data.error || 'Akses ditolak: Hanya akun Administrator yang diizinkan.');
         }
       } catch {
         if (!isMounted) return;
-        // Fallback jika API route offline
-        if (profile?.role === 'admin') {
-          setIsServerVerified(true);
-        } else {
-          setIsServerVerified(false);
-          setServerVerifyError('Gagal memverifikasi hak akses administrator di server.');
-        }
+        setIsServerVerified(false);
+        setServerVerifyError('Gagal memverifikasi hak akses administrator di server.');
       } finally {
         if (isMounted) setIsVerifying(false);
       }
@@ -151,7 +140,7 @@ export default function AdminPage() {
     return () => {
       isMounted = false;
     };
-  }, [user, profile, session, authLoading, router]);
+  }, [user, session, authLoading, router]);
 
   // 2. Load dashboard data jika admin terverifikasi
   const loadDashboard = useCallback(async () => {

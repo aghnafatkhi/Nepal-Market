@@ -62,7 +62,7 @@ export async function fetchProfileById(
   try {
     const { data, error } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, name, username, avatar_url, phone, instagram, role, created_at')
       .eq('id', userId)
       .maybeSingle();
 
@@ -70,7 +70,7 @@ export async function fetchProfileById(
       return { profile: null, error };
     }
 
-    return { profile: data as DbProfile, error: null };
+    return { profile: data ? { ...data, email: null } as DbProfile : null, error: null };
   } catch (err: unknown) {
     return { profile: null, error: err as Error };
   }
@@ -162,7 +162,7 @@ export async function updateUserProfile(
       .from('profiles')
       .update(payload)
       .eq('id', userId)
-      .select('id, name, username, email, avatar_url, phone, instagram, role, created_at')
+      .select('id, name, username, avatar_url, phone, instagram, role, created_at')
       .single();
 
     if (error) {
@@ -192,40 +192,20 @@ export async function uploadAvatarImage(
     // Kompres foto avatar ke dimensi proporsional persegi (maks 600x600 px)
     const compressed = await compressImage(rawFile, 600, 600, 0.85);
 
-    const ext = compressed.type === 'image/png' ? 'png' : 'webp';
+    const ext = compressed.type === 'image/png' ? 'png' : compressed.type === 'image/webp' ? 'webp' : 'jpg';
     const filePath = `${userId}/avatar-${Date.now()}.${ext}`;
 
-    // Coba upload ke bucket 'avatars', jika bucket belum ada coba fallback ke 'product-images'
-    let bucketName = 'avatars';
-    let uploadResult = await supabase.storage
+    const bucketName = 'avatars';
+    const uploadResult = await supabase.storage
       .from(bucketName)
       .upload(filePath, compressed, {
         cacheControl: '3600',
-        upsert: true,
+        upsert: false,
         contentType: compressed.type,
       });
 
     if (uploadResult.error) {
-      // Fallback ke bucket 'product-images'
-      bucketName = 'product-images';
-      const fallbackPath = `avatars/${userId}/avatar-${Date.now()}.${ext}`;
-      const fallbackUpload = await supabase.storage
-        .from(bucketName)
-        .upload(fallbackPath, compressed, {
-          cacheControl: '3600',
-          upsert: true,
-          contentType: compressed.type,
-        });
-
-      if (fallbackUpload.error) {
-        return { url: null, error: fallbackUpload.error };
-      }
-
-      const { data: publicData } = supabase.storage
-        .from(bucketName)
-        .getPublicUrl(fallbackPath);
-
-      return { url: publicData.publicUrl, error: null };
+      return { url: null, error: uploadResult.error };
     }
 
     const { data: publicData } = supabase.storage

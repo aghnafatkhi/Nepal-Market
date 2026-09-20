@@ -83,6 +83,8 @@ export interface FetchProductsOptions {
   condition?: string;
   sortBy?: SortOption;
   searchQuery?: string;
+  minPrice?: number;
+  maxPrice?: number;
 }
 
 // Ambil produk aktif dari Supabase dengan dukungan pagination & filtering di sisi server
@@ -99,6 +101,8 @@ export async function fetchActiveProducts(options: FetchProductsOptions = {}): P
     condition = 'semua',
     sortBy = 'terbaru',
     searchQuery = '',
+    minPrice,
+    maxPrice,
   } = options;
 
   const supabase = getSupabaseClient();
@@ -136,15 +140,26 @@ export async function fetchActiveProducts(options: FetchProductsOptions = {}): P
     if (condition && condition !== 'semua') {
       if (condition === 'baru' || condition === 'Baru') {
         query = query.eq('condition', 'new');
-      } else if (condition === 'seperti_baru' || condition === 'Bekas - Seperti Baru') {
+      } else if (condition === 'seperti_baru' || condition === 'seperti-baru' || condition === 'Bekas - Seperti Baru') {
         query = query.eq('condition', 'like_new');
-      } else if (condition === 'bekas' || condition === 'Bekas - Mulus' || condition === 'used') {
+      } else if (condition === 'Bekas - Mulus' || condition === 'used') {
         query = query.eq('condition', 'used');
       }
     }
 
+    if (condition === 'bekas') {
+      query = query.in('condition', ['used', 'like_new']);
+    }
+    if (minPrice !== undefined && Number.isFinite(minPrice) && minPrice > 0) {
+      query = query.gte('price', minPrice);
+    }
+    if (maxPrice !== undefined && Number.isFinite(maxPrice) && maxPrice > 0) {
+      query = query.lte('price', maxPrice);
+    }
+
     if (searchQuery && searchQuery.trim() !== '') {
-      const q = searchQuery.trim();
+      // PostgREST memakai koma dan tanda kurung sebagai sintaks filter.
+      const q = searchQuery.trim().replace(/[,()\\]/g, ' ').slice(0, 100);
       query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%,location.ilike.%${q}%`);
     }
 

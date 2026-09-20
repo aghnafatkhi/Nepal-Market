@@ -7,18 +7,17 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get('Authorization');
-    const token = authHeader?.replace('Bearer ', '');
-    const body = await req.json().catch(() => ({}));
-    const { userId } = body;
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    if (!token) {
+      return NextResponse.json({ isAdmin: false, error: 'Sesi login diperlukan' }, { status: 401 });
+    }
 
     // Jika Supabase belum dikonfigurasi di environment
     if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('your-project-id')) {
-      // Demo preview mode: Izinkan admin jika role disetel di state client atau email tertentu
       return NextResponse.json({
-        isConfigured: false,
-        isAdmin: true,
-        message: 'Mode preview aktif: Supabase belum terkonfigurasi di server',
-      });
+        isAdmin: false,
+        error: 'Supabase belum terkonfigurasi di server',
+      }, { status: 503 });
     }
 
     const serverSupabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -28,32 +27,23 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    let verifiedUserId = userId;
-
-    // Jika ada token Bearer, verifikasi langsung secara kriptografis dengan Supabase Auth di server
-    if (token) {
-      const { data: userData, error: authError } = await serverSupabase.auth.getUser(token);
-      if (authError || !userData?.user) {
-        return NextResponse.json(
-          { isAdmin: false, error: 'Sesi login tidak valid atau sudah kedaluwarsa' },
-          { status: 401 }
-        );
-      }
-      verifiedUserId = userData.user.id;
-    }
-
-    if (!verifiedUserId) {
+    const { data: userData, error: authError } = await serverSupabase.auth.getUser(token);
+    if (authError || !userData?.user) {
       return NextResponse.json(
-        { isAdmin: false, error: 'User ID tidak ditemukan' },
-        { status: 400 }
+        { isAdmin: false, error: 'Sesi login tidak valid atau sudah kedaluwarsa' },
+        { status: 401 }
       );
     }
 
-    // Periksa tabel profiles di database untuk memastikan role adalah 'admin'
-    const { data: profile, error: profileError } = await serverSupabase
+    // Jalankan pembacaan dengan JWT pengguna, sehingga RLS tetap berlaku.
+    const userSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data: profile, error: profileError } = await userSupabase
       .from('profiles')
-      .select('id, name, username, role, email, is_suspended')
-      .eq('id', verifiedUserId)
+      .select('id, name, username, role')
+      .eq('id', userData.user.id)
       .single();
 
     if (profileError || !profile) {

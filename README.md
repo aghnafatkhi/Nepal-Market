@@ -62,7 +62,7 @@ Buka peramban di `http://localhost:3000`.
 ## 🗄️ Konfigurasi Supabase (Database & Storage)
 
 ### 1. Migrasi Tabel & RLS (Schema)
-Jalankan isi berkas `supabase/schema.sql` di **Supabase Dashboard -> SQL Editor**:
+Untuk proyek Supabase baru, jalankan `supabase_setup.sql` di **Supabase Dashboard -> SQL Editor**:
 - Membuat tabel: `profiles`, `products`, `product_images`, `favorites`, `reports`, dan `moderation_logs`.
 - Mengaktifkan Row Level Security (RLS) pada semua tabel.
 - Menyiapkan trigger otomatis `on_auth_user_created` untuk membuat profil pengguna saat mendaftar.
@@ -73,7 +73,10 @@ Jalankan berkas `supabase/storage_setup.sql` di SQL Editor:
 - Memberikan izin `SELECT` untuk publik.
 - Membatasi izin `INSERT` dan `DELETE` hanya pada folder pengguna masing-masing (`(storage.foldername(name))[1] = auth.uid()::text`).
 
-### 3. Konfigurasi Autentikasi & Redirect URLs
+### 3. Perbaikan fitur setelah tahap 8
+Jalankan `supabase/post_eight_stage_fix.sql` lalu `supabase/harden_existing_functions.sql` setelah setup di atas. Keduanya menambah bucket `avatars`, kolom penangguhan, log moderasi, aturan akses admin, dan mengamankan fungsi trigger lama. **Pada proyek Supabase yang sudah digunakan, jalankan hanya kedua berkas perbaikan ini.** Jangan ulangi `supabase_setup.sql` karena policy lama sudah ada dan SQL dasar tidak dirancang untuk dijalankan ulang.
+
+### 4. Konfigurasi Autentikasi & Redirect URLs
 Di **Supabase Dashboard -> Authentication -> URL Configuration**:
 - **Site URL:** `http://localhost:3000` (saat pengembangan) atau URL domain produksi Vercel.
 - **Redirect URLs:** Tambahkan:
@@ -127,4 +130,3 @@ npm run lint
 # Kompilasi build produksi Next.js
 npm run build
 ```
-

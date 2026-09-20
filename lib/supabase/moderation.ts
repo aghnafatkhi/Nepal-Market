@@ -279,7 +279,7 @@ export async function fetchAdminDashboardData(): Promise<{
     // 1. Fetch counts
     const [productsCountRes, usersCountRes, pendingReportsCountRes, activeProductsCountRes] = await Promise.all([
       supabase.from('products').select('*', { count: 'exact', head: true }),
-      supabase.from('profiles').select('*', { count: 'exact', head: true }),
+      supabase.from('profiles').select('id', { count: 'exact', head: true }),
       supabase.from('reports').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
       supabase.from('products').select('*', { count: 'exact', head: true }).eq('status', 'active'),
     ]);

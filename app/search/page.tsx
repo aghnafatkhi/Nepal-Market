@@ -58,24 +58,43 @@ function SearchPageContent() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const getFilters = () => ({
+    pageSize: 24,
+    category: selectedCategory,
+    condition: selectedCondition,
+    sortBy,
+    searchQuery: paramQ,
+    minPrice: minPrice ? Number(minPrice) : undefined,
+    maxPrice: maxPrice ? Number(maxPrice) : undefined,
+  });
 
   useEffect(() => {
+    let active = true;
     if (isConfigured) {
-      fetchActiveProducts({ page: 1, pageSize: 24 }).then(({ products: dbProds, hasMore: more }) => {
+      fetchActiveProducts({
+        page: 1, pageSize: 24, category: selectedCategory, condition: selectedCondition,
+        sortBy, searchQuery: paramQ,
+        minPrice: minPrice ? Number(minPrice) : undefined,
+        maxPrice: maxPrice ? Number(maxPrice) : undefined,
+      }).then(({ products: dbProds, hasMore: more, totalCount: count, error }) => {
+        if (!active || error) return;
         setProductsList(dbProds);
         setHasMore(more);
+        setTotalCount(count);
         setPage(1);
       });
     }
-  }, [isConfigured]);
+    return () => { active = false; };
+  }, [isConfigured, selectedCategory, selectedCondition, sortBy, paramQ, minPrice, maxPrice]);
 
   const handleLoadMore = async () => {
     if (!isConfigured || isLoadingMore || !hasMore) return;
     setIsLoadingMore(true);
     const nextPage = page + 1;
     const { products: moreProds, hasMore: moreAvailable, error } = await fetchActiveProducts({
-      page: nextPage,
-      pageSize: 24,
+      ...getFilters(), page: nextPage,
     });
     if (!error && moreProds.length > 0) {
       setProductsList((prev) => [...prev, ...moreProds]);
@@ -156,6 +175,7 @@ function SearchPageContent() {
 
   // Filter & Sort Products
   const searchResults = useMemo(() => {
+    if (isConfigured) return productsList;
     return productsList.filter((product) => {
       // 1. Text Search (title, description, category, seller)
       if (searchQuery.trim() !== '') {
@@ -214,7 +234,7 @@ function SearchPageContent() {
       // 'terbaru' (default order by original ID/entry)
       return 0;
     });
-  }, [productsList, searchQuery, selectedCategory, selectedCondition, minPrice, maxPrice, sortBy]);
+  }, [productsList, searchQuery, selectedCategory, selectedCondition, minPrice, maxPrice, sortBy, isConfigured]);
 
   // Reset all filters
   const handleResetFilters = () => {
@@ -231,7 +251,9 @@ function SearchPageContent() {
     maxPrice: string;
     sortBy: SortOption;
   }) => {
+    setSearchQuery(newFilters.q);
     updateUrlParams({
+      q: newFilters.q,
       category: newFilters.category,
       condition: newFilters.condition,
       minPrice: newFilters.minPrice,
@@ -488,7 +510,7 @@ function SearchPageContent() {
                   {searchQuery ? `Hasil untuk "${searchQuery}"` : 'Semua Barang'}
                 </h1>
                 <span id="search-result-count" className="text-xs sm:text-sm text-slate-500 font-medium">
-                  ({searchResults.length} barang)
+                  ({isConfigured ? totalCount : searchResults.length} barang)
                 </span>
               </div>
 
@@ -663,7 +685,7 @@ function SearchPageContent() {
         }}
         onApply={handleApplyFilterSheet}
         onReset={handleResetFilters}
-        totalResultsCount={searchResults.length}
+        totalResultsCount={isConfigured ? totalCount : searchResults.length}
       />
 
       {/* Bottom Nav for Mobile */}
