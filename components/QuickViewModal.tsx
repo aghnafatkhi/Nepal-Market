@@ -2,7 +2,18 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { X, MapPin, Clock, Bookmark, MessageCircle, ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
+import { 
+  X, 
+  MapPin, 
+  Clock, 
+  Bookmark, 
+  MessageCircle, 
+  ShieldCheck, 
+  Instagram, 
+  AlertCircle, 
+  ExternalLink 
+} from 'lucide-react';
 import { Product } from '@/types/market';
 import { formatRupiah } from '@/data/products';
 
@@ -23,12 +34,29 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
 }) => {
   if (!isOpen || !product) return null;
 
+  const isSold = Boolean(product.isSold || !product.isAvailable);
+  const seller = product.seller;
+  const rawPhone = (seller.whatsapp || '').trim();
+  const cleanPhone = rawPhone.replace(/\D/g, '').replace(/^0/, '62');
+  const hasWhatsApp = Boolean(cleanPhone && cleanPhone.length >= 8);
+
+  const rawIg = (seller.instagram || '').trim().replace(/^@/, '');
+  const hasInstagram = Boolean(rawIg);
+  const instagramUrl = hasInstagram ? `https://instagram.com/${rawIg}` : null;
+
   const handleContactWhatsApp = () => {
-    const phone = product.seller.whatsapp || '6281234567890';
-    const message = encodeURIComponent(
-      `Halo ${product.seller.name}, saya tertarik dengan barang "${product.title}" (${formatRupiah(product.price)}) yang dipasang di Nepal Market. Apakah masih ada?`
+    if (!hasWhatsApp) return;
+    const defaultWaMessage = `Halo ${seller.name || 'Penjual'}, saya tertarik dengan barang "${product.title}" (${formatRupiah(product.price)}) yang dipasang di Nepal Market. Apakah masih ada?`;
+    window.open(
+      `https://wa.me/${cleanPhone}?text=${encodeURIComponent(defaultWaMessage)}`,
+      '_blank',
+      'noopener,noreferrer'
     );
-    window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+  };
+
+  const handleContactInstagram = () => {
+    if (!instagramUrl) return;
+    window.open(instagramUrl, '_blank', 'noopener,noreferrer');
   };
 
   return (
@@ -63,10 +91,15 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
             className="object-cover"
             referrerPolicy="no-referrer"
           />
-          <div className="absolute bottom-3 left-3">
+          <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
             <span className="inline-block bg-slate-900/85 backdrop-blur-xs text-white text-xs font-medium px-2.5 py-1 rounded-md shadow-xs">
               Kondisi: {product.condition}
             </span>
+            {isSold && (
+              <span className="inline-block bg-rose-600 text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-xs">
+                Sudah Terjual
+              </span>
+            )}
           </div>
         </div>
 
@@ -74,8 +107,15 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
         <div className="p-4 sm:p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-                {formatRupiah(product.price)}
+              <div className="flex items-center gap-2">
+                <div className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                  {formatRupiah(product.price)}
+                </div>
+                {isSold && (
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+                    Terjual
+                  </span>
+                )}
               </div>
               <h2 className="mt-1 text-base sm:text-lg font-semibold text-slate-800 leading-snug">
                 {product.title}
@@ -134,17 +174,60 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
             </div>
           </div>
 
+          {/* Alert jika penjual tidak memiliki kontak */}
+          {!isSold && !hasWhatsApp && !hasInstagram && (
+            <div className="mt-3.5 p-3 bg-amber-50 border border-amber-200/80 rounded-xl text-xs text-amber-800 flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <p className="font-semibold">Penjual belum menambahkan kontak</p>
+                <p className="text-amber-700">Penjual belum mencantumkan nomor WhatsApp maupun akun Instagram aktif.</p>
+              </div>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="mt-5 flex gap-2.5">
-            <button
-              id="btn-contact-seller"
-              type="button"
-              onClick={handleContactWhatsApp}
-              className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium rounded-xl transition-colors shadow-xs"
-            >
-              <MessageCircle className="w-4 h-4" />
-              <span>Hubungi Penjual</span>
-            </button>
+            {isSold ? (
+              <button
+                id="btn-contact-seller"
+                type="button"
+                disabled
+                className="flex-1 min-h-[44px] inline-flex items-center justify-center px-4 py-2.5 bg-slate-200 text-slate-400 text-sm font-semibold rounded-xl cursor-not-allowed text-center"
+              >
+                Barang Sudah Terjual
+              </button>
+            ) : hasWhatsApp ? (
+              <button
+                id="btn-contact-seller"
+                type="button"
+                onClick={handleContactWhatsApp}
+                className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-sm font-medium rounded-xl transition-colors shadow-xs"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Chat via WhatsApp</span>
+              </button>
+            ) : hasInstagram ? (
+              <button
+                id="btn-contact-seller"
+                type="button"
+                onClick={handleContactInstagram}
+                className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-95 active:opacity-90 text-white text-sm font-medium rounded-xl transition-opacity shadow-xs"
+              >
+                <Instagram className="w-4 h-4" />
+                <span>DM Instagram (@{rawIg})</span>
+              </button>
+            ) : (
+              <Link
+                id="btn-contact-seller"
+                href={`/product/${product.id}`}
+                onClick={onClose}
+                className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium rounded-xl transition-colors shadow-xs text-center"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span>Lihat Detail Produk</span>
+              </Link>
+            )}
+
             <button
               id="btn-close-modal"
               type="button"
@@ -155,7 +238,15 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
             </button>
           </div>
 
-          <div className="mt-2.5 text-center">
+          <div className="mt-3 text-center flex flex-col items-center gap-1">
+            <Link
+              href={`/product/${product.id}`}
+              onClick={onClose}
+              className="text-xs text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center gap-1 font-medium min-h-[32px] px-2 py-1"
+            >
+              <span>Buka halaman rincian lengkap</span>
+              <ExternalLink className="w-3 h-3" />
+            </Link>
             <span className="text-[11px] text-slate-400">
               Transaksi & penyerahan barang dilakukan langsung antara kamu dan penjual.
             </span>
@@ -166,3 +257,4 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
     </div>
   );
 };
+
