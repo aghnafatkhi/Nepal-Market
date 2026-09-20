@@ -521,7 +521,7 @@ export default function ProfilePage() {
                 />
               </div>
               <p className="mt-1 text-[11px] text-slate-400">
-                Akan dipakai untuk tautan profil: nepalmarket.app/profile/{username || 'username'}
+                Username digunakan sebagai identitas unik akun dan pembeda nama kamu di Nepal Market.
               </p>
               {errors.username && (
                 <p className="mt-1 text-xs text-rose-600 font-medium">{errors.username}</p>

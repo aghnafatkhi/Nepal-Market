@@ -256,6 +256,11 @@ export default function HomePage() {
     }
   };
 
+  // Cek apakah ada produk aktif (bukan sold) dari data nyata
+  const hasActiveProducts = useMemo(() => {
+    return products.some((p) => !p.isSold);
+  }, [products]);
+
   // Daftar produk yang disimpan
   const savedProductsList = useMemo(() => {
     return products.filter((p) => savedProductIds.includes(p.id));
@@ -285,7 +290,10 @@ export default function HomePage() {
       <main id="main-content" className="flex-grow max-w-[1200px] w-full mx-auto px-4 sm:px-6 pt-3 sm:pt-5">
         
         {/* Banner Carousel di Bagian Atas Homepage */}
-        <HomeBannerCarousel onOpenSellModal={() => setIsSellModalOpen(true)} />
+        <HomeBannerCarousel 
+          hasActiveProducts={hasActiveProducts}
+          onOpenSellModal={() => setIsSellModalOpen(true)} 
+        />
 
         {/* Section Header: "Baru di Nepal Market" & Kontrol Urutan */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">

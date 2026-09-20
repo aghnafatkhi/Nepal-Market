@@ -10,11 +10,12 @@ import {
   ChevronRight, 
   ArrowRight 
 } from 'lucide-react';
-import { PROMO_BANNERS, PromoBanner } from '@/data/banners';
+import { getPromoBanners, PromoBanner } from '@/data/banners';
 
 interface HomeBannerCarouselProps {
   onOpenSellModal?: () => void;
   banners?: PromoBanner[];
+  hasActiveProducts?: boolean;
   autoSlideInterval?: number;
 }
 
@@ -35,13 +36,22 @@ const getReducedMotionServerSnapshot = () => false;
 
 export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
   onOpenSellModal,
-  banners = PROMO_BANNERS,
+  banners: propBanners,
+  hasActiveProducts = false,
   autoSlideInterval = 5000,
 }) => {
   const router = useRouter();
+  
+  // Dapatkan daftar banner sesuai ketersediaan produk aktif jika banners tidak dioper eksplisit
+  const banners = propBanners || getPromoBanners(hasActiveProducts);
+  const count = banners.length;
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [timerKey, setTimerKey] = useState(0);
+
+  // Indeks aktif yang aman saat jumlah banner atau status katalog berubah
+  const activeIndex = currentIndex < count ? currentIndex : 0;
 
   // Subscribed reduced-motion preference
   const prefersReducedMotion = useSyncExternalStore(
@@ -56,15 +66,14 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
   const touchCurrentXRef = useRef<number | null>(null);
   const touchCurrentYRef = useRef<number | null>(null);
 
-  // Total banners count
-  const count = banners.length;
-
   // Handlers for next and prev with timer reset
   const handleNext = useCallback(() => {
+    if (count <= 1) return;
     setCurrentIndex((prev) => (prev + 1) % count);
   }, [count]);
 
   const handlePrev = useCallback(() => {
+    if (count <= 1) return;
     setCurrentIndex((prev) => (prev - 1 + count) % count);
   }, [count]);
 
@@ -82,6 +91,17 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
     setCurrentIndex(index);
     setTimerKey((k) => k + 1);
   }, []);
+
+  // Keyboard navigation on indicators or buttons (Left / Right Arrow)
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      handleManualPrev();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      handleManualNext();
+    }
+  };
 
   // Auto-advance timer (every ~5 seconds), paused during interaction or reduced motion
   useEffect(() => {
@@ -167,12 +187,13 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
     <section 
       id="home-banner-carousel"
       aria-roledescription="carousel"
-      aria-label="Promosi dan Informasi Komunitas Nepal Market"
+      aria-label="Promosi dan Panduan Komunitas Nepal Market"
       className="relative w-full mb-5 select-none"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onFocusCapture={() => setIsPaused(true)}
       onBlurCapture={() => setIsPaused(false)}
+      onKeyDown={handleKeyDown}
     >
       {/* Outer Card Container */}
       <div 
@@ -184,10 +205,10 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
         {/* Slides Track */}
         <div 
           className={`flex w-full ${prefersReducedMotion ? 'transition-none' : 'transition-transform duration-500 ease-out'}`}
-          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+          style={{ transform: `translateX(-${activeIndex * 100}%)` }}
         >
           {banners.map((banner, index) => {
-            const isActive = index === currentIndex;
+            const isActive = index === activeIndex;
 
             return (
               <div
@@ -197,6 +218,7 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
                 aria-roledescription="slide"
                 aria-label={`Slide ${index + 1} dari ${count}: ${banner.title}`}
                 aria-hidden={!isActive}
+                inert={!isActive ? true : undefined}
                 className={`w-full shrink-0 relative flex flex-col justify-between ${banner.theme.containerBg} px-4 sm:px-10 py-3.5 sm:py-4.5 min-h-[140px] sm:min-h-[155px]`}
               >
                 {/* Banner Content (Badge + Title + Subtitle) */}
@@ -218,8 +240,8 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
                   </p>
                 </div>
 
-                {/* Banner Action & Bottom Row */}
-                <div className="relative z-10 flex items-center justify-between gap-3 mt-3">
+                {/* Banner Action Row */}
+                <div className="relative z-10 flex items-center justify-between gap-3 mt-3 pr-24 sm:pr-28">
                   <button
                     type="button"
                     id={`btn-carousel-cta-${banner.id}`}
@@ -230,60 +252,69 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
                     <span>{banner.ctaText}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
-
-                  {/* Slide Indicators */}
-                  <div 
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-slate-950/40 backdrop-blur-xs border border-white/10"
-                    role="tablist"
-                    aria-label="Navigasi slide banner"
-                  >
-                    {banners.map((b, idx) => {
-                      const isDotActive = idx === currentIndex;
-                      return (
-                        <button
-                          key={`dot-${b.id}`}
-                          id={`btn-carousel-indicator-${idx}`}
-                          type="button"
-                          role="tab"
-                          aria-selected={isDotActive}
-                          aria-label={`Buka banner ${idx + 1}: ${b.title}`}
-                          onClick={() => handleSelectSlide(idx)}
-                          className={`h-1.5 transition-all duration-300 rounded-full cursor-pointer focus:outline-hidden ${
-                            isDotActive 
-                              ? 'w-5 bg-white' 
-                              : 'w-1.5 bg-white/40 hover:bg-white/70'
-                          }`}
-                        />
-                      );
-                    })}
-                  </div>
                 </div>
               </div>
             );
           })}
         </div>
 
-        {/* Previous Button (Desktop only, mobile uses swipe & dots) */}
-        <button
-          type="button"
-          id="btn-carousel-prev"
-          onClick={handleManualPrev}
-          aria-label="Banner sebelumnya"
-          className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-slate-900/40 hover:bg-slate-900/75 text-white/80 hover:text-white backdrop-blur-xs items-center justify-center border border-white/10 transition-all opacity-90 hover:opacity-100 cursor-pointer min-h-[44px] min-w-[44px]"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
+        {/* Unified Single Tablist for Slide Indicators */}
+        {count > 1 && (
+          <div 
+            className="absolute bottom-3.5 right-3.5 sm:right-6 z-20 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-slate-950/45 backdrop-blur-xs border border-white/10"
+            role="tablist"
+            aria-label="Pilih slide banner"
+          >
+            {banners.map((b, idx) => {
+              const isDotActive = idx === activeIndex;
+              return (
+                <button
+                  key={`dot-${b.id}`}
+                  id={`btn-carousel-indicator-${idx}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={isDotActive}
+                  aria-label={`Lihat banner ${idx + 1}: ${b.title}`}
+                  tabIndex={0}
+                  onClick={() => handleSelectSlide(idx)}
+                  className={`h-1.5 transition-all duration-300 rounded-full cursor-pointer focus:outline-hidden focus:ring-1 focus:ring-white ${
+                    isDotActive 
+                      ? 'w-5 bg-white' 
+                      : 'w-1.5 bg-white/40 hover:bg-white/70'
+                  }`}
+                />
+              );
+            })}
+          </div>
+        )}
 
-        {/* Next Button (Desktop only, mobile uses swipe & dots) */}
-        <button
-          type="button"
-          id="btn-carousel-next"
-          onClick={handleManualNext}
-          aria-label="Banner berikutnya"
-          className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-slate-900/40 hover:bg-slate-900/75 text-white/80 hover:text-white backdrop-blur-xs items-center justify-center border border-white/10 transition-all opacity-90 hover:opacity-100 cursor-pointer min-h-[44px] min-w-[44px]"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
+        {/* Previous Button (Desktop only, mobile uses touch swipe & indicators) */}
+        {count > 1 && (
+          <button
+            type="button"
+            id="btn-carousel-prev"
+            onClick={handleManualPrev}
+            aria-label="Tampilkan banner sebelumnya"
+            tabIndex={0}
+            className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-slate-900/40 hover:bg-slate-900/75 text-white/80 hover:text-white backdrop-blur-xs items-center justify-center border border-white/10 transition-all opacity-90 hover:opacity-100 cursor-pointer min-h-[44px] min-w-[44px] focus:outline-hidden focus:ring-2 focus:ring-white/50"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+        )}
+
+        {/* Next Button (Desktop only, mobile uses touch swipe & indicators) */}
+        {count > 1 && (
+          <button
+            type="button"
+            id="btn-carousel-next"
+            onClick={handleManualNext}
+            aria-label="Tampilkan banner berikutnya"
+            tabIndex={0}
+            className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-slate-900/40 hover:bg-slate-900/75 text-white/80 hover:text-white backdrop-blur-xs items-center justify-center border border-white/10 transition-all opacity-90 hover:opacity-100 cursor-pointer min-h-[44px] min-w-[44px] focus:outline-hidden focus:ring-2 focus:ring-white/50"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        )}
       </div>
     </section>
   );
