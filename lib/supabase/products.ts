@@ -1,6 +1,6 @@
 import { getSupabaseClient } from './client';
 import { DbCondition, DbProduct, DbProductStatus } from './types';
-import { Product, ProductCondition, CategorySlug } from '@/types/market';
+import { Product, ProductCondition, CategorySlug, SortOption } from '@/types/market';
 
 // Map antara UI condition dan DB condition
 export function mapUiConditionToDb(condition: ProductCondition): DbCondition {
@@ -60,6 +60,7 @@ export function mapDbProductToUi(db: DbProduct): Product {
     seller: {
       id: db.seller?.id || db.seller_id,
       name: db.seller?.name || 'Warga Nepal',
+      username: db.seller?.username || undefined,
       avatar: db.seller?.avatar_url || undefined,
       location: db.location || 'Area Sekitar',
       joinedDate: db.seller?.created_at ? new Date(db.seller.created_at).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : '2024',
@@ -71,18 +72,45 @@ export function mapDbProductToUi(db: DbProduct): Product {
     description: db.description || 'Tidak ada deskripsi barang.',
     isAvailable: db.status === 'active',
     isSold: db.status === 'sold',
+    status: db.status,
   };
 }
 
-// Ambil semua produk aktif dari Supabase
-export async function fetchActiveProducts(): Promise<{ products: Product[]; error: Error | null }> {
+export interface FetchProductsOptions {
+  page?: number;
+  pageSize?: number;
+  category?: CategorySlug | string;
+  condition?: string;
+  sortBy?: SortOption;
+  searchQuery?: string;
+}
+
+// Ambil produk aktif dari Supabase dengan dukungan pagination & filtering di sisi server
+export async function fetchActiveProducts(options: FetchProductsOptions = {}): Promise<{
+  products: Product[];
+  totalCount: number;
+  hasMore: boolean;
+  error: Error | null;
+}> {
+  const {
+    page = 1,
+    pageSize = 12,
+    category = 'semua',
+    condition = 'semua',
+    sortBy = 'terbaru',
+    searchQuery = '',
+  } = options;
+
   const supabase = getSupabaseClient();
   if (!supabase) {
-    return { products: [], error: new Error('Supabase belum dikonfigurasi') };
+    return { products: [], totalCount: 0, hasMore: false, error: new Error('Supabase belum dikonfigurasi') };
   }
 
   try {
-    const { data, error } = await supabase
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = supabase
       .from('products')
       .select(`
         id,
@@ -98,19 +126,52 @@ export async function fetchActiveProducts(): Promise<{ products: Product[]; erro
         updated_at,
         seller:profiles!seller_id(id, name, username, avatar_url, phone, instagram, role, created_at),
         product_images(id, product_id, image_url, sort_order)
-      `)
-      .eq('status', 'active')
-      .order('created_at', { ascending: false });
+      `, { count: 'exact' })
+      .eq('status', 'active');
+
+    if (category && category !== 'semua') {
+      query = query.eq('category', category);
+    }
+
+    if (condition && condition !== 'semua') {
+      if (condition === 'baru' || condition === 'Baru') {
+        query = query.eq('condition', 'new');
+      } else if (condition === 'seperti_baru' || condition === 'Bekas - Seperti Baru') {
+        query = query.eq('condition', 'like_new');
+      } else if (condition === 'bekas' || condition === 'Bekas - Mulus' || condition === 'used') {
+        query = query.eq('condition', 'used');
+      }
+    }
+
+    if (searchQuery && searchQuery.trim() !== '') {
+      const q = searchQuery.trim();
+      query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%,location.ilike.%${q}%`);
+    }
+
+    if (sortBy === 'harga-rendah') {
+      query = query.order('price', { ascending: true });
+    } else if (sortBy === 'harga-tinggi') {
+      query = query.order('price', { ascending: false });
+    } else {
+      query = query.order('created_at', { ascending: false });
+    }
+
+    query = query.range(from, to);
+
+    const { data, count, error } = await query;
 
     if (error) {
       console.error('Error fetchActiveProducts:', error);
-      return { products: [], error };
+      return { products: [], totalCount: 0, hasMore: false, error };
     }
 
     const mapped = (data as unknown as DbProduct[]).map(mapDbProductToUi);
-    return { products: mapped, error: null };
+    const total = count ?? mapped.length;
+    const hasMore = to + 1 < total;
+
+    return { products: mapped, totalCount: total, hasMore, error: null };
   } catch (err: unknown) {
-    return { products: [], error: err as Error };
+    return { products: [], totalCount: 0, hasMore: false, error: err as Error };
   }
 }
 
@@ -196,6 +257,8 @@ export interface CreateProductInput {
   location: string;
   images: File[];
   contactPhone?: string;
+  contactInstagram?: string;
+  status?: 'active' | 'draft';
 }
 
 export async function createProductInDb(input: CreateProductInput): Promise<{ product: Product | null; error: Error | null }> {
@@ -216,18 +279,29 @@ export async function createProductInDb(input: CreateProductInput): Promise<{ pr
     const { data: sellerProfile, error: sellerError } = await supabase.from('profiles')
       .select('phone, instagram').eq('id', input.sellerId).single();
     if (sellerError) return { product: null, error: sellerError };
+
     const phone = input.contactPhone?.trim().replace(/\D/g, '').replace(/^0/, '62') || sellerProfile?.phone;
-    if (!phone && !sellerProfile?.instagram) {
-      return { product: null, error: new Error('Isi nomor WhatsApp agar pembeli bisa menghubungimu.') };
+    const instagram = input.contactInstagram?.trim().replace(/^@/, '') || sellerProfile?.instagram;
+
+    if (!phone && !instagram) {
+      return { product: null, error: new Error('Isi nomor WhatsApp atau Instagram agar pembeli bisa menghubungimu.') };
     }
     if (phone && !/^62\d{8,13}$/.test(phone)) {
       return { product: null, error: new Error('Masukkan nomor WhatsApp yang valid, misalnya 081234567890.') };
     }
-    if (phone && phone !== sellerProfile?.phone) {
-      const { error: contactError } = await supabase.from('profiles').update({ phone }).eq('id', input.sellerId);
+    if (instagram && !/^[a-zA-Z0-9._]{1,30}$/.test(instagram)) {
+      return { product: null, error: new Error('Format username Instagram tidak valid.') };
+    }
+
+    if ((phone && phone !== sellerProfile?.phone) || (instagram && instagram !== sellerProfile?.instagram)) {
+      const profileUpdates: { phone?: string; instagram?: string } = {};
+      if (phone) profileUpdates.phone = phone;
+      if (instagram) profileUpdates.instagram = instagram;
+      const { error: contactError } = await supabase.from('profiles').update(profileUpdates).eq('id', input.sellerId);
       if (contactError) return { product: null, error: contactError };
     }
-    // 1. Insert ke tabel products
+
+    // 1. Insert ke tabel products (status draft untuk memenuhi RLS storage)
     const { data: productData, error: productError } = await supabase
       .from('products')
       .insert({
@@ -247,7 +321,7 @@ export async function createProductInDb(input: CreateProductInput): Promise<{ pr
       return { product: null, error: productError };
     }
 
-    // Foto diunggah ke folder milik seller dan produk ini.
+    // Foto diunggah ke folder milik seller dan produk ini
     const uploadedPaths: string[] = [];
     const imageRows: { product_id: string; image_url: string; sort_order: number }[] = [];
     for (const [index, file] of input.images.entries()) {
@@ -262,23 +336,225 @@ export async function createProductInDb(input: CreateProductInput): Promise<{ pr
       uploadedPaths.push(path);
       imageRows.push({ product_id: productData.id, image_url: supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl, sort_order: index });
     }
+
     const { error: imagesError } = await supabase.from('product_images').insert(imageRows);
     if (imagesError) {
       await supabase.storage.from('product-images').remove(uploadedPaths);
       await supabase.from('products').delete().eq('id', productData.id);
       return { product: null, error: imagesError };
     }
-    const { error: publishError } = await supabase.from('products').update({ status: 'active' }).eq('id', productData.id);
-    if (publishError) {
-      await supabase.storage.from('product-images').remove(uploadedPaths);
-      await supabase.from('products').delete().eq('id', productData.id);
-      return { product: null, error: publishError };
+
+    // Ubah ke status target (default 'active', atau 'draft' jika dipilih)
+    const finalStatus = input.status || 'active';
+    if (finalStatus !== 'draft') {
+      const { error: publishError } = await supabase.from('products').update({ status: finalStatus }).eq('id', productData.id);
+      if (publishError) {
+        await supabase.storage.from('product-images').remove(uploadedPaths);
+        await supabase.from('products').delete().eq('id', productData.id);
+        return { product: null, error: publishError };
+      }
     }
 
     // 3. Ambil produk lengkap dengan join
     return await fetchProductById(productData.id);
   } catch (err: unknown) {
     return { product: null, error: err as Error };
+  }
+}
+
+export type EditPhotoEntry = 
+  | { type: 'existing'; url: string }
+  | { type: 'file'; file: File };
+
+export interface UpdateProductInput {
+  productId: string;
+  sellerId: string;
+  title: string;
+  description: string;
+  price: number;
+  category: CategorySlug;
+  condition: ProductCondition;
+  location: string;
+  photos: EditPhotoEntry[];
+  contactPhone?: string;
+  contactInstagram?: string;
+  status?: DbProductStatus;
+}
+
+// Perbarui data produk lengkap (termasuk foto, kontak, dan status)
+export async function updateProductInDb(input: UpdateProductInput): Promise<{ product: Product | null; error: Error | null }> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return { product: null, error: new Error('Supabase belum dikonfigurasi') };
+
+  try {
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user || authData.user.id !== input.sellerId) {
+      return { product: null, error: new Error('Masuk kembali sebelum mengedit barang.') };
+    }
+
+    // Verifikasi kepemilikan produk
+    const { data: ownedProduct, error: ownedError } = await supabase
+      .from('products')
+      .select('id, status, seller_id')
+      .eq('id', input.productId)
+      .eq('seller_id', input.sellerId)
+      .maybeSingle();
+
+    if (ownedError || !ownedProduct) {
+      return { product: null, error: new Error('Kamu tidak memiliki izin untuk mengedit barang ini.') };
+    }
+
+    if (input.photos.length < 1 || input.photos.length > 5) {
+      return { product: null, error: new Error('Pilih 1–5 foto barang.') };
+    }
+
+    // Kontak WhatsApp & Instagram
+    const phone = input.contactPhone?.trim().replace(/\D/g, '').replace(/^0/, '62');
+    const instagram = input.contactInstagram?.trim().replace(/^@/, '');
+
+    if (!phone && !instagram) {
+      return { product: null, error: new Error('Isi nomor WhatsApp atau Instagram agar pembeli bisa menghubungimu.') };
+    }
+    if (phone && !/^62\d{8,13}$/.test(phone)) {
+      return { product: null, error: new Error('Masukkan nomor WhatsApp yang valid.') };
+    }
+    if (instagram && !/^[a-zA-Z0-9._]{1,30}$/.test(instagram)) {
+      return { product: null, error: new Error('Format username Instagram tidak valid.') };
+    }
+
+    // Update profil penjual jika ada kontak baru
+    const profileUpdates: { phone?: string; instagram?: string } = {};
+    if (phone) profileUpdates.phone = phone;
+    if (instagram) profileUpdates.instagram = instagram;
+    if (Object.keys(profileUpdates).length > 0) {
+      await supabase.from('profiles').update(profileUpdates).eq('id', input.sellerId);
+    }
+
+    // 1. Ambil foto-foto yang saat ini terdaftar di database
+    const { data: currentImages } = await supabase
+      .from('product_images')
+      .select('id, image_url, sort_order')
+      .eq('product_id', input.productId);
+
+    const keptExistingUrls = input.photos
+      .filter((p): p is { type: 'existing'; url: string } => p.type === 'existing')
+      .map((p) => p.url);
+
+    // Hapus foto lama yang sudah tidak dipakai
+    const removedImages = (currentImages || []).filter((img) => !keptExistingUrls.includes(img.image_url));
+    if (removedImages.length > 0) {
+      const marker = '/storage/v1/object/public/product-images/';
+      const pathsToRemove = removedImages.flatMap((img) => {
+        const path = img.image_url.split(marker)[1]?.split('?')[0];
+        return path?.startsWith(`${input.sellerId}/${input.productId}/`) ? [decodeURIComponent(path)] : [];
+      });
+      if (pathsToRemove.length > 0) {
+        await supabase.storage.from('product-images').remove(pathsToRemove);
+      }
+      await supabase.from('product_images').delete().in('id', removedImages.map((img) => img.id));
+    }
+
+    const hasNewFiles = input.photos.some((p) => p.type === 'file');
+
+    // Jika ada file baru yang perlu diunggah, pastikan status sementara adalah draft untuk RLS policy storage
+    if (hasNewFiles && ownedProduct.status !== 'draft') {
+      await supabase.from('products').update({ status: 'draft' }).eq('id', input.productId);
+    }
+
+    // Unggah file baru dan susun urutan foto akhir
+    const finalImageUrls: { url: string; sort_order: number }[] = [];
+    for (let index = 0; index < input.photos.length; index++) {
+      const item = input.photos[index];
+      if (item.type === 'existing') {
+        finalImageUrls.push({ url: item.url, sort_order: index });
+      } else {
+        const file = item.file;
+        const extension = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+        const path = `${input.sellerId}/${input.productId}/${crypto.randomUUID()}.${extension}`;
+        const { error: uploadErr } = await supabase.storage.from('product-images').upload(path, file, { contentType: file.type, upsert: false });
+        if (uploadErr) {
+          return { product: null, error: uploadErr };
+        }
+        const publicUrl = supabase.storage.from('product-images').getPublicUrl(path).data.publicUrl;
+        finalImageUrls.push({ url: publicUrl, sort_order: index });
+        await supabase.from('product_images').insert({
+          product_id: input.productId,
+          image_url: publicUrl,
+          sort_order: index,
+        });
+      }
+    }
+
+    // Perbarui sort_order untuk foto-foto yang dipertahankan
+    for (const item of finalImageUrls) {
+      await supabase.from('product_images')
+        .update({ sort_order: item.sort_order })
+        .eq('product_id', input.productId)
+        .eq('image_url', item.url);
+    }
+
+    // Perbarui data tabel products
+    const finalStatus = input.status || ownedProduct.status || 'active';
+    const { error: updateError } = await supabase
+      .from('products')
+      .update({
+        title: input.title.trim(),
+        description: input.description.trim(),
+        price: input.price,
+        category: input.category,
+        condition: mapUiConditionToDb(input.condition),
+        location: input.location.trim() || 'Kantin Utama',
+        status: finalStatus,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', input.productId);
+
+    if (updateError) return { product: null, error: updateError };
+
+    return await fetchProductById(input.productId);
+  } catch (err: unknown) {
+    return { product: null, error: err as Error };
+  }
+}
+
+// Ambil produk milik seller dengan filter status opsional
+export async function fetchSellerProducts(
+  sellerId: string,
+  statusFilter?: 'active' | 'sold' | 'draft'
+): Promise<{ products: Product[]; error: Error | null }> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return { products: [], error: new Error('Supabase belum dikonfigurasi') };
+
+  try {
+    let query = supabase
+      .from('products')
+      .select(`
+        id,
+        seller_id,
+        title,
+        description,
+        price,
+        category,
+        condition,
+        location,
+        status,
+        created_at,
+        updated_at,
+        seller:profiles!seller_id(id, name, username, avatar_url, phone, instagram, role, created_at),
+        product_images(id, product_id, image_url, sort_order)
+      `)
+      .eq('seller_id', sellerId)
+      .order('created_at', { ascending: false });
+
+    if (statusFilter) {
+      query = query.eq('status', statusFilter);
+    }
+
+    const { data, error } = await query;
+    if (error) return { products: [], error };
+    return { products: (data as unknown as DbProduct[]).map(mapDbProductToUi), error: null };
+  } catch (err: unknown) {
+    return { products: [], error: err as Error };
   }
 }
 
@@ -382,30 +658,95 @@ export async function toggleFavoriteInDb(userId: string, productId: string, isCu
   }
 }
 
+// Ambil seluruh produk yang disimpan (favorites) oleh user
+// Produk yang dihapus atau disembunyikan (hidden/removed) secara otomatis disaring keluar
+export async function fetchUserSavedProducts(userId: string): Promise<{ products: Product[]; error: Error | null }> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return { products: [], error: new Error('Supabase belum dikonfigurasi') };
+
+  try {
+    const { data, error } = await supabase
+      .from('favorites')
+      .select(`
+        id,
+        created_at,
+        product:products!product_id(
+          id,
+          seller_id,
+          title,
+          description,
+          price,
+          category,
+          condition,
+          location,
+          status,
+          created_at,
+          updated_at,
+          seller:profiles!seller_id(id, name, username, avatar_url, phone, instagram, role, created_at),
+          product_images(id, product_id, image_url, sort_order)
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) return { products: [], error };
+    if (!data) return { products: [], error: null };
+
+    const validProducts: Product[] = [];
+    for (const item of data) {
+      const p = (item as unknown as { product: DbProduct | null }).product;
+      if (p && p.id && p.status !== 'removed' && p.status !== 'hidden') {
+        validProducts.push(mapDbProductToUi(p));
+      }
+    }
+
+    return { products: validProducts, error: null };
+  } catch (err: unknown) {
+    return { products: [], error: err as Error };
+  }
+}
+
+// Ambil produk aktif milik seller tertentu untuk profil publik
+export async function fetchSellerActiveProducts(sellerId: string): Promise<{ products: Product[]; error: Error | null }> {
+  const supabase = getSupabaseClient();
+  if (!supabase) return { products: [], error: new Error('Supabase belum dikonfigurasi') };
+
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select(`
+        id,
+        seller_id,
+        title,
+        description,
+        price,
+        category,
+        condition,
+        location,
+        status,
+        created_at,
+        updated_at,
+        seller:profiles!seller_id(id, name, username, avatar_url, phone, instagram, role, created_at),
+        product_images(id, product_id, image_url, sort_order)
+      `)
+      .eq('seller_id', sellerId)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+
+    if (error) return { products: [], error };
+    return { products: (data as unknown as DbProduct[]).map(mapDbProductToUi), error: null };
+  } catch (err: unknown) {
+    return { products: [], error: err as Error };
+  }
+}
+
 // REPORTS HELPER
 export async function submitReportToDb(
   reporterId: string,
   productId: string,
   reason: string,
   description?: string
-): Promise<{ success: boolean; error: Error | null }> {
-  const supabase = getSupabaseClient();
-  if (!supabase) return { success: false, error: new Error('Supabase belum dikonfigurasi') };
-
-  try {
-    const { error } = await supabase
-      .from('reports')
-      .insert({
-        reporter_id: reporterId,
-        product_id: productId,
-        reason,
-        description: description || null,
-        status: 'pending',
-      });
-
-    if (error) return { success: false, error };
-    return { success: true, error: null };
-  } catch (err: unknown) {
-    return { success: false, error: err as Error };
-  }
+): Promise<{ success: boolean; alreadyReported?: boolean; error: Error | null }> {
+  const { submitProductReport } = await import('./moderation');
+  return submitProductReport(reporterId, productId, reason, description);
 }

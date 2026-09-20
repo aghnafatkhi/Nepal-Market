@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowUpDown, X, PlusCircle, AlertCircle } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { CategoryBar } from '@/components/CategoryBar';
@@ -25,6 +26,7 @@ import {
 } from '@/lib/supabase/products';
 
 export default function HomePage() {
+  const router = useRouter();
   const { user, isConfigured } = useAuth();
 
   // State data produk: jika supabase aktif, mulai dari array kosong atau data Supabase
@@ -39,8 +41,11 @@ export default function HomePage() {
   const [sortBy, setSortBy] = useState<SortOption>('terbaru');
   const [selectedCondition, setSelectedCondition] = useState<string>('semua');
   
-  // Loading state
+  // Loading & Pagination state
   const [isLoading, setIsLoading] = useState(isConfigured);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Modal states
   const [selectedProductForView, setSelectedProductForView] = useState<Product | null>(null);
@@ -51,14 +56,16 @@ export default function HomePage() {
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Load produk dari Supabase jika configured
+  // Load produk dari Supabase jika configured (page 1)
   useEffect(() => {
     let isMounted = true;
     if (isConfigured) {
-      fetchActiveProducts().then(({ products: dbProducts, error }) => {
+      fetchActiveProducts({ page: 1, pageSize: 12 }).then(({ products: dbProducts, hasMore: more, error }) => {
         if (!isMounted) return;
         if (!error) {
           setProducts(dbProducts);
+          setHasMore(more);
+          setPage(1);
         } else {
           console.warn('Gagal memuat dari Supabase:', error.message);
         }
@@ -70,6 +77,24 @@ export default function HomePage() {
       isMounted = false;
     };
   }, [isConfigured]);
+
+  // Handler muat lebih banyak data produk (pagination)
+  const handleLoadMore = async () => {
+    if (!isConfigured || isLoadingMore || !hasMore) return;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+    const { products: moreProducts, hasMore: moreAvailable, error } = await fetchActiveProducts({
+      page: nextPage,
+      pageSize: 12,
+    });
+
+    if (!error && moreProducts.length > 0) {
+      setProducts((prev) => [...prev, ...moreProducts]);
+      setPage(nextPage);
+      setHasMore(moreAvailable);
+    }
+    setIsLoadingMore(false);
+  };
 
   // Load user favorites dan user listings saat user login
   useEffect(() => {
@@ -146,6 +171,11 @@ export default function HomePage() {
 
   // Toggle simpan barang (wishlist)
   const handleToggleSave = async (productId: string) => {
+    if (!user) {
+      router.push('/login?redirectTo=/');
+      return;
+    }
+
     const isCurrentlySaved = savedProductIds.includes(productId);
     
     // Update local UI optimistically
@@ -154,7 +184,7 @@ export default function HomePage() {
     );
 
     // Sync ke Supabase jika login
-    if (user && isConfigured) {
+    if (isConfigured) {
       await toggleFavoriteInDb(user.id, productId, isCurrentlySaved);
     }
   };
@@ -209,11 +239,19 @@ export default function HomePage() {
         el.scrollIntoView({ behavior: 'smooth' });
       }
     } else if (tab === 'jual') {
-      setIsSellModalOpen(true);
+      router.push('/sell');
     } else if (tab === 'disimpan') {
-      setIsSavedModalOpen(true);
+      if (!user) {
+        router.push('/login?redirectTo=/saved');
+      } else {
+        router.push('/saved');
+      }
     } else if (tab === 'profil') {
-      setIsProfileModalOpen(true);
+      if (!user) {
+        router.push('/login?redirectTo=/profile');
+      } else {
+        router.push('/profile');
+      }
     }
   };
 
@@ -243,7 +281,7 @@ export default function HomePage() {
       />
 
       {/* Main Content Area */}
-      <main id="main-content" className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
+      <main id="main-content" className="flex-grow max-w-[1200px] w-full mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
         
         {/* Banner Penjelasan Singkat C2C */}
         <div 
@@ -253,13 +291,13 @@ export default function HomePage() {
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
             <span>
-              Marketplace lokal C2C. Beli & jual langsung antar anggota komunitas dengan kesepakatan tempat serah terima (COD).
+              Jual beli langsung antar anggota komunitas dengan kesepakatan tempat serah terima (COD).
             </span>
           </div>
           <button
             type="button"
             onClick={() => setIsSellModalOpen(true)}
-            className="hidden sm:inline-flex items-center gap-1 font-semibold text-blue-600 hover:text-blue-700 whitespace-nowrap min-h-[36px]"
+            className="hidden sm:inline-flex items-center gap-1 font-semibold text-blue-600 hover:text-blue-700 whitespace-nowrap min-h-[44px]"
           >
             Mulai Jual Barang →
           </button>
@@ -284,7 +322,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setSelectedCondition('semua')}
-                className={`px-2.5 py-1.5 rounded-md font-medium transition-colors min-h-[36px] ${
+                className={`px-3 py-2 rounded-lg font-medium transition-colors min-h-[44px] ${
                   selectedCondition === 'semua'
                     ? 'bg-slate-900 text-white'
                     : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -295,7 +333,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setSelectedCondition('Baru')}
-                className={`px-2.5 py-1.5 rounded-md font-medium transition-colors min-h-[36px] ${
+                className={`px-3 py-2 rounded-lg font-medium transition-colors min-h-[44px] ${
                   selectedCondition === 'Baru'
                     ? 'bg-slate-900 text-white'
                     : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -306,7 +344,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setSelectedCondition('Bekas - Mulus')}
-                className={`px-2.5 py-1.5 rounded-md font-medium transition-colors min-h-[36px] ${
+                className={`px-3 py-2 rounded-lg font-medium transition-colors min-h-[44px] ${
                   selectedCondition === 'Bekas - Mulus'
                     ? 'bg-slate-900 text-white'
                     : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
@@ -327,7 +365,7 @@ export default function HomePage() {
                 aria-label="Urutkan produk"
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="bg-white border border-slate-200 text-xs font-medium text-slate-700 py-1.5 px-2 rounded-md focus:outline-hidden focus:border-blue-500 min-h-[36px]"
+                className="bg-white border border-slate-200 text-xs font-medium text-slate-700 py-2 px-2.5 rounded-lg focus:outline-hidden focus:border-blue-500 min-h-[44px]"
               >
                 <option value="terbaru">Terbaru</option>
                 <option value="harga-rendah">Harga Terendah</option>
@@ -391,19 +429,43 @@ export default function HomePage() {
         {isLoading ? (
           <ProductSkeleton count={10} />
         ) : filteredProducts.length > 0 ? (
-          <div 
-            id="product-grid" 
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4"
-          >
-            {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                isSaved={savedProductIds.includes(product.id)}
-                onToggleSave={handleToggleSave}
-                onOpenDetail={setSelectedProductForView}
-              />
-            ))}
+          <div className="space-y-6">
+            <div 
+              id="product-grid" 
+              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4"
+            >
+              {filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isSaved={savedProductIds.includes(product.id)}
+                  onToggleSave={handleToggleSave}
+                  onOpenDetail={setSelectedProductForView}
+                />
+              ))}
+            </div>
+
+            {/* Tombol Muat Lebih Banyak (Pagination) */}
+            {hasMore && isConfigured && (
+              <div className="flex justify-center pt-4">
+                <button
+                  id="btn-load-more-products"
+                  type="button"
+                  onClick={handleLoadMore}
+                  disabled={isLoadingMore}
+                  className="px-6 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 font-semibold text-sm rounded-xl shadow-xs transition-colors flex items-center gap-2 min-h-[44px] disabled:opacity-60"
+                >
+                  {isLoadingMore ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                      <span>Memuat barang...</span>
+                    </>
+                  ) : (
+                    <span>Muat Lebih Banyak Barang</span>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <EmptyState 
@@ -418,7 +480,7 @@ export default function HomePage() {
 
       {/* Footer Ringan Komunitas */}
       <footer className="mt-16 border-t border-slate-200/80 bg-white py-8 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-left">
               <span className="font-bold text-slate-800 text-sm">Nepal Market</span>

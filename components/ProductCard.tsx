@@ -101,14 +101,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </div>
 
         {/* Lokasi & Waktu Serah Terima */}
-        <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] sm:text-xs text-slate-500">
-          <div className="flex items-center gap-1 truncate max-w-[65%]">
+        <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 text-[11px] sm:text-xs text-slate-500">
+          <div className="flex items-center gap-1 min-w-0 truncate">
             <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-400" />
             <span className="truncate">{product.location}</span>
           </div>
-          <div className="flex items-center gap-1 shrink-0 text-slate-400">
-            <Clock className="w-3 h-3" />
-            <span>{product.postedAt}</span>
+          <div className="shrink-0 text-slate-400 whitespace-nowrap text-[10px] sm:text-[11px]">
+            {product.postedAt}
           </div>
         </div>
       </Link>

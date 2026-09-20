@@ -10,23 +10,57 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Nepal Market - Marketplace Jual Beli Komunitas Lokal',
-  description: 'Marketplace C2C lokal untuk jual beli barang antar anggota komunitas dengan mudah dan aman.',
+  metadataBase: new URL(process.env.APP_URL || 'https://nepalmarket.id'),
+  title: {
+    default: 'Nepal Market - Marketplace Jual Beli Komunitas Lokal',
+    template: '%s | Nepal Market',
+  },
+  description: 'Marketplace C2C lokal untuk jual beli barang antar anggota komunitas dengan kesepakatan tempat serah terima (COD) secara mudah dan aman.',
+  applicationName: 'Nepal Market',
+  keywords: ['marketplace komunitas', 'jual beli lokal', 'COD sekolah', 'pasar komunitas', 'nepal market'],
+  authors: [{ name: 'Komunitas Nepal Market' }],
+  creator: 'Nepal Market',
   openGraph: {
     title: 'Nepal Market - Marketplace Jual Beli Komunitas Lokal',
-    description: 'Marketplace C2C lokal untuk jual beli barang antar anggota komunitas dengan mudah dan aman.',
+    description: 'Marketplace C2C lokal untuk jual beli barang antar anggota komunitas dengan kesepakatan tempat serah terima (COD) secara mudah dan aman.',
+    url: '/',
+    siteName: 'Nepal Market',
+    locale: 'id_ID',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Nepal Market - Marketplace Jual Beli Komunitas Lokal',
-    description: 'Marketplace C2C lokal untuk jual beli barang antar anggota komunitas dengan mudah dan aman.',
+    description: 'Marketplace C2C lokal untuk jual beli barang antar anggota komunitas dengan kesepakatan tempat serah terima (COD) secara mudah dan aman.',
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
 export default function RootLayout({children}: {children: React.ReactNode}) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Nepal Market',
+    applicationCategory: 'ShoppingApplication',
+    operatingSystem: 'All',
+    description: 'Marketplace C2C lokal untuk jual beli barang antar anggota komunitas dengan kesepakatan COD.',
+    offers: {
+      '@type': 'AggregateOffer',
+      priceCurrency: 'IDR',
+    },
+  };
+
   return (
     <html lang="id" className={inter.variable}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="min-h-screen bg-[#F8FAFC] text-[#1E293B] antialiased selection:bg-blue-100 selection:text-blue-900" suppressHydrationWarning>
         <AuthProvider>
           {children}

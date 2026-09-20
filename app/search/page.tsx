@@ -54,13 +54,36 @@ function SearchPageContent() {
   const [isSavedModalOpen, setIsSavedModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
+  // Pagination states
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   useEffect(() => {
     if (isConfigured) {
-      fetchActiveProducts().then(({ products: dbProds }) => {
+      fetchActiveProducts({ page: 1, pageSize: 24 }).then(({ products: dbProds, hasMore: more }) => {
         setProductsList(dbProds);
+        setHasMore(more);
+        setPage(1);
       });
     }
   }, [isConfigured]);
+
+  const handleLoadMore = async () => {
+    if (!isConfigured || isLoadingMore || !hasMore) return;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+    const { products: moreProds, hasMore: moreAvailable, error } = await fetchActiveProducts({
+      page: nextPage,
+      pageSize: 24,
+    });
+    if (!error && moreProds.length > 0) {
+      setProductsList((prev) => [...prev, ...moreProds]);
+      setPage(nextPage);
+      setHasMore(moreAvailable);
+    }
+    setIsLoadingMore(false);
+  };
 
   useEffect(() => {
     if (user && isConfigured) {
@@ -218,16 +241,16 @@ function SearchPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-20 md:pb-12">
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-28 md:pb-12">
       {/* Top Sticky Header */}
       <header className="sticky top-0 z-30 bg-white border-b border-slate-200/90 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-3 h-15 sm:h-17">
             {/* Back to Home Button */}
             <Link
               id="btn-back-to-home"
               href="/"
-              className="w-10 h-10 -ml-1.5 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              className="w-11 h-11 min-w-[44px] min-h-[44px] -ml-1.5 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
               aria-label="Kembali ke Beranda"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -243,7 +266,7 @@ function SearchPageContent() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari nama barang, deskripsi, atau kategori..."
+                placeholder="Cari nama barang atau kategori..."
                 autoFocus={!paramQ}
                 className="w-full pl-10 pr-10 py-2.5 bg-slate-100/90 hover:bg-slate-100 focus:bg-white text-sm text-slate-900 placeholder:text-slate-500 rounded-lg border border-transparent focus:border-blue-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 transition-all min-h-[44px]"
               />
@@ -256,7 +279,7 @@ function SearchPageContent() {
                     setSearchQuery('');
                     updateUrlParams({ q: '' });
                   }}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 min-w-[44px] min-h-[44px] justify-center"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -267,6 +290,7 @@ function SearchPageContent() {
             <button
               id="btn-open-mobile-filter"
               type="button"
+              aria-label="Buka Filter Pencarian"
               onClick={() => setIsFilterSheetOpen(true)}
               className={`md:hidden flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-semibold min-h-[44px] transition-colors shrink-0 ${
                 activeFilterCount > 0
@@ -287,7 +311,7 @@ function SearchPageContent() {
       </header>
 
       {/* Main Container: Desktop Side Filter + Search Results */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
+      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
         <div className="flex flex-col md:flex-row gap-6 items-start">
           
           {/* Desktop Filter Panel (Left Sidebar) */}
@@ -551,18 +575,41 @@ function SearchPageContent() {
 
             {/* Results Grid or Empty State */}
             {searchResults.length > 0 ? (
-              <div 
-                id="search-results-grid"
-                className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 mt-3"
-              >
-                {searchResults.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    isSaved={savedProductIds.includes(product.id)}
-                    onToggleSave={handleToggleSave}
-                  />
-                ))}
+              <div className="space-y-6 mt-3">
+                <div 
+                  id="search-results-grid"
+                  className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4"
+                >
+                  {searchResults.map((product) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      isSaved={savedProductIds.includes(product.id)}
+                      onToggleSave={handleToggleSave}
+                    />
+                  ))}
+                </div>
+
+                {hasMore && isConfigured && (
+                  <div className="flex justify-center pt-2">
+                    <button
+                      id="btn-search-load-more"
+                      type="button"
+                      onClick={handleLoadMore}
+                      disabled={isLoadingMore}
+                      className="px-6 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 font-semibold text-sm rounded-xl shadow-xs transition-colors flex items-center gap-2 min-h-[44px] disabled:opacity-60"
+                    >
+                      {isLoadingMore ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                          <span>Memuat barang...</span>
+                        </>
+                      ) : (
+                        <span>Muat Lebih Banyak Barang</span>
+                      )}
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               /* Specified Empty State: "Barangnya belum ketemu." & "Lihat barang lainnya" */

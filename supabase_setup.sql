@@ -60,8 +60,25 @@ CREATE TABLE IF NOT EXISTS public.reports (
   reason TEXT NOT NULL,
   description TEXT,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'resolved')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT unique_reporter_product UNIQUE (reporter_id, product_id)
+);
+
+-- 6B. TABEL MODERATION_LOGS
+CREATE TABLE IF NOT EXISTS public.moderation_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  admin_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  action TEXT NOT NULL,
+  target_type TEXT NOT NULL CHECK (target_type IN ('product', 'profile', 'report')),
+  target_id UUID NOT NULL,
+  target_title TEXT,
+  reason TEXT NOT NULL DEFAULT '',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Kolom tambahan untuk penonaktifan akun seller jika diperlukan
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS is_suspended BOOLEAN DEFAULT false;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS suspension_reason TEXT;
 
 -- ==============================================================================
 -- 7. INDEXES UNTUK PERFORMA QUERY
@@ -304,11 +321,12 @@ WITH CHECK (
   AND auth.uid() = reporter_id
 );
 
-CREATE POLICY "Hanya admin yang boleh melihat semua laporan"
+CREATE POLICY "Pelapor boleh melihat laporannya sendiri dan admin boleh melihat semua"
 ON public.reports
 FOR SELECT
 USING (
-  EXISTS (
+  auth.uid() = reporter_id
+  OR EXISTS (
     SELECT 1 FROM public.profiles
     WHERE id = auth.uid() AND role = 'admin'
   )
@@ -329,3 +347,51 @@ WITH CHECK (
     WHERE id = auth.uid() AND role = 'admin'
   )
 );
+
+-- F. MODERATION_LOGS
+ALTER TABLE public.moderation_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Hanya admin yang boleh melihat log moderasi"
+ON public.moderation_logs
+FOR SELECT
+USING (
+  EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  )
+);
+
+CREATE POLICY "Hanya admin yang boleh menambahkan log moderasi"
+ON public.moderation_logs
+FOR INSERT
+WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  )
+);
+
+-- G. ADMIN PROFILE UPDATE (Untuk penonaktifan akun)
+CREATE POLICY "Admin boleh memperbarui status penonaktifan akun"
+ON public.profiles
+FOR UPDATE
+USING (
+  auth.uid() = id
+  OR EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  )
+)
+WITH CHECK (
+  auth.uid() = id
+  OR EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  )
+);
+
+-- ==============================================================================
+-- PANDUAN PEMBERIAN HAK AKSES ADMIN:
+-- Jalankan query ini di SQL Editor Supabase untuk menetapkan akun menjadi Admin:
+-- UPDATE public.profiles SET role = 'admin' WHERE email = 'aghna1011@gmail.com';
+-- ==============================================================================

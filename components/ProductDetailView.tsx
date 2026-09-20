@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   ArrowLeft, 
   Bookmark, 
@@ -17,7 +18,10 @@ import {
   Store,
   Calendar,
   Layers,
-  Check
+  Check,
+  Edit3,
+  Package,
+  ShieldCheck
 } from 'lucide-react';
 import { Product } from '@/types/market';
 import { getProductById, getProductsBySeller, formatRupiah, INITIAL_PRODUCTS } from '@/data/products';
@@ -36,7 +40,16 @@ interface ProductDetailViewProps {
 }
 
 export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId }) => {
+  const router = useRouter();
   const { user, isConfigured } = useAuth();
+  const searchParams = useSearchParams();
+  const justListed = searchParams?.get('justListed') === 'true';
+  const justUpdated = searchParams?.get('justUpdated') === 'true';
+
+  const [notification, setNotification] = useState<string | null>(
+    justListed ? 'Barang berhasil dipasang.' : justUpdated ? 'Perubahan barang berhasil disimpan.' : null
+  );
+
   const initialLocal = getProductById(productId);
   const [product, setProduct] = useState<Product | null>(initialLocal || null);
   const [isLoadingProduct, setIsLoadingProduct] = useState(!initialLocal && isConfigured);
@@ -81,10 +94,39 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
   }, [user, productId, isConfigured]);
 
   const handleToggleSave = async () => {
+    if (!user) {
+      const currentUrl = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : `/product/${productId}`;
+      router.push(`/login?redirectTo=${encodeURIComponent(currentUrl)}`);
+      return;
+    }
     const nextSaved = !isSaved;
     setIsSaved(nextSaved);
-    if (user && isConfigured) {
+    if (isConfigured) {
       await toggleFavoriteInDb(user.id, productId, isSaved);
+    }
+  };
+
+  const handleContactSeller = () => {
+    if (!product) return;
+    const rawPhone = product.seller.whatsapp?.trim() || '';
+    const cleanIg = (product.seller.instagram || '').trim().replace(/^@/, '');
+    const hasWa = Boolean(rawPhone);
+    const hasIg = Boolean(cleanIg);
+
+    if (hasWa && hasIg) {
+      // Jika keduanya tersedia, tampilkan pilihan sederhana
+      setIsContactModalOpen(true);
+    } else if (hasWa) {
+      // Jika seller memiliki WhatsApp, buka WhatsApp dengan pesan otomatis:
+      // “Halo, saya melihat produk ‘[nama produk]’ di Nepal Market. Apakah masih tersedia?”
+      const cleanPhone = rawPhone.replace(/\D/g, '').replace(/^0/, '62');
+      const msg = `Halo, saya melihat produk ‘${product.title}’ di Nepal Market. Apakah masih tersedia?`;
+      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
+    } else if (hasIg) {
+      // Jika seller hanya memiliki Instagram, buka profil Instagram
+      window.open(`https://instagram.com/${cleanIg}`, '_blank', 'noopener,noreferrer');
+    } else {
+      setIsContactModalOpen(true);
     }
   };
 
@@ -179,13 +221,13 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-28 md:pb-16">
       {/* Top Header Navigation */}
       <header className="sticky top-0 z-30 bg-white border-b border-slate-200/90 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14 sm:h-16">
-            <div className="flex items-center gap-3">
+        <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-15 sm:h-16">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Link
                 id="btn-back-detail"
                 href="/"
-                className="w-10 h-10 -ml-2 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                className="w-11 h-11 min-h-[44px] min-w-[44px] -ml-2 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                 aria-label="Kembali ke Beranda"
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -208,7 +250,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                 type="button"
                 onClick={handleShare}
                 title="Salin tautan barang"
-                className="w-10 h-10 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors relative"
+                className="w-11 h-11 min-h-[44px] min-w-[44px] rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors relative"
                 aria-label="Bagikan barang"
               >
                 {isCopiedLink ? (
@@ -228,7 +270,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                 id="btn-toggle-save-desktop"
                 type="button"
                 onClick={handleToggleSave}
-                className="hidden sm:flex w-10 h-10 rounded-lg items-center justify-center text-slate-600 hover:text-blue-600 hover:bg-slate-100 transition-colors"
+                className="hidden sm:flex w-11 h-11 min-h-[44px] min-w-[44px] rounded-lg items-center justify-center text-slate-600 hover:text-blue-600 hover:bg-slate-100 transition-colors"
                 aria-label={isSaved ? 'Hapus dari simpanan' : 'Simpan barang'}
               >
                 <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-blue-600 text-blue-600' : ''}`} />
@@ -239,7 +281,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                 id="btn-report-desktop"
                 type="button"
                 onClick={() => setIsReportModalOpen(true)}
-                className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                className="hidden sm:flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors min-h-[44px]"
               >
                 <AlertTriangle className="w-3.5 h-3.5" />
                 <span>Laporkan</span>
@@ -250,7 +292,61 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
       </header>
 
       {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
+      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
+        {/* Notifikasi Sukses Pasang / Edit */}
+        {notification && (
+          <div
+            role="status"
+            className="mb-5 p-3.5 sm:p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between text-xs sm:text-sm font-semibold text-emerald-800 shadow-xs animate-in fade-in"
+          >
+            <div className="flex items-center gap-2.5">
+              <Check className="w-5 h-5 text-emerald-600 shrink-0" />
+              <span>{notification}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setNotification(null)}
+              className="text-emerald-700 hover:text-emerald-900 p-1"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Banner Pemilik Barang */}
+        {user && product && user.id === product.seller.id && (
+          <div className="mb-5 p-4 bg-blue-50/80 border border-blue-200/90 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                <Package className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-xs sm:text-sm font-bold text-blue-950">
+                  Ini adalah iklan barang milikmu
+                </p>
+                <p className="text-[11px] sm:text-xs text-blue-700">
+                  Status: <span className="font-semibold uppercase tracking-wider">{product.status || (product.isSold ? 'Terjual' : 'Aktif')}</span>
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Link
+                href={`/my-products/${product.id}/edit`}
+                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors min-h-[40px]"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+                <span>Edit Iklan</span>
+              </Link>
+              <Link
+                href="/my-products"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center px-3.5 py-2 rounded-xl border border-blue-300 bg-white hover:bg-blue-50 text-blue-800 text-xs font-semibold transition-colors min-h-[40px]"
+              >
+                <span>Produk Saya</span>
+              </Link>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           
           {/* LEFT COLUMN: Photo Gallery (max 5 photos) */}
@@ -432,7 +528,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                   <button
                     id="btn-contact-seller-desktop"
                     type="button"
-                    onClick={() => setIsContactModalOpen(true)}
+                    onClick={handleContactSeller}
                     className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm transition-colors shadow-xs flex items-center justify-center gap-2 min-h-[48px]"
                   >
                     <MessageCircle className="w-4 h-4" />
@@ -485,21 +581,69 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
 
               <div className="flex items-center gap-3.5 pt-1">
                 {/* Seller Avatar */}
-                <div className="w-12 h-12 rounded-full bg-blue-600 text-white font-bold text-lg flex items-center justify-center shrink-0 shadow-xs">
-                  {seller.name.charAt(0)}
-                </div>
+                {seller.username ? (
+                  <Link
+                    href={`/profile/${seller.username}`}
+                    className="w-12 h-12 rounded-full bg-blue-600 text-white font-bold text-lg flex items-center justify-center shrink-0 shadow-xs overflow-hidden relative group hover:ring-2 hover:ring-blue-500 transition-all"
+                  >
+                    {seller.avatar ? (
+                      <Image
+                        src={seller.avatar}
+                        alt={seller.name}
+                        fill
+                        sizes="48px"
+                        className="object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      seller.name.charAt(0).toUpperCase()
+                    )}
+                  </Link>
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-blue-600 text-white font-bold text-lg flex items-center justify-center shrink-0 shadow-xs overflow-hidden relative">
+                    {seller.avatar ? (
+                      <Image
+                        src={seller.avatar}
+                        alt={seller.name}
+                        fill
+                        sizes="48px"
+                        className="object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      seller.name.charAt(0).toUpperCase()
+                    )}
+                  </div>
+                )}
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <h3 className="text-sm font-bold text-slate-900 truncate">
-                      {seller.name}
-                    </h3>
+                    {seller.username ? (
+                      <Link
+                        href={`/profile/${seller.username}`}
+                        className="text-sm font-bold text-slate-900 hover:text-blue-600 truncate transition-colors"
+                      >
+                        {seller.name}
+                      </Link>
+                    ) : (
+                      <h3 className="text-sm font-bold text-slate-900 truncate">
+                        {seller.name}
+                      </h3>
+                    )}
                     {seller.isVerified && (
                       <span title="Penjual Terverifikasi" className="inline-flex items-center">
                         <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
                       </span>
                     )}
                   </div>
+                  {seller.username && (
+                    <Link
+                      href={`/profile/${seller.username}`}
+                      className="text-xs font-mono text-slate-500 hover:text-blue-600 block truncate"
+                    >
+                      @{seller.username}
+                    </Link>
+                  )}
                   <p className="text-xs text-slate-500 truncate mt-0.5">
                     {seller.location}
                   </p>
@@ -510,7 +654,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
               <div className="pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-xs">
                 <div className="flex items-center gap-1.5 text-slate-600">
                   <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span>{seller.joinedDate || 'Bergabung 2023'}</span>
+                  <span>{seller.joinedDate || 'Bergabung 2024'}</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-slate-600">
                   <Store className="w-3.5 h-3.5 text-slate-400 shrink-0" />
@@ -519,10 +663,18 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
               </div>
             </div>
 
-            {/* Safety Reminder / COD Tips */}
-            <div className="p-3.5 bg-slate-100/80 rounded-xl border border-slate-200/80 text-[11px] text-slate-600 leading-relaxed">
-              <strong className="text-slate-800 font-semibold block mb-0.5">Tips Transaksi Aman:</strong>
-              Sepakati COD di tempat ramai seperti kantin atau lobi. Periksa kondisi fisik barang secara teliti sebelum membayar langsung kepada seller.
+            {/* Disclaimer Ringkas */}
+            <div 
+              id="product-detail-disclaimer"
+              className="p-3.5 bg-slate-100/90 rounded-xl border border-slate-200/90 text-xs text-slate-600 leading-relaxed space-y-1"
+            >
+              <div className="flex items-center gap-1.5 font-semibold text-slate-800">
+                <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
+                <span>Disclaimer Transaksi</span>
+              </div>
+              <p className="text-[12px] text-slate-600">
+                Nepal Market hanya menjadi wadah. Pastikan kondisi barang dan kesepakatan transaksi sebelum membeli.
+              </p>
             </div>
 
           </div>
@@ -599,8 +751,17 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
           <AlertTriangle className="w-5 h-5" />
         </button>
 
-        {/* Mobile Hubungi Seller Button */}
-        {isSold ? (
+        {/* Mobile Action Button (Hubungi Seller vs Edit Iklan untuk Pemilik) */}
+        {user && product && user.id === product.seller.id ? (
+          <Link
+            id="btn-mobile-sticky-owner-edit"
+            href={`/my-products/${product.id}/edit`}
+            className="flex-1 h-11 px-4 rounded-xl bg-blue-600 active:bg-blue-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs"
+          >
+            <Edit3 className="w-4 h-4" />
+            <span>Edit Iklan Saya</span>
+          </Link>
+        ) : isSold ? (
           <button
             id="btn-mobile-sticky-disabled"
             type="button"
@@ -613,7 +774,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
           <button
             id="btn-mobile-sticky-contact"
             type="button"
-            onClick={() => setIsContactModalOpen(true)}
+            onClick={handleContactSeller}
             className="flex-1 h-11 px-4 rounded-xl bg-blue-600 active:bg-blue-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs"
           >
             <MessageCircle className="w-4 h-4" />

@@ -1,14 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, AlertCircle, ShoppingBag, Sparkles } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, ShoppingBag, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { CategorySlug, ProductCondition } from '@/types/market';
 import { CATEGORIES } from '@/data/products';
-import { createProductInDb } from '@/lib/supabase/products';
-import { ProductPhotoPicker } from '@/components/ProductPhotoPicker';
+import { fetchProductById, updateProductInDb, EditPhotoEntry } from '@/lib/supabase/products';
+import { ProductPhotoPicker, PhotoPickerItem } from '@/components/ProductPhotoPicker';
 
 const CONDITIONS: { value: ProductCondition; label: string; desc: string }[] = [
   { value: 'Baru', label: 'Baru', desc: 'Belum pernah dipakai / masih segel' },
@@ -17,12 +17,20 @@ const CONDITIONS: { value: ProductCondition; label: string; desc: string }[] = [
   { value: 'Bekas - Layak', label: 'Bekas - Layak', desc: 'Ada lecet / minus wajar, harga hemat' },
 ];
 
-export default function SellPage() {
+export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
+  const productId = resolvedParams.id;
+
   const router = useRouter();
   const { user, profile, isLoading: authLoading, isConfigured } = useAuth();
 
+  // Data loading states
+  const [isFetchingProduct, setIsFetchingProduct] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [isUnauthorized, setIsUnauthorized] = useState(false);
+
   // Form states
-  const [photos, setPhotos] = useState<File[]>([]);
+  const [photoItems, setPhotoItems] = useState<PhotoPickerItem[]>([]);
   const [title, setTitle] = useState('');
   const [displayPrice, setDisplayPrice] = useState('');
   const [rawPrice, setRawPrice] = useState<number>(0);
@@ -30,32 +38,91 @@ export default function SellPage() {
   const [condition, setCondition] = useState<ProductCondition>('Bekas - Mulus');
   const [location, setLocation] = useState('Kantin Utama');
   const [description, setDescription] = useState('');
+  const [status, setStatus] = useState<'active' | 'sold' | 'draft'>('active');
   const [whatsapp, setWhatsapp] = useState('');
   const [instagram, setInstagram] = useState('');
 
-  // Status & Validation
+  // Validation & Submit states
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Initialize contact info from logged in user
-  useEffect(() => {
-    if (!profile) return;
-    const timer = setTimeout(() => {
-      setWhatsapp((curr) => curr || profile.phone || '');
-      setInstagram((curr) => curr || profile.instagram || '');
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [profile]);
-
   // Protected route check
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/login?redirectTo=/sell');
+      router.push(`/login?redirectTo=/my-products/${productId}/edit`);
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, productId]);
 
-  // Format harga Rupiah otomatis
+  // Load existing product
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadData() {
+      if (!productId || !user) return;
+      setIsFetchingProduct(true);
+      setFetchError(null);
+
+      const result = await fetchProductById(productId);
+      if (!isMounted) return;
+
+      if (result.error || !result.product) {
+        setFetchError(result.error?.message || 'Barang tidak ditemukan.');
+        setIsFetchingProduct(false);
+        return;
+      }
+
+      const prod = result.product;
+
+      // Cek apakah pemilik adalah user yang login
+      if (prod.seller.id !== user.id) {
+        setIsUnauthorized(true);
+        setIsFetchingProduct(false);
+        return;
+      }
+
+      // Isi form dengan data yang ada
+      setTitle(prod.title);
+      setRawPrice(prod.price);
+      setDisplayPrice(new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(prod.price));
+      setCategory(prod.category);
+      setCondition(prod.condition);
+      setLocation(prod.location || 'Kantin Utama');
+      setDescription(prod.description);
+      const initialStatus: 'active' | 'sold' | 'draft' = 
+        prod.status === 'sold' ? 'sold' :
+        prod.status === 'draft' ? 'draft' :
+        prod.isSold ? 'sold' : 'active';
+      setStatus(initialStatus);
+
+      // Kontak
+      setWhatsapp(prod.seller.whatsapp || profile?.phone || '');
+      setInstagram(prod.seller.instagram || profile?.instagram || '');
+
+      // Susun list foto yang sudah ada
+      const existingList: string[] = prod.images && prod.images.length > 0
+        ? prod.images
+        : prod.imageUrl ? [prod.imageUrl] : [];
+
+      const initialItems: PhotoPickerItem[] = existingList.map((url, idx) => ({
+        id: `existing-${idx}-${url}`,
+        type: 'existing',
+        url,
+      }));
+
+      setPhotoItems(initialItems);
+      setIsFetchingProduct(false);
+    }
+
+    if (user && isConfigured) {
+      loadData();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [productId, user, isConfigured, profile]);
+
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputVal = e.target.value.replace(/\D/g, '');
     if (!inputVal) {
@@ -65,7 +132,6 @@ export default function SellPage() {
     }
 
     const num = parseInt(inputVal, 10);
-    // Batas maksimal harga Rp 1.000.000.000
     if (num > 1000000000) return;
 
     setRawPrice(num);
@@ -78,12 +144,10 @@ export default function SellPage() {
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    // 1. Foto
-    if (photos.length === 0) {
-      newErrors.photos = 'Tambahkan minimal 1 foto barang.';
+    if (photoItems.length === 0) {
+      newErrors.photos = 'Pertahankan atau tambahkan minimal 1 foto barang.';
     }
 
-    // 2. Nama Barang
     const cleanTitle = title.trim();
     if (!cleanTitle) {
       newErrors.title = 'Nama barang wajib diisi.';
@@ -93,22 +157,18 @@ export default function SellPage() {
       newErrors.title = 'Nama barang maksimal 80 karakter.';
     }
 
-    // 3. Harga
     if (!rawPrice || rawPrice <= 0) {
       newErrors.price = 'Harga barang harus lebih dari Rp 0.';
     }
 
-    // 4. Kategori
     if (!category || category === 'semua') {
       newErrors.category = 'Pilih salah satu kategori barang.';
     }
 
-    // 5. Kondisi
     if (!condition) {
       newErrors.condition = 'Pilih kondisi barang saat ini.';
     }
 
-    // 6. Deskripsi
     const cleanDesc = description.trim();
     if (!cleanDesc) {
       newErrors.description = 'Deskripsi barang wajib diisi.';
@@ -116,7 +176,6 @@ export default function SellPage() {
       newErrors.description = 'Deskripsi terlalu pendek. Tuliskan minimal 15 karakter.';
     }
 
-    // 7. Kontak (minimal satu)
     const cleanWa = whatsapp.trim().replace(/\D/g, '');
     const cleanIg = instagram.trim().replace(/^@/, '');
 
@@ -124,7 +183,6 @@ export default function SellPage() {
       newErrors.contact = 'Isi minimal satu kontak: nomor WhatsApp atau username Instagram.';
     } else {
       if (cleanWa) {
-        // Validasi nomor Indonesia: harus mulai 08 atau 628 dengan panjang 9-14 digit
         const waNum = cleanWa.startsWith('0') ? `62${cleanWa.slice(1)}` : cleanWa;
         if (!/^628\d{7,12}$/.test(waNum)) {
           newErrors.whatsapp = 'Format nomor WhatsApp belum tepat (contoh: 081234567890).';
@@ -141,7 +199,6 @@ export default function SellPage() {
 
     if (Object.keys(newErrors).length > 0) {
       setGeneralError('Periksa lagi data yang belum lengkap.');
-      // Scroll ke atas agar pengguna melihat pesan
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return false;
     }
@@ -150,24 +207,29 @@ export default function SellPage() {
     return true;
   };
 
-  const handleSubmit = async (e: React.FormEvent, status: 'active' | 'draft' = 'active') => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting || !user) return;
 
     if (!validateForm()) return;
 
-    if (!isConfigured) {
-      setGeneralError('Koneksi Supabase belum terkonfigurasi di sistem.');
-      return;
-    }
-
     setIsSubmitting(true);
     setGeneralError(null);
+
+    // Siapkan array foto untuk backend
+    const photosPayload: EditPhotoEntry[] = photoItems.map((item) => {
+      if (item.type === 'existing') {
+        return { type: 'existing', url: item.url };
+      } else {
+        return { type: 'file', file: item.file as File };
+      }
+    });
 
     const cleanWa = whatsapp.trim().replace(/\D/g, '');
     const cleanIg = instagram.trim().replace(/^@/, '');
 
-    const result = await createProductInDb({
+    const result = await updateProductInDb({
+      productId,
       sellerId: user.id,
       title: title.trim(),
       description: description.trim(),
@@ -175,31 +237,71 @@ export default function SellPage() {
       category,
       condition,
       location: location.trim() || 'Kantin Utama',
-      images: photos,
+      photos: photosPayload,
       contactPhone: cleanWa || undefined,
       contactInstagram: cleanIg || undefined,
       status,
     });
 
     if (result.error) {
-      setGeneralError(result.error.message || 'Gagal memasang barang. Silakan coba sesaat lagi.');
+      setGeneralError(result.error.message || 'Gagal menyimpan perubahan barang.');
       setIsSubmitting(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
 
-    if (result.product) {
-      // Arahkan langsung ke halaman detail produk dengan query pemberitahuan singkat
-      router.push(`/product/${result.product.id}?justListed=true`);
-    } else {
-      router.push('/my-products');
-    }
+    // Arahkan ke halaman detail produk dengan notifikasi sukses
+    router.push(`/product/${productId}?justUpdated=true`);
   };
 
-  if (authLoading || !user) {
+  if (authLoading || isFetchingProduct) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <Loader2 className="w-7 h-7 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  // Not authorized state
+  if (isUnauthorized) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 text-center space-y-4 shadow-sm">
+          <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto">
+            <ShieldAlert className="w-6 h-6" />
+          </div>
+          <h1 className="text-lg font-bold text-slate-900">Tidak Ada Izin</h1>
+          <p className="text-xs sm:text-sm text-slate-500">
+            Kamu tidak memiliki izin untuk mengedit barang ini karena bukan pemilik iklan.
+          </p>
+          <Link
+            href="/my-products"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition-colors"
+          >
+            <span>Kembali ke Produk Saya</span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Fetch error state
+  if (fetchError) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 text-center space-y-4 shadow-sm">
+          <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+            <AlertCircle className="w-6 h-6" />
+          </div>
+          <h1 className="text-lg font-bold text-slate-900">Barang Tidak Ditemukan</h1>
+          <p className="text-xs sm:text-sm text-slate-500">{fetchError}</p>
+          <Link
+            href="/my-products"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition-colors"
+          >
+            <span>Kembali ke Produk Saya</span>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -210,18 +312,18 @@ export default function SellPage() {
       <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-200/90">
         <div className="max-w-2xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
           <Link
-            href="/"
+            href="/my-products"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors -ml-1 min-h-[44px] px-2"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Kembali</span>
           </Link>
-          <span className="text-sm font-bold text-slate-900 truncate">Pasang Iklan</span>
+          <span className="text-sm font-bold text-slate-900 truncate">Edit Iklan Barang</span>
           <Link
-            href="/my-products"
+            href={`/product/${productId}`}
             className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors min-h-[44px] flex items-center px-2"
           >
-            Produk Saya
+            Lihat Iklan
           </Link>
         </div>
       </div>
@@ -229,15 +331,11 @@ export default function SellPage() {
       <main className="max-w-2xl mx-auto px-4 pt-4 sm:pt-6">
         {/* Header Title Section */}
         <div className="mb-5">
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <span>Jual Barang</span>
-            <span className="text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-blue-600" />
-              Cepat & Mudah
-            </span>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            Edit Detail Barang
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Pasang barang yang ingin kamu lepas ke sesama warga komunitas Nepal Market.
+            Perbarui foto, harga, deskripsi, atau status ketersediaan barangmu.
           </p>
         </div>
 
@@ -252,13 +350,58 @@ export default function SellPage() {
           </div>
         )}
 
-        <form onSubmit={(e) => handleSubmit(e, 'active')} className="space-y-5">
-          {/* 1. KOTAK UPLOAD FOTO */}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Status Switcher Box */}
+          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+              Status Iklan Barang
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setStatus('active')}
+                className={`py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-semibold transition-all min-h-[44px] flex items-center justify-center gap-1.5 ${
+                  status === 'active'
+                    ? 'border-blue-600 bg-blue-50 text-blue-700 ring-1 ring-blue-600'
+                    : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                <span>Aktif</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatus('sold')}
+                className={`py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-semibold transition-all min-h-[44px] flex items-center justify-center gap-1.5 ${
+                  status === 'sold'
+                    ? 'border-emerald-600 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600'
+                    : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                <span>Terjual</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatus('draft')}
+                className={`py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-semibold transition-all min-h-[44px] flex items-center justify-center gap-1.5 ${
+                  status === 'draft'
+                    ? 'border-amber-600 bg-amber-50 text-amber-700 ring-1 ring-amber-600'
+                    : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                }`}
+              >
+                <span>Draft</span>
+              </button>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-1.5">
+              Pilih &quot;Terjual&quot; jika barang sudah laku, atau &quot;Draft&quot; untuk menyembunyikannya sementara dari beranda.
+            </p>
+          </div>
+
+          {/* 1. KOTAK FOTO */}
           <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs">
             <ProductPhotoPicker
-              files={photos}
-              onChange={(newFiles) => {
-                setPhotos(newFiles);
+              items={photoItems}
+              onItemsChange={(newItems) => {
+                setPhotoItems(newItems);
                 if (errors.photos) {
                   setErrors((prev) => ({ ...prev, photos: '' }));
                 }
@@ -267,17 +410,17 @@ export default function SellPage() {
             />
           </div>
 
-          {/* 2. INFORMASI BARANG */}
+          {/* 2. DETAIL INFORMASI BARANG */}
           <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs space-y-4">
             <h2 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2.5 flex items-center gap-2">
               <ShoppingBag className="w-4 h-4 text-blue-600" />
-              <span>Detail Barang</span>
+              <span>Informasi Barang</span>
             </h2>
 
             {/* Nama Barang */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label htmlFor="sell-title" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                <label htmlFor="edit-title" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
                   Nama Barang *
                 </label>
                 <span className="text-[11px] text-slate-400">
@@ -285,10 +428,10 @@ export default function SellPage() {
                 </span>
               </div>
               <input
-                id="sell-title"
+                id="edit-title"
                 type="text"
                 maxLength={80}
-                placeholder="Contoh: Hoodie H&M Abu Mist Size L Original"
+                placeholder="Contoh: Jaket Denim Uniqlo Size L Original"
                 value={title}
                 onChange={(e) => {
                   setTitle(e.target.value);
@@ -309,40 +452,34 @@ export default function SellPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {/* Harga */}
               <div>
-                <label htmlFor="sell-price" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label htmlFor="edit-price" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                   Harga Barang *
                 </label>
-                <div className="relative">
-                  <input
-                    id="sell-price"
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="Contoh: Rp 75.000"
-                    value={displayPrice}
-                    onChange={handlePriceChange}
-                    className={`w-full px-3.5 py-3 bg-slate-50 border rounded-xl text-base font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:outline-hidden min-h-[46px] transition-colors ${
-                      errors.price ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-500'
-                    }`}
-                  />
-                </div>
-                {errors.price ? (
+                <input
+                  id="edit-price"
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Contoh: Rp 75.000"
+                  value={displayPrice}
+                  onChange={handlePriceChange}
+                  className={`w-full px-3.5 py-3 bg-slate-50 border rounded-xl text-base font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:outline-hidden min-h-[46px] transition-colors ${
+                    errors.price ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-500'
+                  }`}
+                />
+                {errors.price && (
                   <p role="alert" className="text-xs font-medium text-rose-600 mt-1">
                     {errors.price}
-                  </p>
-                ) : (
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Ketik angka saja, format Rupiah akan otomatis muncul.
                   </p>
                 )}
               </div>
 
               {/* Kategori */}
               <div>
-                <label htmlFor="sell-category" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label htmlFor="edit-category" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                   Kategori *
                 </label>
                 <select
-                  id="sell-category"
+                  id="edit-category"
                   value={category}
                   onChange={(e) => {
                     setCategory(e.target.value as CategorySlug);
@@ -414,28 +551,25 @@ export default function SellPage() {
               )}
             </div>
 
-            {/* Titik Lokasi COD / Ketemuan */}
+            {/* Titik COD */}
             <div>
-              <label htmlFor="sell-location" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              <label htmlFor="edit-location" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                 Lokasi / Titik COD *
               </label>
               <input
-                id="sell-location"
+                id="edit-location"
                 type="text"
-                placeholder="Contoh: Kantin Utama / Gedung B / Sekitar Sekolah"
+                placeholder="Contoh: Kantin Utama / Gedung B"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 className="w-full px-3.5 py-3 bg-slate-50 border border-slate-200 rounded-xl text-base text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:outline-hidden min-h-[46px]"
               />
-              <p className="text-[11px] text-slate-400 mt-1">
-                Tempat kesepakatan serah terima barang secara langsung.
-              </p>
             </div>
 
             {/* Deskripsi */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label htmlFor="sell-desc" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                <label htmlFor="edit-desc" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
                   Deskripsi Barang *
                 </label>
                 <span className={`text-[11px] ${description.length < 15 ? 'text-amber-600' : 'text-slate-400'}`}>
@@ -443,9 +577,9 @@ export default function SellPage() {
                 </span>
               </div>
               <textarea
-                id="sell-desc"
+                id="edit-desc"
                 rows={4}
-                placeholder="Ceritakan detail barang: kelengkapan, berapa lama pemakaian, minus fisik (jika ada), dan alasan dijual..."
+                placeholder="Ceritakan detail barang..."
                 value={description}
                 onChange={(e) => {
                   setDescription(e.target.value);
@@ -470,7 +604,7 @@ export default function SellPage() {
                 Kontak Penjual
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Isi minimal satu kontak agar calon pembeli dapat menghubungimu untuk negosiasi atau janjian COD.
+                Isi minimal satu kontak agar calon pembeli dapat menghubungimu.
               </p>
             </div>
 
@@ -483,11 +617,11 @@ export default function SellPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               {/* WhatsApp */}
               <div>
-                <label htmlFor="sell-wa" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label htmlFor="edit-wa" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                   Nomor WhatsApp
                 </label>
                 <input
-                  id="sell-wa"
+                  id="edit-wa"
                   type="tel"
                   inputMode="tel"
                   placeholder="Contoh: 081234567890"
@@ -510,7 +644,7 @@ export default function SellPage() {
 
               {/* Instagram */}
               <div>
-                <label htmlFor="sell-ig" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                <label htmlFor="edit-ig" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                   Username Instagram (Opsional)
                 </label>
                 <div className="relative">
@@ -518,7 +652,7 @@ export default function SellPage() {
                     @
                   </span>
                   <input
-                    id="sell-ig"
+                    id="edit-ig"
                     type="text"
                     placeholder="username"
                     value={instagram}
@@ -543,14 +677,12 @@ export default function SellPage() {
 
           {/* Action Buttons (Desktop Inline) */}
           <div className="hidden sm:flex items-center justify-end gap-3 pt-2">
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={(e) => handleSubmit(e, 'draft')}
-              className="px-5 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-colors min-h-[48px] disabled:opacity-50"
+            <Link
+              href="/my-products"
+              className="px-5 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-colors min-h-[48px] flex items-center justify-center"
             >
-              Simpan sebagai Draft
-            </button>
+              Batal
+            </Link>
             <button
               type="submit"
               disabled={isSubmitting}
@@ -559,40 +691,41 @@ export default function SellPage() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Memasang Barang...</span>
+                  <span>Menyimpan Perubahan...</span>
                 </>
               ) : (
-                <span>Jual Barang Sekarang</span>
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Simpan Perubahan</span>
+                </div>
               )}
             </button>
           </div>
         </form>
       </main>
 
-      {/* Sticky Bottom Action Bar di Layar HP (Mobile thumb-friendly) */}
+      {/* Sticky Bottom Action Bar di Layar HP */}
       <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/90 p-3 pb-[max(12px,env(safe-area-inset-bottom))] shadow-lg">
         <div className="max-w-2xl mx-auto flex items-center gap-2">
-          <button
-            type="button"
-            disabled={isSubmitting}
-            onClick={(e) => handleSubmit(e, 'draft')}
-            className="w-1/3 min-h-[48px] py-3 px-2 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs rounded-xl transition-colors text-center disabled:opacity-50"
+          <Link
+            href="/my-products"
+            className="w-1/3 min-h-[48px] py-3 px-2 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs rounded-xl transition-colors text-center flex items-center justify-center"
           >
-            Draft
-          </button>
+            Batal
+          </Link>
           <button
             type="button"
             disabled={isSubmitting}
-            onClick={(e) => handleSubmit(e, 'active')}
+            onClick={handleSubmit}
             className="flex-1 min-h-[48px] py-3 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm rounded-xl transition-colors shadow-xs flex items-center justify-center gap-2 disabled:opacity-60"
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Memasang...</span>
+                <span>Menyimpan...</span>
               </>
             ) : (
-              <span>Jual Barang</span>
+              <span>Simpan Perubahan</span>
             )}
           </button>
         </div>

@@ -19,6 +19,7 @@ export type ConditionFilter = 'semua' | 'baru' | 'seperti-baru' | 'bekas';
 export interface Seller {
   id?: string;
   name: string;
+  username?: string;
   avatar?: string;
   location: string;
   joinedDate?: string;
@@ -42,6 +43,7 @@ export interface Product {
   description: string;
   isAvailable: boolean;
   isSold?: boolean;
+  status?: 'draft' | 'active' | 'sold' | 'hidden' | 'removed';
 }
 
 export interface CategoryItem {

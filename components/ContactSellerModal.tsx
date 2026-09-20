@@ -21,15 +21,16 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
   if (!isOpen) return null;
 
   const seller = product.seller;
-  const phoneNumber = seller.whatsapp || '';
-  const instagramHandle = seller.instagram || '';
+  const rawPhone = seller.whatsapp || '';
+  const cleanPhone = rawPhone.replace(/\D/g, '').replace(/^0/, '62');
+  const instagramHandle = (seller.instagram || '').replace(/^@/, '');
 
-  const defaultWaMessage = `Halo ${seller.name}, saya tertarik dengan barang "${product.title}" seharga ${formatRupiah(product.price)} di Nepal Market. Apakah masih ada?`;
-  const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(defaultWaMessage)}`;
+  const defaultWaMessage = `Halo, saya melihat produk ‘${product.title}’ di Nepal Market. Apakah masih tersedia?`;
+  const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(defaultWaMessage)}`;
   const instagramUrl = instagramHandle ? `https://instagram.com/${instagramHandle}` : null;
 
   const handleCopyPhone = () => {
-    navigator.clipboard.writeText(phoneNumber);
+    navigator.clipboard.writeText(rawPhone);
     setCopiedPhone(true);
     setTimeout(() => setCopiedPhone(false), 2000);
   };
@@ -84,7 +85,7 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
 
           <div className="space-y-2.5 pt-1">
             {/* Opsi WhatsApp */}
-            {phoneNumber && <a
+            {rawPhone && <a
               id="link-contact-whatsapp"
               href={whatsappUrl}
               target="_blank"
@@ -116,9 +117,9 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
             )}
 
             {/* Salin Nomor HP/WA */}
-            {phoneNumber && <div className="flex items-center gap-2 pt-1">
+            {rawPhone && <div className="flex items-center gap-2 pt-1">
               <div className="flex-1 px-3 py-2 bg-slate-100 rounded-lg text-xs font-mono text-slate-700 truncate border border-slate-200">
-                +{phoneNumber}
+                {rawPhone}
               </div>
               <button
                 id="btn-copy-seller-phone"
@@ -139,7 +140,7 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
                 )}
               </button>
             </div>}
-            {!phoneNumber && !instagramUrl && <p className="text-sm text-slate-600">Penjual belum menambahkan kontak.</p>}
+            {!rawPhone && !instagramUrl && <p className="text-sm text-slate-600">Penjual belum menambahkan kontak.</p>}
           </div>
         </div>
 

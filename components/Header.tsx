@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, PlusCircle, Bookmark, User, X, LogIn } from 'lucide-react';
+import { Search, PlusCircle, Bookmark, User, X, LogIn, Shield } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface HeaderProps {
@@ -44,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
       id="main-header"
       className="sticky top-0 z-30 w-full bg-white border-b border-slate-200/90"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-15 sm:h-17 gap-3 sm:gap-6">
           
           {/* Brand Wordmark */}
@@ -105,10 +105,9 @@ export const Header: React.FC<HeaderProps> = ({
             aria-label="Navigasi Desktop"
             className="hidden md:flex items-center gap-1.5 lg:gap-3 shrink-0"
           >
-            <button
+            <Link
               id="desktop-nav-saved"
-              type="button"
-              onClick={onOpenSavedModal}
+              href={user ? "/saved" : "/login?redirectTo=/saved"}
               className="relative flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors min-h-[44px]"
             >
               <Bookmark className="w-4 h-4 text-slate-500" />
@@ -118,12 +117,11 @@ export const Header: React.FC<HeaderProps> = ({
                   {savedCount}
                 </span>
               )}
-            </button>
+            </Link>
 
-            <button
+            <Link
               id="desktop-nav-profile"
-              type="button"
-              onClick={onOpenProfileModal}
+              href={user ? "/profile" : "/login?redirectTo=/profile"}
               className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-colors min-h-[44px]"
             >
               {user ? (
@@ -139,31 +137,42 @@ export const Header: React.FC<HeaderProps> = ({
                   <span>Profil</span>
                 </>
               )}
-            </button>
+            </Link>
+
+            {/* Akses Admin (Hanya tampil jika role = admin) */}
+            {profile?.role === 'admin' && (
+              <Link
+                id="desktop-nav-admin"
+                href="/admin"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition-colors min-h-[44px]"
+                title="Buka Panel Moderasi Admin"
+              >
+                <Shield className="w-4 h-4 text-rose-600" />
+                <span>Admin</span>
+              </Link>
+            )}
 
             {/* CTA Button Jual */}
-            <button
+            <Link
               id="desktop-nav-sell"
-              type="button"
-              onClick={onOpenSellModal}
+              href="/sell"
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-xs min-h-[44px]"
             >
               <PlusCircle className="w-4 h-4" />
               <span>+ Jual Barang</span>
-            </button>
+            </Link>
           </nav>
 
           {/* Mobile Right CTA (Shortcut Jual Cepat di Header Mobile) */}
           <div className="flex md:hidden items-center gap-1.5">
-            <button
+            <Link
               id="mobile-header-sell"
-              type="button"
-              onClick={onOpenSellModal}
+              href="/sell"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors min-h-[44px]"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Jual</span>
-            </button>
+            </Link>
           </div>
 
         </div>

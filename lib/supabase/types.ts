@@ -13,6 +13,8 @@ export interface DbProfile {
   phone: string | null;
   instagram: string | null;
   role: UserRole;
+  is_suspended?: boolean;
+  suspension_reason?: string | null;
   created_at: string;
 }
 
@@ -57,4 +59,29 @@ export interface DbReport {
   description: string | null;
   status: DbReportStatus;
   created_at: string;
+  // Joins
+  reporter?: DbProfile;
+  product?: DbProduct;
+}
+
+export type ModerationAction =
+  | 'hide_product'
+  | 'remove_product'
+  | 'restore_product'
+  | 'suspend_user'
+  | 'unsuspend_user'
+  | 'resolve_report'
+  | 'dismiss_report';
+
+export interface DbModerationLog {
+  id: string;
+  admin_id: string;
+  action: ModerationAction;
+  target_type: 'product' | 'profile' | 'report';
+  target_id: string;
+  target_title: string | null;
+  reason: string;
+  created_at: string;
+  // Joins
+  admin?: DbProfile;
 }

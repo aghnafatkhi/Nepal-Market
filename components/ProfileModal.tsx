@@ -268,14 +268,23 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
             {/* Tombol Kelola Iklan Saya jika login */}
             {user && (
-              <button
-                type="button"
-                onClick={() => setViewTab('my-listings')}
-                className="w-full py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-xs rounded-xl transition-colors flex items-center justify-center gap-2"
-              >
-                <Package className="w-4 h-4 text-slate-600" />
-                <span>Kelola Iklan Saya ({myListingsCount})</span>
-              </button>
+              <div className="space-y-2">
+                <Link
+                  href="/my-products"
+                  onClick={onClose}
+                  className="w-full py-2.5 px-3 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-2 border border-blue-200 min-h-[42px]"
+                >
+                  <Package className="w-4 h-4 text-blue-600" />
+                  <span>Dashboard Produk Saya ({myListingsCount})</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setViewTab('my-listings')}
+                  className="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  <span>Lihat Riwayat Ringkas ({myListingsCount})</span>
+                </button>
+              </div>
             )}
 
             {/* Tips Transaksi Aman C2C */}
