@@ -38,7 +38,7 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({
     <nav 
       id="category-navigation" 
       aria-label="Kategori Barang"
-      className="w-full bg-white border-b border-slate-200/80 sticky top-[112px] sm:top-[69px] z-20"
+      className="w-full bg-white border-b border-slate-200/80 relative sm:sticky sm:top-[65px] z-20"
     >
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-3 scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0">

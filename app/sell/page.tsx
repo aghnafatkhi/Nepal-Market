@@ -80,32 +80,32 @@ export default function SellPage() {
 
     // 1. Foto
     if (photos.length === 0) {
-      newErrors.photos = 'Tambahkan minimal 1 foto barang.';
+      newErrors.photos = 'Pilih minimal satu foto barang.';
     }
 
     // 2. Nama Barang
     const cleanTitle = title.trim();
     if (!cleanTitle) {
-      newErrors.title = 'Nama barang wajib diisi.';
+      newErrors.title = 'Judul barang wajib diisi.';
     } else if (cleanTitle.length < 3) {
-      newErrors.title = 'Nama barang minimal 3 karakter.';
+      newErrors.title = 'Judul barang minimal 3 karakter.';
     } else if (cleanTitle.length > 80) {
-      newErrors.title = 'Nama barang maksimal 80 karakter.';
+      newErrors.title = 'Judul barang maksimal 80 karakter.';
     }
 
     // 3. Harga
     if (!rawPrice || rawPrice <= 0) {
-      newErrors.price = 'Harga barang harus lebih dari Rp 0.';
+      newErrors.price = 'Masukkan harga barang.';
     }
 
     // 4. Kategori
     if (!category || category === 'semua') {
-      newErrors.category = 'Pilih salah satu kategori barang.';
+      newErrors.category = 'Pilih kategori barang.';
     }
 
     // 5. Kondisi
     if (!condition) {
-      newErrors.condition = 'Pilih kondisi barang saat ini.';
+      newErrors.condition = 'Pilih kondisi fisik barang.';
     }
 
     // 6. Deskripsi
@@ -113,7 +113,7 @@ export default function SellPage() {
     if (!cleanDesc) {
       newErrors.description = 'Deskripsi barang wajib diisi.';
     } else if (cleanDesc.length < 15) {
-      newErrors.description = 'Deskripsi terlalu pendek. Tuliskan minimal 15 karakter.';
+      newErrors.description = 'Deskripsi terlalu singkat. Tuliskan minimal 15 karakter.';
     }
 
     // 7. Kontak (minimal satu)
@@ -121,18 +121,18 @@ export default function SellPage() {
     const cleanIg = instagram.trim().replace(/^@/, '');
 
     if (!cleanWa && !cleanIg) {
-      newErrors.contact = 'Isi minimal satu kontak: nomor WhatsApp atau username Instagram.';
+      newErrors.contact = 'Cantumkan minimal satu kontak: nomor WhatsApp atau akun Instagram.';
     } else {
       if (cleanWa) {
         // Validasi nomor Indonesia: harus mulai 08 atau 628 dengan panjang 9-14 digit
         const waNum = cleanWa.startsWith('0') ? `62${cleanWa.slice(1)}` : cleanWa;
         if (!/^628\d{7,12}$/.test(waNum)) {
-          newErrors.whatsapp = 'Format nomor WhatsApp belum tepat (contoh: 081234567890).';
+          newErrors.whatsapp = 'Format nomor WhatsApp kurang tepat (contoh: 081234567890).';
         }
       }
       if (cleanIg) {
         if (!/^[a-zA-Z0-9._]{1,30}$/.test(cleanIg)) {
-          newErrors.instagram = 'Username Instagram hanya boleh huruf, angka, titik, dan garis bawah.';
+          newErrors.instagram = 'Username Instagram hanya boleh menggunakan huruf, angka, titik, atau garis bawah.';
         }
       }
     }
@@ -140,7 +140,7 @@ export default function SellPage() {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      setGeneralError('Periksa lagi data yang belum lengkap.');
+      setGeneralError('Lengkapi bidang yang masih bertanda merah sebelum melanjutkan.');
       // Scroll ke atas agar pengguna melihat pesan
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return false;
@@ -157,7 +157,7 @@ export default function SellPage() {
     if (!validateForm()) return;
 
     if (!isConfigured) {
-      setGeneralError('Koneksi Supabase belum terkonfigurasi di sistem.');
+      setGeneralError('Layanan akun belum siap. Silakan coba sesaat lagi.');
       return;
     }
 
@@ -182,7 +182,7 @@ export default function SellPage() {
     });
 
     if (result.error) {
-      setGeneralError(result.error.message || 'Gagal memasang barang. Silakan coba sesaat lagi.');
+      setGeneralError(result.error.message || 'Gagal menerbitkan iklan. Silakan periksa koneksi dan coba lagi.');
       setIsSubmitting(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
@@ -233,11 +233,11 @@ export default function SellPage() {
             <span>Jual Barang</span>
             <span className="text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-blue-600" />
-              Cepat & Mudah
+              COD Langsung
             </span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Pasang barang yang ingin kamu lepas ke sesama warga komunitas Nepal Market.
+            Tawarkan barang yang masih layak pakai ke sesama warga di sekitar Nepal.
           </p>
         </div>
 
@@ -271,14 +271,14 @@ export default function SellPage() {
           <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs space-y-4">
             <h2 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2.5 flex items-center gap-2">
               <ShoppingBag className="w-4 h-4 text-blue-600" />
-              <span>Detail Barang</span>
+              <span>Informasi Barang</span>
             </h2>
 
             {/* Nama Barang */}
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label htmlFor="sell-title" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  Nama Barang *
+                  Judul Barang *
                 </label>
                 <span className="text-[11px] text-slate-400">
                   {title.length}/80
@@ -288,7 +288,7 @@ export default function SellPage() {
                 id="sell-title"
                 type="text"
                 maxLength={80}
-                placeholder="Contoh: Hoodie H&M Abu Mist Size L Original"
+                placeholder="Contoh: Jaket Parasut Navy Ukuran L"
                 value={title}
                 onChange={(e) => {
                   setTitle(e.target.value);
@@ -331,7 +331,7 @@ export default function SellPage() {
                   </p>
                 ) : (
                   <p className="text-[11px] text-slate-400 mt-1">
-                    Ketik angka saja, format Rupiah akan otomatis muncul.
+                    Cukup ketik nominal angka tanpa titik atau koma.
                   </p>
                 )}
               </div>
@@ -417,18 +417,18 @@ export default function SellPage() {
             {/* Titik Lokasi COD / Ketemuan */}
             <div>
               <label htmlFor="sell-location" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Lokasi / Titik COD *
+                Lokasi COD *
               </label>
               <input
                 id="sell-location"
                 type="text"
-                placeholder="Contoh: Kantin Utama / Gedung B / Sekitar Sekolah"
+                placeholder="Contoh: Kantin Utama atau Depan Gerbang"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 className="w-full px-3.5 py-3 bg-slate-50 border border-slate-200 rounded-xl text-base text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:outline-hidden min-h-[46px]"
               />
               <p className="text-[11px] text-slate-400 mt-1">
-                Tempat kesepakatan serah terima barang secara langsung.
+                Pilih tempat yang mudah dijangkau dan aman untuk ketemuan.
               </p>
             </div>
 
@@ -445,7 +445,7 @@ export default function SellPage() {
               <textarea
                 id="sell-desc"
                 rows={4}
-                placeholder="Ceritakan detail barang: kelengkapan, berapa lama pemakaian, minus fisik (jika ada), dan alasan dijual..."
+                placeholder="Ceritakan kelengkapan barang, riwayat pemakaian, minus fisik jika ada, dan alasan dijual..."
                 value={description}
                 onChange={(e) => {
                   setDescription(e.target.value);
@@ -470,7 +470,7 @@ export default function SellPage() {
                 Kontak Penjual
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
-                Isi minimal satu kontak agar calon pembeli dapat menghubungimu untuk negosiasi atau janjian COD.
+                Cantumkan minimal satu kontak agar pembeli bisa langsung janjian COD.
               </p>
             </div>
 
@@ -549,7 +549,7 @@ export default function SellPage() {
               onClick={(e) => handleSubmit(e, 'draft')}
               className="px-5 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-colors min-h-[48px] disabled:opacity-50"
             >
-              Simpan sebagai Draft
+              Simpan Draf
             </button>
             <button
               type="submit"
@@ -559,10 +559,10 @@ export default function SellPage() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Memasang Barang...</span>
+                  <span>Menerbitkan Iklan...</span>
                 </>
               ) : (
-                <span>Jual Barang Sekarang</span>
+                <span>Terbitkan Iklan</span>
               )}
             </button>
           </div>
@@ -578,7 +578,7 @@ export default function SellPage() {
             onClick={(e) => handleSubmit(e, 'draft')}
             className="w-1/3 min-h-[48px] py-3 px-2 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs rounded-xl transition-colors text-center disabled:opacity-50"
           >
-            Draft
+            Simpan Draf
           </button>
           <button
             type="button"
@@ -589,10 +589,10 @@ export default function SellPage() {
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Memasang...</span>
+                <span>Menerbitkan...</span>
               </>
             ) : (
-              <span>Jual Barang</span>
+              <span>Terbitkan Iklan</span>
             )}
           </button>
         </div>

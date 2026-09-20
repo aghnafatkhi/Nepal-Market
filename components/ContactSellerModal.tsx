@@ -25,7 +25,7 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
   const cleanPhone = rawPhone.replace(/\D/g, '').replace(/^0/, '62');
   const instagramHandle = (seller.instagram || '').replace(/^@/, '');
 
-  const defaultWaMessage = `Halo, saya melihat produk ‘${product.title}’ di Nepal Market. Apakah masih tersedia?`;
+  const defaultWaMessage = `Halo, saya melihat barang '${product.title}' di Nepal Market. Apakah masih ada?`;
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(defaultWaMessage)}`;
   const instagramUrl = instagramHandle ? `https://instagram.com/${instagramHandle}` : null;
 
@@ -74,13 +74,13 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
                 {seller.name}
               </div>
               <div className="text-xs text-slate-500">
-                COD di sekitar: {product.location}
+                Lokasi COD: {product.location}
               </div>
             </div>
           </div>
 
           <p className="text-xs text-slate-600 leading-relaxed">
-            Nepal Market memfasilitasi transaksi langsung. Negosiasi harga dan kesepakatan tempat serah terima dilakukan mandiri antara buyer dan seller.
+            Negosiasi harga dan kesepakatan tempat COD dilakukan langsung antara kamu dan penjual.
           </p>
 
           <div className="space-y-2.5 pt-1">
@@ -94,7 +94,7 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
             >
               <div className="flex items-center gap-2.5">
                 <MessageCircle className="w-5 h-5" />
-                <span>Chat via WhatsApp</span>
+                <span>Hubungi via WhatsApp</span>
               </div>
               <ExternalLink className="w-4 h-4 opacity-80 group-hover:opacity-100" />
             </a>}
@@ -110,7 +110,7 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
               >
                 <div className="flex items-center gap-2.5">
                   <Instagram className="w-5 h-5" />
-                  <span>Kirim DM Instagram (@{instagramHandle})</span>
+                  <span>Kirim Pesan via Instagram (@{instagramHandle})</span>
                 </div>
                 <ExternalLink className="w-4 h-4 opacity-80" />
               </a>
@@ -140,7 +140,7 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
                 )}
               </button>
             </div>}
-            {!rawPhone && !instagramUrl && <p className="text-sm text-slate-600">Penjual belum menambahkan kontak.</p>}
+            {!rawPhone && !instagramUrl && <p className="text-sm text-slate-600">Penjual belum mencantumkan kontak langsung.</p>}
           </div>
         </div>
 

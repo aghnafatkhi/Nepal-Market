@@ -42,7 +42,7 @@ export const SavedModal: React.FC<SavedModalProps> = ({
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-bold text-slate-900">Barang Disimpan</h2>
-              <p className="text-xs text-slate-500">{savedProducts.length} barang di wishlist kamu</p>
+              <p className="text-xs text-slate-500">{savedProducts.length} barang tersimpan</p>
             </div>
           </div>
           <button
@@ -63,9 +63,9 @@ export const SavedModal: React.FC<SavedModalProps> = ({
               <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
                 <Bookmark className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-semibold text-slate-800">Belum Ada Barang Disimpan</h3>
+              <h3 className="text-base font-semibold text-slate-800">Belum Ada Barang yang Disimpan</h3>
               <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-                Tandai barang yang menarik perhatianmu dengan menekan ikon simpan di setiap card.
+                Tekan ikon simpan pada produk yang ingin kamu pantau atau simpan untuk nanti.
               </p>
             </div>
           ) : (
@@ -86,8 +86,16 @@ export const SavedModal: React.FC<SavedModalProps> = ({
                     alt={prod.title}
                     fill
                     sizes="64px"
-                    className="object-cover"
+                    className={`object-cover ${prod.isSold ? 'grayscale contrast-75 brightness-95' : ''}`}
+                    referrerPolicy="no-referrer"
                   />
+                  {prod.isSold && (
+                    <div className="absolute inset-0 bg-slate-950/40 flex items-center justify-center">
+                      <span className="text-[9px] font-bold text-white uppercase tracking-wider px-1 py-0.5 bg-slate-900/80 rounded">
+                        Terjual
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div 
@@ -97,10 +105,17 @@ export const SavedModal: React.FC<SavedModalProps> = ({
                     onClose();
                   }}
                 >
-                  <div className="text-xs font-semibold text-blue-600">
-                    {formatRupiah(prod.price)}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className={`text-xs font-semibold ${prod.isSold ? 'text-slate-400 line-through' : 'text-blue-600'}`}>
+                      {formatRupiah(prod.price)}
+                    </span>
+                    {prod.isSold && (
+                      <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-1 py-0.5 rounded">
+                        Terjual
+                      </span>
+                    )}
                   </div>
-                  <h4 className="text-xs sm:text-sm font-medium text-slate-900 truncate">
+                  <h4 className={`text-xs sm:text-sm font-medium truncate ${prod.isSold ? 'text-slate-400' : 'text-slate-900'}`}>
                     {prod.title}
                   </h4>
                   <p className="text-[11px] text-slate-500 truncate mt-0.5">

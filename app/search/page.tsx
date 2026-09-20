@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, Suspense, useCallback, useSyncExternalStore } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { 
@@ -10,7 +10,8 @@ import {
   ArrowUpDown, 
   X, 
   ArrowLeft,
-  ChevronDown
+  ChevronDown,
+  History
 } from 'lucide-react';
 import { INITIAL_PRODUCTS, CATEGORIES } from '@/data/products';
 import { CategorySlug, ConditionFilter, Product, SortOption } from '@/types/market';
@@ -22,6 +23,30 @@ import { SavedModal } from '@/components/SavedModal';
 import { ProfileModal } from '@/components/ProfileModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchActiveProducts, fetchUserFavoriteIds, toggleFavoriteInDb } from '@/lib/supabase/products';
+
+const SEARCH_HISTORY_KEY = 'nepal_market_search_history';
+
+// Cross-tab and in-tab store listeners for localStorage
+const subscribeSearchHistory = (callback: () => void) => {
+  if (typeof window === 'undefined') return () => {};
+  window.addEventListener('storage', callback);
+  window.addEventListener('nepal_market_history_change', callback);
+  return () => {
+    window.removeEventListener('storage', callback);
+    window.removeEventListener('nepal_market_history_change', callback);
+  };
+};
+
+const getSearchHistorySnapshot = () => {
+  if (typeof window === 'undefined') return '[]';
+  try {
+    return localStorage.getItem(SEARCH_HISTORY_KEY) || '[]';
+  } catch {
+    return '[]';
+  }
+};
+
+const getServerSnapshot = () => '[]';
 
 function SearchPageContent() {
   const router = useRouter();
@@ -40,14 +65,32 @@ function SearchPageContent() {
   const [searchQuery, setSearchQuery] = useState<string>(paramQ);
   const [prevParamQ, setPrevParamQ] = useState<string>(paramQ);
 
+  // Search history state subscribed via useSyncExternalStore (SSR-safe, reactive, no setState cascading renders)
+  const searchHistoryRaw = useSyncExternalStore(
+    subscribeSearchHistory,
+    getSearchHistorySnapshot,
+    getServerSnapshot
+  );
+
+  const searchHistory = useMemo(() => {
+    try {
+      const parsed = JSON.parse(searchHistoryRaw);
+      return Array.isArray(parsed)
+        ? parsed.filter((item): item is string => typeof item === 'string' && item.trim().length > 0).slice(0, 5)
+        : [];
+    } catch {
+      return [];
+    }
+  }, [searchHistoryRaw]);
+
   // Sync searchQuery when URL paramQ changes externally without an effect
   if (paramQ !== prevParamQ) {
     setPrevParamQ(paramQ);
     setSearchQuery(paramQ);
   }
 
-  // Modals & UI states
-  const [productsList, setProductsList] = useState<Product[]>(isConfigured ? [] : INITIAL_PRODUCTS);
+  // Modals & UI states: tidak memakai produk demo palsu untuk mengisi katalog
+  const [productsList, setProductsList] = useState<Product[]>([]);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
   const [savedProductIds, setSavedProductIds] = useState<string[]>([]);
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
@@ -152,15 +195,75 @@ function SearchPageContent() {
     router.replace(targetUrl, { scroll: false });
   }, [router, searchQuery, selectedCategory, selectedCondition, minPrice, maxPrice, sortBy]);
 
-  // Debounce search query changes to URL
+  // Save a search query to search history (max 5 items, case-insensitive deduplication)
+  const saveToHistory = useCallback((query: string) => {
+    const trimmed = query.trim();
+    if (!trimmed || trimmed.length < 2) return;
+    try {
+      const stored = localStorage.getItem(SEARCH_HISTORY_KEY);
+      const parsed = stored ? JSON.parse(stored) : [];
+      const currentList: string[] = Array.isArray(parsed) ? parsed : [];
+      const filtered = currentList.filter(
+        (item) => typeof item === 'string' && item.toLowerCase() !== trimmed.toLowerCase()
+      );
+      const updated = [trimmed, ...filtered].slice(0, 5);
+      localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
+      window.dispatchEvent(new Event('nepal_market_history_change'));
+    } catch (err) {
+      console.warn('Gagal menyimpan riwayat pencarian ke localStorage:', err);
+    }
+  }, []);
+
+  // Remove a single item from search history
+  const handleRemoveHistoryItem = useCallback((itemToRemove: string) => {
+    try {
+      const stored = localStorage.getItem(SEARCH_HISTORY_KEY);
+      const parsed = stored ? JSON.parse(stored) : [];
+      const currentList: string[] = Array.isArray(parsed) ? parsed : [];
+      const updated = currentList.filter((item) => item !== itemToRemove).slice(0, 5);
+      localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
+      window.dispatchEvent(new Event('nepal_market_history_change'));
+    } catch (err) {
+      console.warn('Gagal memperbarui riwayat pencarian:', err);
+    }
+  }, []);
+
+  // Clear all search history
+  const handleClearHistory = useCallback(() => {
+    try {
+      localStorage.removeItem(SEARCH_HISTORY_KEY);
+      window.dispatchEvent(new Event('nepal_market_history_change'));
+    } catch (err) {
+      console.warn('Gagal menghapus riwayat pencarian:', err);
+    }
+  }, []);
+
+  // Quick re-access: click history chip to search
+  const handleSelectHistory = useCallback((queryText: string) => {
+    setSearchQuery(queryText);
+    updateUrlParams({ q: queryText });
+    saveToHistory(queryText);
+  }, [updateUrlParams, saveToHistory]);
+
+  // Save when URL query param changes or arrives from external page
+  useEffect(() => {
+    if (paramQ && paramQ.trim().length >= 2) {
+      saveToHistory(paramQ);
+    }
+  }, [paramQ, saveToHistory]);
+
+  // Debounce search query changes to URL and save to history
   useEffect(() => {
     const timer = setTimeout(() => {
       if (searchQuery !== paramQ) {
         updateUrlParams({ q: searchQuery });
+        if (searchQuery.trim().length >= 2) {
+          saveToHistory(searchQuery);
+        }
       }
-    }, 350);
+    }, 500);
     return () => clearTimeout(timer);
-  }, [searchQuery, paramQ, updateUrlParams]);
+  }, [searchQuery, paramQ, updateUrlParams, saveToHistory]);
 
   // Calculate active filter count
   const activeFilterCount = useMemo(() => {
@@ -288,6 +391,15 @@ function SearchPageContent() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (searchQuery.trim()) {
+                      saveToHistory(searchQuery);
+                      updateUrlParams({ q: searchQuery });
+                    }
+                  }
+                }}
                 placeholder="Cari nama barang atau kategori..."
                 autoFocus={!paramQ}
                 className="w-full pl-10 pr-10 py-2.5 bg-slate-100/90 hover:bg-slate-100 focus:bg-white text-sm text-slate-900 placeholder:text-slate-500 rounded-lg border border-transparent focus:border-blue-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 transition-all min-h-[44px]"
@@ -329,6 +441,59 @@ function SearchPageContent() {
               )}
             </button>
           </div>
+
+          {/* Search History Row (below search input field for quick re-access) */}
+          {searchHistory.length > 0 && (
+            <div
+              id="search-history-container"
+              className="pb-2.5 pt-0.5 flex items-center justify-between gap-2 overflow-x-auto text-xs"
+            >
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 min-w-0">
+                <span className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 shrink-0 select-none">
+                  <History className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Riwayat:</span>
+                </span>
+                {searchHistory.map((queryText, index) => (
+                  <div
+                    key={`${queryText}-${index}`}
+                    className="inline-flex items-center rounded-full bg-slate-100 hover:bg-blue-50 border border-slate-200/80 hover:border-blue-200 text-slate-700 hover:text-blue-700 transition-colors shrink-0 group text-xs"
+                  >
+                    <button
+                      type="button"
+                      id={`btn-search-history-${index}`}
+                      onClick={() => handleSelectHistory(queryText)}
+                      className="pl-2.5 pr-1 py-1 font-medium truncate max-w-[130px] sm:max-w-[200px] text-left cursor-pointer"
+                      title={`Cari ulang "${queryText}"`}
+                    >
+                      {queryText}
+                    </button>
+                    <button
+                      type="button"
+                      id={`btn-remove-history-${index}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveHistoryItem(queryText);
+                      }}
+                      aria-label={`Hapus ${queryText} dari riwayat`}
+                      className="pr-2 pl-0.5 py-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                id="btn-clear-all-history"
+                onClick={handleClearHistory}
+                className="text-[11px] font-medium text-slate-400 hover:text-rose-600 transition-colors shrink-0 whitespace-nowrap pl-1 cursor-pointer"
+                title="Hapus semua riwayat pencarian"
+              >
+                Hapus
+              </button>
+            </div>
+          )}
         </div>
       </header>
 

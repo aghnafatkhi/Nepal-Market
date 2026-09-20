@@ -32,15 +32,15 @@ export default function NotFound() {
           </div>
           
           <span className="inline-block px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-wider mb-2">
-            404 - Halaman Tidak Ditemukan
+            404 - Tidak Ditemukan
           </span>
           
           <h1 className="text-2xl font-black text-slate-900 mb-2">
-            Barang atau Halaman Hilang
+            Halaman Tidak Ditemukan
           </h1>
           
           <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-            Halaman yang kamu cari mungkin sudah dihapus, dipindahkan, atau tautan yang kamu buka tidak valid.
+            Halaman atau barang yang kamu cari mungkin sudah laku, dihapus, atau alamat tautannya kurang tepat.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -50,7 +50,7 @@ export default function NotFound() {
               className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm min-h-[44px] transition-colors shadow-xs"
             >
               <Home className="w-4 h-4" />
-              <span>Beranda Utama</span>
+              <span>Ke Beranda</span>
             </Link>
             <Link
               id="btn-404-search"
@@ -58,7 +58,7 @@ export default function NotFound() {
               className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm min-h-[44px] transition-colors"
             >
               <Search className="w-4 h-4" />
-              <span>Cari Barang</span>
+              <span>Cari Barang Lain</span>
             </Link>
           </div>
         </div>

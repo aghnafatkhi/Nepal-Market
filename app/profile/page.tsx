@@ -107,12 +107,12 @@ export default function ProfilePage() {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setGeneralError('File harus berupa gambar (JPG, PNG, atau WebP).');
+      setGeneralError('Pilih file gambar dengan format JPG, PNG, atau WebP.');
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setGeneralError('Ukuran foto maksimal 5 MB.');
+      setGeneralError('Ukuran file foto maksimal 5 MB.');
       return;
     }
 
@@ -145,7 +145,7 @@ export default function ProfilePage() {
     // Validasi nama
     const cleanName = name.trim();
     if (!cleanName) {
-      newErrors.name = 'Nama wajib diisi.';
+      newErrors.name = 'Nama lengkap wajib diisi.';
     } else if (cleanName.length < 2) {
       newErrors.name = 'Nama minimal 2 karakter.';
     } else if (cleanName.length > 50) {
@@ -155,13 +155,13 @@ export default function ProfilePage() {
     // Validasi username
     const cleanUsername = username.trim().toLowerCase().replace(/^@/, '');
     if (!cleanUsername) {
-      newErrors.username = 'Username wajib diisi.';
+      newErrors.username = 'Username akun wajib diisi.';
     } else if (cleanUsername.length < 3) {
       newErrors.username = 'Username minimal 3 karakter.';
     } else if (cleanUsername.length > 25) {
       newErrors.username = 'Username maksimal 25 karakter.';
     } else if (!/^[a-z0-9_]+$/.test(cleanUsername)) {
-      newErrors.username = 'Hanya boleh menggunakan huruf kecil, angka, dan garis bawah (_).';
+      newErrors.username = 'Username hanya boleh huruf kecil, angka, dan garis bawah (_).';
     }
 
     // Validasi nomor WhatsApp (jika diisi)
@@ -169,14 +169,14 @@ export default function ProfilePage() {
     if (cleanPhone) {
       const digitsOnly = cleanPhone.replace(/\D/g, '');
       if (digitsOnly.length < 9 || digitsOnly.length > 15) {
-        newErrors.phone = 'Nomor WhatsApp tidak valid (contoh: 081234567890).';
+        newErrors.phone = 'Nomor WhatsApp kurang tepat (contoh: 081234567890).';
       }
     }
 
     // Validasi Instagram (jika diisi)
     const cleanInstagram = instagram.trim().replace(/^@/, '');
     if (cleanInstagram && !/^[a-zA-Z0-9._]+$/.test(cleanInstagram)) {
-      newErrors.instagram = 'Username Instagram hanya boleh huruf, angka, titik, dan garis bawah.';
+      newErrors.instagram = 'Username Instagram hanya boleh huruf, angka, titik, atau garis bawah.';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -191,7 +191,7 @@ export default function ProfilePage() {
       if (cleanUsername !== profile?.username) {
         const check = await checkUsernameAvailable(cleanUsername, user.id);
         if (!check.available) {
-          setErrors({ username: check.message || 'Username sudah digunakan orang lain.' });
+          setErrors({ username: check.message || 'Username sudah dipakai oleh pengguna lain. Silakan pilih nama lain.' });
           setIsSubmitting(false);
           return;
         }
@@ -202,7 +202,7 @@ export default function ProfilePage() {
       if (avatarFile) {
         const uploadRes = await uploadAvatarImage(user.id, avatarFile);
         if (uploadRes.error) {
-          setGeneralError(`Gagal mengunggah foto profil: ${uploadRes.error.message}`);
+          setGeneralError('Gagal mengunggah foto profil. Silakan coba beberapa saat lagi.');
           setIsSubmitting(false);
           return;
         }
@@ -221,7 +221,7 @@ export default function ProfilePage() {
       });
 
       if (updateRes.error) {
-        setGeneralError(updateRes.error.message || 'Gagal menyimpan profil.');
+        setGeneralError(updateRes.error.message || 'Gagal memperbarui profil. Silakan periksa koneksi dan coba lagi.');
         setIsSubmitting(false);
         return;
       }
@@ -230,10 +230,10 @@ export default function ProfilePage() {
       await refreshProfile();
       setErrors({});
       setAvatarFile(null);
-      setSuccessMessage('Profil berhasil diperbarui.');
+      setSuccessMessage('Perubahan profil berhasil disimpan.');
       setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err: unknown) {
-      setGeneralError((err as Error).message || 'Terjadi kesalahan.');
+      setGeneralError((err as Error).message || 'Terjadi kendala saat menyimpan. Coba lagi.');
     } finally {
       setIsSubmitting(false);
     }
@@ -350,7 +350,7 @@ export default function ProfilePage() {
                 <Package className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-slate-500">Iklan Kamu</p>
+                <p className="text-xs font-semibold text-slate-500">Kelola Iklan</p>
                 <p className="text-sm font-bold text-slate-900">
                   Produk Saya ({myProductCount})
                 </p>
@@ -371,8 +371,8 @@ export default function ProfilePage() {
                 <Bookmark className="w-5 h-5" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-slate-500">Koleksi Favorit</p>
-                <p className="text-sm font-bold text-slate-900">Barang Disimpan</p>
+                <p className="text-xs font-semibold text-slate-500">Barang Tersimpan</p>
+                <p className="text-sm font-bold text-slate-900">Koleksi Favorit</p>
               </div>
             </div>
             <span className="text-xs font-semibold text-blue-600 group-hover:translate-x-0.5 transition-transform">
@@ -428,7 +428,7 @@ export default function ProfilePage() {
             <div className="text-center sm:text-left flex-1">
               <h2 className="text-base font-bold text-slate-900">Foto Profil</h2>
               <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                Gunakan foto asli atau foto yang mudah dikenali oleh sesama pembeli & penjual di Nepal.
+                Gunakan foto yang jelas agar mudah dikenali saat janjian COD.
               </p>
               <div className="mt-2.5 flex items-center justify-center sm:justify-start gap-2">
                 <button
@@ -521,7 +521,7 @@ export default function ProfilePage() {
                 />
               </div>
               <p className="mt-1 text-[11px] text-slate-400">
-                Akan dipakai untuk alamat profil: nepalmarket.app/profile/{username || 'username'}
+                Akan dipakai untuk tautan profil: nepalmarket.app/profile/{username || 'username'}
               </p>
               {errors.username && (
                 <p className="mt-1 text-xs text-rose-600 font-medium">{errors.username}</p>
@@ -551,7 +551,7 @@ export default function ProfilePage() {
                 />
               </div>
               <p className="mt-1 text-[11px] text-slate-400">
-                Otomatis digunakan sebagai kontak default saat kamu memasang barang jualan.
+                Digunakan sebagai kontak saat pembeli ingin janjian COD.
               </p>
               {errors.phone && (
                 <p className="mt-1 text-xs text-rose-600 font-medium">{errors.phone}</p>
@@ -597,7 +597,7 @@ export default function ProfilePage() {
                 className="w-full px-3.5 py-2.5 bg-slate-100 text-sm text-slate-500 rounded-xl border border-slate-200 cursor-not-allowed"
               />
               <p className="mt-1 text-[11px] text-slate-400">
-                Email akun aman dan tidak ditampilkan pada halaman publik seller.
+                Email bersifat pribadi dan tidak ditampilkan kepada pembeli.
               </p>
             </div>
           </div>
@@ -613,10 +613,10 @@ export default function ProfilePage() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Menyimpan Perubahan...</span>
+                  <span>Menyimpan...</span>
                 </>
               ) : (
-                <span>Simpan Perubahan Profil</span>
+                <span>Simpan Perubahan</span>
               )}
             </button>
           </div>
@@ -626,7 +626,7 @@ export default function ProfilePage() {
         <div className="p-5 bg-white border border-slate-200/90 rounded-2xl shadow-xs flex items-center justify-between">
           <div>
             <p className="text-sm font-bold text-slate-900">Keluar dari Akun</p>
-            <p className="text-xs text-slate-500">Kamu dapat masuk kembali kapan saja.</p>
+            <p className="text-xs text-slate-500">Sesi login pada perangkat ini akan diakhiri.</p>
           </div>
           <button
             id="btn-logout-main"
@@ -640,7 +640,7 @@ export default function ProfilePage() {
             ) : (
               <LogOut className="w-4 h-4" />
             )}
-            <span>Keluar Akun</span>
+            <span>Keluar</span>
           </button>
         </div>
       </main>

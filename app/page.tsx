@@ -13,6 +13,7 @@ import { QuickViewModal } from '@/components/QuickViewModal';
 import { SellModal } from '@/components/SellModal';
 import { SavedModal } from '@/components/SavedModal';
 import { ProfileModal } from '@/components/ProfileModal';
+import { HomeBannerCarousel } from '@/components/HomeBannerCarousel';
 import { INITIAL_PRODUCTS } from '@/data/products';
 import { CategorySlug, Product, SortOption } from '@/types/market';
 import { useAuth } from '@/contexts/AuthContext';
@@ -29,8 +30,8 @@ export default function HomePage() {
   const router = useRouter();
   const { user, isConfigured } = useAuth();
 
-  // State data produk: jika supabase aktif, mulai dari array kosong atau data Supabase
-  const [products, setProducts] = useState<Product[]>(isConfigured ? [] : INITIAL_PRODUCTS);
+  // State data produk: tidak memakai produk demo palsu untuk mengisi katalog
+  const [products, setProducts] = useState<Product[]>([]);
   const [myProducts, setMyProducts] = useState<Product[]>([]);
   const [savedProductIds, setSavedProductIds] = useState<string[]>([]);
   const [hasLoadedFromDb, setHasLoadedFromDb] = useState(!isConfigured);
@@ -281,33 +282,16 @@ export default function HomePage() {
       />
 
       {/* Main Content Area */}
-      <main id="main-content" className="flex-grow max-w-[1200px] w-full mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
+      <main id="main-content" className="flex-grow max-w-[1200px] w-full mx-auto px-4 sm:px-6 pt-3 sm:pt-5">
         
-        {/* Banner Penjelasan Singkat C2C */}
-        <div 
-          id="c2c-community-banner"
-          className="mb-5 px-4 py-3 bg-white border border-slate-200/90 rounded-xl flex items-center justify-between gap-3 text-xs sm:text-sm text-slate-600 shadow-none"
-        >
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-            <span>
-              Jual beli langsung antar anggota komunitas dengan kesepakatan tempat serah terima (COD).
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setIsSellModalOpen(true)}
-            className="hidden sm:inline-flex items-center gap-1 font-semibold text-blue-600 hover:text-blue-700 whitespace-nowrap min-h-[44px]"
-          >
-            Mulai Jual Barang →
-          </button>
-        </div>
+        {/* Banner Carousel di Bagian Atas Homepage */}
+        <HomeBannerCarousel onOpenSellModal={() => setIsSellModalOpen(true)} />
 
         {/* Section Header: "Baru di Nepal Market" & Kontrol Urutan */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2">
             <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
-              Baru di Nepal Market
+              Barang Terbaru
             </h1>
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-200/80 text-slate-700">
               {filteredProducts.length}
@@ -458,10 +442,10 @@ export default function HomePage() {
                   {isLoadingMore ? (
                     <>
                       <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                      <span>Memuat barang...</span>
+                      <span>Memuat...</span>
                     </>
                   ) : (
-                    <span>Muat Lebih Banyak Barang</span>
+                    <span>Lihat Lebih Banyak</span>
                   )}
                 </button>
               </div>
@@ -470,7 +454,12 @@ export default function HomePage() {
         ) : (
           <EmptyState 
             query={searchQuery}
-            isInitialEmpty={products.length === 0 && hasLoadedFromDb}
+            isInitialEmpty={
+              filteredProducts.length === 0 &&
+              !searchQuery.trim() &&
+              selectedCategory === 'semua' &&
+              selectedCondition === 'semua'
+            }
             onReset={handleResetFilters}
             onOpenSellModal={() => setIsSellModalOpen(true)}
           />
@@ -485,11 +474,11 @@ export default function HomePage() {
             <div className="text-left">
               <span className="font-bold text-slate-800 text-sm">Nepal Market</span>
               <p className="mt-0.5 text-slate-400">
-                Wadah jual beli mandiri C2C antar teman & anggota komunitas lokal.
+                Platform jual beli langsung (COD) untuk warga komunitas Nepal.
               </p>
             </div>
             <div className="text-xs text-slate-400">
-              © {new Date().getFullYear()} Nepal Market • Transaksi langsung & aman
+              © {new Date().getFullYear()} Nepal Market • Jual beli praktis sistem COD
             </div>
           </div>
         </div>

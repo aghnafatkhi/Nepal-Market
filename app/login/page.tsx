@@ -30,15 +30,8 @@ function LoginForm() {
   }, [user, router, redirectTo]);
 
   const handleGoogleSignIn = async () => {
-    setErrorMessage(null);
     setSuccessNotice(null);
-    setIsSubmitting(true);
-
-    const { error } = await signInWithGoogle(redirectTo);
-    if (error) {
-      setErrorMessage(error.message || 'Gagal masuk dengan Google. Pastikan konfigurasi OAuth Supabase sudah aktif.');
-      setIsSubmitting(false);
-    }
+    setErrorMessage('Login dengan Google saat ini belum dikonfigurasi. Silakan masuk atau daftar menggunakan email dan kata sandi di bawah.');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,11 +55,11 @@ function LoginForm() {
       const { error } = await signInWithEmail(email, password);
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
-          setErrorMessage('Email atau kata sandi tidak cocok.');
+          setErrorMessage('Email atau kata sandi salah. Silakan periksa kembali.');
         } else if (error.message.includes('Email not confirmed')) {
-          setErrorMessage('Email kamu belum dikonfirmasi. Periksa kotak masuk atau spam email.');
+          setErrorMessage('Email belum dikonfirmasi. Silakan periksa kotak masuk atau folder spam kamu.');
         } else {
-          setErrorMessage(error.message || 'Gagal masuk akun.');
+          setErrorMessage(error.message || 'Gagal masuk akun. Silakan coba lagi.');
         }
         setIsSubmitting(false);
       } else {
@@ -86,7 +79,7 @@ function LoginForm() {
         if (error.message.includes('already registered')) {
           setErrorMessage('Email ini sudah terdaftar. Silakan pilih tab "Masuk".');
         } else {
-          setErrorMessage(error.message || 'Gagal membuat akun.');
+          setErrorMessage(error.message || 'Gagal membuat akun. Silakan periksa data kamu.');
         }
         setIsSubmitting(false);
       } else {
@@ -125,8 +118,8 @@ function LoginForm() {
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             {mode === 'signin' 
-              ? 'Masuk untuk pasang iklan & kelola barang simpananmu'
-              : 'Gabung komunitas jual beli lokal terpercaya'
+              ? 'Masuk untuk memasang iklan dan mengelola barang favorit'
+              : 'Daftar untuk mulai jual dan beli barang di lingkungan Nepal'
             }
           </p>
         </div>
@@ -134,9 +127,9 @@ function LoginForm() {
         {/* Warning jika env supabase belum ada */}
         {!isConfigured && (
           <div className="mb-5 p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900">
-            <p className="font-semibold mb-1">Supabase Belum Dikonfigurasi</p>
+            <p className="font-semibold mb-1">Fitur Akun Belum Siap</p>
             <p className="text-amber-800 leading-relaxed">
-              Silakan tambahkan <code>NEXT_PUBLIC_SUPABASE_URL</code> dan <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> pada file <code>.env.local</code> Anda.
+              Konfigurasi server akun belum terpasang. Kamu tetap dapat menjelajahi barang secara bebas.
             </p>
           </div>
         )}
@@ -195,8 +188,8 @@ function LoginForm() {
         <button
           type="button"
           onClick={handleGoogleSignIn}
-          disabled={isSubmitting}
-          className="w-full min-h-[44px] py-2.5 px-4 bg-white border border-slate-300 hover:bg-slate-50 active:bg-slate-100 text-slate-700 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-3 shadow-2xs mb-5 disabled:opacity-60"
+          className="w-full min-h-[44px] py-2.5 px-4 bg-slate-50 hover:bg-slate-100 active:bg-slate-200 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2 shadow-2xs mb-5"
+          title="Login dengan Google saat ini belum dikonfigurasi"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path
@@ -216,14 +209,17 @@ function LoginForm() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
             />
           </svg>
-          <span>Lanjutkan dengan Google</span>
+          <span>Masuk dengan Google</span>
+          <span className="text-[11px] font-normal text-slate-500 bg-slate-200/80 px-1.5 py-0.5 rounded">
+            Belum Tersedia
+          </span>
         </button>
 
         {/* Divider */}
         <div className="relative flex items-center justify-center mb-5">
           <div className="border-t border-slate-200 w-full" />
           <span className="bg-white px-3 text-[11px] font-medium text-slate-400 uppercase tracking-wider">
-            atau dengan email
+            atau gunakan email
           </span>
           <div className="border-t border-slate-200 w-full" />
         </div>
@@ -243,7 +239,7 @@ function LoginForm() {
                   id="input-name"
                   type="text"
                   required
-                  placeholder="Contoh: Farhan Rizky"
+                  placeholder="Nama lengkap kamu"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-hidden min-h-[44px]"
@@ -285,7 +281,7 @@ function LoginForm() {
                 type="password"
                 required
                 minLength={6}
-                placeholder="Minimal 6 karakter"
+                placeholder="Masukkan minimal 6 karakter"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-hidden min-h-[44px]"
@@ -305,14 +301,14 @@ function LoginForm() {
                 <span>Memproses...</span>
               </>
             ) : (
-              <span>{mode === 'signin' ? 'Masuk Sekarang' : 'Daftar Akun Baru'}</span>
+              <span>{mode === 'signin' ? 'Masuk' : 'Daftar Akun'}</span>
             )}
           </button>
         </form>
 
         {/* Footer Note */}
         <p className="text-[11px] text-center text-slate-400 mt-6 leading-relaxed">
-          Dengan masuk atau mendaftar, kamu menyetujui pedoman transaksi saling percaya di komunitas Nepal Market.
+          Dengan melanjutkan, kamu menyetujui panduan transaksi aman dan aturan komunitas Nepal Market.
         </p>
       </div>
     </div>

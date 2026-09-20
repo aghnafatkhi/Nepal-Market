@@ -88,7 +88,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
             alt={product.title}
             fill
             sizes="(max-width: 640px) 100vw, 600px"
-            className="object-cover"
+            className={`object-cover ${isSold ? 'grayscale contrast-75 brightness-95' : ''}`}
             referrerPolicy="no-referrer"
           />
           <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
@@ -96,7 +96,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
               Kondisi: {product.condition}
             </span>
             {isSold && (
-              <span className="inline-block bg-rose-600 text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-xs">
+              <span className="inline-block bg-slate-950/90 backdrop-blur-xs text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-xs uppercase tracking-wider">
                 Sudah Terjual
               </span>
             )}
@@ -107,8 +107,12 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
         <div className="p-4 sm:p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div className="flex items-center gap-2">
-                <div className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className={`text-xl sm:text-2xl tracking-tight ${
+                  isSold 
+                    ? 'font-bold text-slate-400 line-through' 
+                    : 'font-bold text-slate-900'
+                }`}>
                   {formatRupiah(product.price)}
                 </div>
                 {isSold && (
@@ -138,7 +142,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 pb-3 border-b border-slate-100">
             <div className="flex items-center gap-1.5">
               <MapPin className="w-4 h-4 text-blue-600" />
-              <span>Area COD: <strong className="text-slate-700 font-medium">{product.location}</strong></span>
+              <span>Lokasi COD: <strong className="text-slate-700 font-medium">{product.location}</strong></span>
             </div>
             <div className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-slate-400" />
@@ -169,7 +173,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
                     <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
                   )}
                 </div>
-                <div className="text-[11px] text-slate-500">Penjual Komunitas • {product.seller.location}</div>
+                <div className="text-[11px] text-slate-500">Penjual Aktif • {product.seller.location}</div>
               </div>
             </div>
           </div>
@@ -179,8 +183,8 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
             <div className="mt-3.5 p-3 bg-amber-50 border border-amber-200/80 rounded-xl text-xs text-amber-800 flex items-start gap-2">
               <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
               <div className="space-y-0.5">
-                <p className="font-semibold">Penjual belum menambahkan kontak</p>
-                <p className="text-amber-700">Penjual belum mencantumkan nomor WhatsApp maupun akun Instagram aktif.</p>
+                <p className="font-semibold">Penjual belum mencantumkan kontak</p>
+                <p className="text-amber-700">Nomor WhatsApp atau akun Instagram belum tersedia di profil ini.</p>
               </div>
             </div>
           )}
@@ -204,7 +208,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
                 className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-sm font-medium rounded-xl transition-colors shadow-xs"
               >
                 <MessageCircle className="w-4 h-4" />
-                <span>Chat via WhatsApp</span>
+                <span>Hubungi via WhatsApp</span>
               </button>
             ) : hasInstagram ? (
               <button
@@ -214,7 +218,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
                 className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-95 active:opacity-90 text-white text-sm font-medium rounded-xl transition-opacity shadow-xs"
               >
                 <Instagram className="w-4 h-4" />
-                <span>DM Instagram (@{rawIg})</span>
+                <span>Pesan Instagram (@{rawIg})</span>
               </button>
             ) : (
               <Link
@@ -224,7 +228,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
                 className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium rounded-xl transition-colors shadow-xs text-center"
               >
                 <ExternalLink className="w-4 h-4" />
-                <span>Lihat Detail Produk</span>
+                <span>Lihat Rincian Barang</span>
               </Link>
             )}
 
@@ -244,7 +248,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
               onClick={onClose}
               className="text-xs text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center gap-1 font-medium min-h-[32px] px-2 py-1"
             >
-              <span>Buka halaman rincian lengkap</span>
+              <span>Lihat rincian lengkap barang</span>
               <ExternalLink className="w-3 h-3" />
             </Link>
             <span className="text-[11px] text-slate-400">

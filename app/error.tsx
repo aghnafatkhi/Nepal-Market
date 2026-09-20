@@ -24,11 +24,11 @@ export default function Error({
         </div>
 
         <h2 className="text-xl font-bold text-slate-900 mb-2">
-          Terjadi Gangguan Sistem
+          Terjadi Kendala Teknis
         </h2>
 
         <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-          Mohon maaf, terjadi kendala saat memproses permintaanmu. Silakan coba muat ulang halaman atau kembali ke beranda.
+          Halaman tidak dapat ditampilkan saat ini. Silakan coba muat ulang atau kembali ke beranda.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -39,7 +39,7 @@ export default function Error({
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm min-h-[44px] transition-colors shadow-xs"
           >
             <RefreshCw className="w-4 h-4" />
-            <span>Coba Lagi</span>
+            <span>Coba Muat Ulang</span>
           </button>
           <Link
             id="btn-error-home"

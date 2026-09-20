@@ -98,9 +98,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-2">
                   <Package className="w-6 h-6" />
                 </div>
-                <p className="text-sm font-semibold text-slate-800">Belum ada barang yang kamu jual</p>
+                <p className="text-sm font-semibold text-slate-800">Belum Ada Barang yang Dijual</p>
                 <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
-                  Punya barang tak terpakai di kos atau kamar? Pasang iklan sekarang dan temukan pembeli terdekat.
+                  Punya barang yang masih layak pakai? Pasang iklan sekarang untuk warga sekitar.
                 </p>
                 <button
                   type="button"
@@ -111,7 +111,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs rounded-xl transition-colors inline-flex items-center gap-1.5"
                 >
                   <PlusCircle className="w-4 h-4" />
-                  <span>Pasang Iklan Sekarang</span>
+                  <span>Pasang Iklan</span>
                 </button>
               </div>
             ) : (
@@ -126,15 +126,15 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                       alt={prod.title} 
                       fill 
                       sizes="48px" 
-                      className="object-cover" 
+                      className={`object-cover ${prod.isSold ? 'grayscale contrast-75 brightness-95' : ''}`}
                       referrerPolicy="no-referrer" 
                     />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h4 className="text-xs font-semibold text-slate-900 truncate">
+                    <h4 className={`text-xs font-semibold truncate ${prod.isSold ? 'text-slate-400' : 'text-slate-900'}`}>
                       {prod.title}
                     </h4>
-                    <p className="text-xs font-bold text-blue-600 mt-0.5">
+                    <p className={`text-xs mt-0.5 ${prod.isSold ? 'text-slate-400 line-through font-semibold' : 'font-bold text-blue-600'}`}>
                       {formatRupiah(prod.price)}
                     </p>
                     <span className={`inline-block text-[10px] font-medium px-1.5 py-0.2 rounded mt-1 ${
@@ -155,7 +155,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                         title="Tandai sudah laku"
                       >
                         <CheckCircle className="w-3 h-3 text-emerald-600" />
-                        <span>Laku</span>
+                        <span>Terjual</span>
                       </button>
                     )}
                     {onDeleteProduct && (
@@ -221,9 +221,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             ) : (
               /* Guest Card */
               <div className="p-4 bg-blue-50/80 border border-blue-100 rounded-xl text-left">
-                <h3 className="text-sm font-bold text-blue-950">Belum Masuk Akun</h3>
+                <h3 className="text-sm font-bold text-blue-950">Belum Login</h3>
                 <p className="text-xs text-blue-900/80 mt-1 leading-relaxed">
-                  Masuk untuk pasang iklan barang, simpan favorit, dan hubungi penjual secara langsung.
+                  Login untuk pasang iklan barang, menyimpan produk favorit, dan menghubungi penjual.
                 </p>
                 <Link
                   href="/login"
@@ -231,7 +231,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   className="mt-3 w-full min-h-[40px] py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-lg transition-colors flex items-center justify-center gap-2 shadow-xs"
                 >
                   <LogIn className="w-3.5 h-3.5" />
-                  <span>Masuk atau Daftar Akun</span>
+                  <span>Login atau Daftar</span>
                 </Link>
               </div>
             )}
@@ -261,7 +261,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 }}
                 className="p-3 text-left bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-200/80 transition-colors"
               >
-                <span className="text-xs text-slate-500 block">Iklan Kamu</span>
+                <span className="text-xs text-slate-500 block">Iklan Saya</span>
                 <span className="text-xl font-bold text-blue-600 mt-0.5 block">{myListingsCount}</span>
               </button>
             </div>
@@ -275,14 +275,14 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   className="w-full py-2.5 px-3 bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-xs rounded-xl transition-colors flex items-center justify-center gap-2 border border-blue-200 min-h-[42px]"
                 >
                   <Package className="w-4 h-4 text-blue-600" />
-                  <span>Dashboard Produk Saya ({myListingsCount})</span>
+                  <span>Kelola Produk Saya ({myListingsCount})</span>
                 </Link>
                 <button
                   type="button"
                   onClick={() => setViewTab('my-listings')}
                   className="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl transition-colors flex items-center justify-center gap-2"
                 >
-                  <span>Lihat Riwayat Ringkas ({myListingsCount})</span>
+                  <span>Lihat Daftar Ringkas ({myListingsCount})</span>
                 </button>
               </div>
             )}
@@ -291,12 +291,12 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span>Pedoman Transaksi Komunitas</span>
+                <span>Tips Transaksi COD Aman</span>
               </div>
               <ul className="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
-                <li>Pilih titik serah terima (COD) di area ramai atau umum.</li>
-                <li>Periksa kondisi fisik barang secara menyeluruh sebelum membayar.</li>
-                <li>Selesaikan pembayaran langsung secara tunai atau QRIS saat serah terima.</li>
+                <li>Pilih tempat bertemu yang ramai dan mudah dijangkau.</li>
+                <li>Cek kondisi barang secara teliti sebelum membayar.</li>
+                <li>Bayar langsung secara tunai atau transfer saat bertemu.</li>
               </ul>
             </div>
 
@@ -311,7 +311,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 className="w-full min-h-[44px] py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-xl transition-colors inline-flex items-center justify-center gap-2 shadow-xs"
               >
                 <PlusCircle className="w-4 h-4" />
-                <span>Pasang Iklan Barang Baru</span>
+                <span>Pasang Iklan Barang</span>
               </button>
 
               {user && (
@@ -321,7 +321,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   className="w-full min-h-[40px] py-2 text-rose-600 hover:bg-rose-50 font-medium text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5"
                 >
                   <LogOut className="w-3.5 h-3.5" />
-                  <span>Keluar dari Akun</span>
+                  <span>Keluar</span>
                 </button>
               )}
             </div>

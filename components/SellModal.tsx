@@ -53,7 +53,7 @@ export const SellModal: React.FC<SellModalProps> = ({
 
     const numPrice = parseInt(price.replace(/\D/g, ''), 10) || 10000;
     if (!isConfigured || photos.length === 0) {
-      setErrorMessage(!isConfigured ? 'Supabase belum terhubung.' : 'Tambahkan minimal satu foto barang.');
+      setErrorMessage(!isConfigured ? 'Layanan akun belum siap. Coba lagi nanti.' : 'Pilih minimal satu foto barang.');
       return;
     }
 
@@ -64,7 +64,7 @@ export const SellModal: React.FC<SellModalProps> = ({
       const result = await createProductInDb({
         sellerId: user.id,
         title: title.trim(),
-        description: description.trim() || 'Barang milik pribadi, kondisi terawat. Silakan hubungi langsung untuk janjian ketemuan/COD.',
+        description: description.trim() || 'Barang pribadi masih layak pakai. Silakan hubungi untuk janjian COD.',
         price: numPrice,
         category,
         condition,
@@ -74,7 +74,7 @@ export const SellModal: React.FC<SellModalProps> = ({
       });
 
       if (result.error) {
-        setErrorMessage(result.error.message || 'Gagal menyimpan barang ke database Supabase.');
+        setErrorMessage(result.error.message || 'Gagal memasang iklan. Silakan periksa koneksi dan coba lagi.');
         setIsSubmitting(false);
         return;
       }
@@ -113,7 +113,7 @@ export const SellModal: React.FC<SellModalProps> = ({
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
           <div>
             <h2 className="text-lg font-bold text-slate-900">Pasang Iklan Barang</h2>
-            <p className="text-xs text-slate-500">Tawarkan barangmu ke sesama anggota komunitas</p>
+            <p className="text-xs text-slate-500">Tawarkan barang layak pakai ke pembeli di sekitarmu</p>
           </div>
           <button
             id="btn-close-sell-modal"
@@ -135,7 +135,7 @@ export const SellModal: React.FC<SellModalProps> = ({
             <div>
               <h3 className="text-base font-bold text-slate-900">Masuk untuk Pasang Iklan</h3>
               <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto leading-relaxed">
-                Untuk menjaga keamanan komunitas dan memudahkan pembeli menghubungimu, kamu perlu masuk atau mendaftar terlebih dahulu.
+                Masuk terlebih dahulu agar calon pembeli dapat menghubungimu secara langsung.
               </p>
             </div>
             <div className="pt-2">
@@ -145,7 +145,7 @@ export const SellModal: React.FC<SellModalProps> = ({
                 className="w-full min-h-[44px] py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-xl transition-colors inline-flex items-center justify-center gap-2 shadow-xs"
               >
                 <LogIn className="w-4 h-4" />
-                <span>Masuk Sekarang</span>
+                <span>Masuk untuk Mulai Jual</span>
               </Link>
             </div>
           </div>
@@ -154,8 +154,8 @@ export const SellModal: React.FC<SellModalProps> = ({
             <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
               <Check className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900">Barang Berhasil Dipasang</h3>
-            <p className="text-sm text-slate-500">Iklanmu kini sudah tampil di feed Nepal Market.</p>
+            <h3 className="text-lg font-bold text-slate-900">Iklan Berhasil Diterbitkan</h3>
+            <p className="text-sm text-slate-500">Barangmu sudah tampil dan dapat dilihat oleh calon pembeli.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
@@ -169,14 +169,14 @@ export const SellModal: React.FC<SellModalProps> = ({
             {/* Judul Barang */}
             <div>
               <label htmlFor="input-sell-title" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Nama Barang *
+                Judul Barang *
               </label>
               <input
                 id="input-sell-title"
                 type="text"
                 required
                 maxLength={90}
-                placeholder="Contoh: Hoodie Oversize Abu Mist Size L"
+                placeholder="Contoh: Jaket Parasut Navy Ukuran L"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-hidden min-h-[44px]"
@@ -242,13 +242,13 @@ export const SellModal: React.FC<SellModalProps> = ({
 
               <div>
                 <label htmlFor="input-sell-location" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Area Ketemuan / COD *
+                  Lokasi COD *
                 </label>
                 <input
                   id="input-sell-location"
                   type="text"
                   required
-                  placeholder="Misal: Kantin Utama / Depan Lab"
+                  placeholder="Contoh: Kantin Utama atau Depan Gerbang"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-hidden min-h-[44px]"
@@ -261,12 +261,12 @@ export const SellModal: React.FC<SellModalProps> = ({
             {/* Deskripsi */}
             <div>
               <label htmlFor="input-sell-description" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Deskripsi Singkat
+                Deskripsi Barang
               </label>
               <textarea
                 id="input-sell-description"
                 rows={3}
-                placeholder="Jelaskan alasan dijual, kelengkapan, atau minus jika ada..."
+                placeholder="Ceritakan kondisi fisik, kelengkapan, atau alasan dijual..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-hidden"
@@ -290,7 +290,7 @@ export const SellModal: React.FC<SellModalProps> = ({
               </div>
               <div>
                 <label htmlFor="input-sell-wa" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Nomor WhatsApp (Untuk COD)
+                  Nomor WhatsApp (Aktif)
                 </label>
                 <input
                   id="input-sell-wa"
@@ -314,10 +314,10 @@ export const SellModal: React.FC<SellModalProps> = ({
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Menyimpan Barang...</span>
+                    <span>Menerbitkan Iklan...</span>
                   </>
                 ) : (
-                  <span>Pasang Iklan Sekarang</span>
+                  <span>Terbitkan Iklan</span>
                 )}
               </button>
             </div>

@@ -82,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Cari barang di Nepal Market (tekan Enter)"
+                placeholder="Cari barang di Nepal Market..."
                 className="w-full pl-10 pr-10 py-2.5 bg-slate-100/90 hover:bg-slate-100 focus:bg-white text-sm text-slate-900 placeholder:text-slate-500 rounded-lg border border-transparent focus:border-blue-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 transition-all duration-150"
               />
               {searchQuery && (
@@ -156,10 +156,10 @@ export const Header: React.FC<HeaderProps> = ({
             <Link
               id="desktop-nav-sell"
               href="/sell"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-xs min-h-[44px]"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-xs min-h-[44px]"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>+ Jual Barang</span>
+              <span>Jual Barang</span>
             </Link>
           </nav>
 
@@ -168,7 +168,7 @@ export const Header: React.FC<HeaderProps> = ({
             <Link
               id="mobile-header-sell"
               href="/sell"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors min-h-[44px]"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 active:bg-blue-800 transition-colors min-h-[44px]"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Jual</span>
@@ -188,7 +188,7 @@ export const Header: React.FC<HeaderProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Cari barang di Nepal Market"
+              placeholder="Cari barang di Nepal Market..."
               className="w-full pl-9 pr-9 py-2 bg-slate-100 focus:bg-white text-sm text-slate-900 placeholder:text-slate-500 rounded-lg border border-transparent focus:border-blue-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 transition-all min-h-[44px]"
             />
             {searchQuery && (

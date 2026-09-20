@@ -142,14 +142,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
   // Other products from same seller (excluding current product)
   const sellerOtherProducts = useMemo(() => {
     if (!product) return [];
-    const fromSeller = getProductsBySeller(product.seller.name, product.id).filter(p => !p.isSold);
-    if (fromSeller.length > 0) {
-      return fromSeller;
-    }
-    // Fallback: recommend items from same category
-    return INITIAL_PRODUCTS.filter(
-      (p) => p.category === product.category && p.id !== product.id && !p.isSold
-    ).slice(0, 4);
+    return getProductsBySeller(product.seller.name, product.id).filter(p => !p.isSold).slice(0, 4);
   }, [product]);
 
   // Copy shareable link
@@ -359,28 +352,30 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                 fill
                 priority
                 sizes="(max-width: 1024px) 100vw, 60vw"
-                className="object-cover"
+                className={`object-cover transition-all ${isSold ? 'grayscale contrast-75 brightness-95' : ''}`}
                 referrerPolicy="no-referrer"
               />
 
               {/* Sold Out Overlay Banner or Condition Badge */}
-              <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
-                {isSold ? (
+              {isSold ? (
+                <div className="absolute inset-0 bg-slate-950/30 flex items-center justify-center pointer-events-none z-10">
                   <span 
-                    id="product-badge-sold"
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-slate-950/90 backdrop-blur-xs text-white text-xs font-bold rounded-lg shadow-sm"
+                    id="product-badge-sold-center"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-950/90 backdrop-blur-xs text-white text-sm sm:text-base font-bold rounded-xl shadow-md uppercase tracking-wider"
                   >
-                    Sudah terjual
+                    Barang Sudah Terjual
                   </span>
-                ) : (
+                </div>
+              ) : (
+                <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
                   <span 
                     id="product-badge-condition"
                     className="inline-flex items-center gap-1 px-2.5 py-1 bg-slate-900/80 backdrop-blur-xs text-white text-xs font-medium rounded-lg shadow-xs"
                   >
                     {product.condition}
                   </span>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Image Counter Badge */}
               {galleryImages.length > 1 && (
@@ -472,8 +467,19 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                 <h1 className="text-xl sm:text-2xl font-bold text-slate-900 leading-snug">
                   {product.title}
                 </h1>
-                <div className="mt-2 text-2xl sm:text-3xl font-extrabold text-blue-600 tracking-tight">
-                  {formatRupiah(product.price)}
+                <div className="mt-2 flex items-center gap-3 flex-wrap">
+                  <span className={`tracking-tight ${
+                    isSold 
+                      ? 'text-2xl sm:text-3xl font-bold text-slate-400 line-through' 
+                      : 'text-2xl sm:text-3xl font-extrabold text-blue-600'
+                  }`}>
+                    {formatRupiah(product.price)}
+                  </span>
+                  {isSold && (
+                    <span className="px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-semibold rounded-lg">
+                      Sudah Terjual
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -481,7 +487,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
               <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-500 gap-2">
                 <div className="flex items-center gap-1.5">
                   <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
-                  <span>Tempat serah terima: <strong className="text-slate-700 font-medium">{product.location}</strong></span>
+                  <span>Lokasi COD: <strong className="text-slate-700 font-medium">{product.location}</strong></span>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0 text-slate-400">
                   <Clock className="w-3.5 h-3.5" />
@@ -532,7 +538,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                     className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm transition-colors shadow-xs flex items-center justify-center gap-2 min-h-[48px]"
                   >
                     <MessageCircle className="w-4 h-4" />
-                    <span>Hubungi Seller</span>
+                    <span>Hubungi Penjual</span>
                   </button>
                 )}
 
@@ -548,7 +554,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                     }`}
                   >
                     <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-blue-600' : ''}`} />
-                    <span>{isSaved ? 'Tersimpan' : 'Simpan Barang'}</span>
+                    <span>{isSaved ? 'Tersimpan' : 'Simpan'}</span>
                   </button>
 
                   <button
@@ -575,7 +581,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                   Informasi Penjual
                 </span>
                 <span className="text-[11px] px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-medium">
-                  Pengguna Komunitas
+                  Penjual Aktif
                 </span>
               </div>
 
@@ -663,17 +669,17 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
               </div>
             </div>
 
-            {/* Disclaimer Ringkas */}
+            {/* Tips Transaksi Aman */}
             <div 
               id="product-detail-disclaimer"
               className="p-3.5 bg-slate-100/90 rounded-xl border border-slate-200/90 text-xs text-slate-600 leading-relaxed space-y-1"
             >
               <div className="flex items-center gap-1.5 font-semibold text-slate-800">
                 <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
-                <span>Disclaimer Transaksi</span>
+                <span>Tips Transaksi Aman</span>
               </div>
               <p className="text-[12px] text-slate-600">
-                Nepal Market hanya menjadi wadah. Pastikan kondisi barang dan kesepakatan transaksi sebelum membeli.
+                Pilih tempat COD yang ramai dan periksa kondisi barang secara langsung sebelum melakukan pembayaran.
               </p>
             </div>
 
@@ -682,35 +688,37 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
         </div>
 
         {/* RELATED PRODUCTS: Other items from same seller */}
-        <div className="mt-12 pt-8 border-t border-slate-200/80">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900">
-                Barang lain dari {seller.name}
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Lihat barang lain yang dijual oleh penjual ini atau dalam kategori serupa.
-              </p>
+        {sellerOtherProducts.length > 0 && (
+          <div className="mt-12 pt-8 border-t border-slate-200/80">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">
+                  Barang lain dari {seller.name}
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Barang aktif lainnya yang dijual oleh penjual ini.
+                </p>
+              </div>
+              <Link
+                href={`/search?q=${encodeURIComponent(seller.name)}`}
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700 hidden sm:inline"
+              >
+                Lihat semua
+              </Link>
             </div>
-            <Link
-              href={`/search?q=${encodeURIComponent(seller.name)}`}
-              className="text-xs font-semibold text-blue-600 hover:text-blue-700 hidden sm:inline"
-            >
-              Lihat semua
-            </Link>
-          </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-            {sellerOtherProducts.map((p) => (
-              <ProductCard
-                key={p.id}
-                product={p}
-                isSaved={false}
-                onToggleSave={() => {}}
-              />
-            ))}
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+              {sellerOtherProducts.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  isSaved={false}
+                  onToggleSave={() => {}}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </main>
 
       {/* MOBILE STICKY ACTION BAR */}
@@ -720,9 +728,18 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
       >
         <div className="flex flex-col min-w-0 pr-2">
           <span className="text-[10px] text-slate-400 font-medium uppercase leading-none">Harga</span>
-          <span className="text-base font-extrabold text-blue-600 truncate leading-tight mt-0.5">
-            {formatRupiah(product.price)}
-          </span>
+          <div className="flex items-center gap-1.5 truncate leading-tight mt-0.5">
+            <span className={`text-base font-extrabold truncate ${
+              isSold ? 'text-slate-400 line-through font-semibold' : 'text-blue-600'
+            }`}>
+              {formatRupiah(product.price)}
+            </span>
+            {isSold && (
+              <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-1 py-0.5 rounded shrink-0">
+                Terjual
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Mobile Bookmark Button */}
@@ -759,7 +776,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
             className="flex-1 h-11 px-4 rounded-xl bg-blue-600 active:bg-blue-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs"
           >
             <Edit3 className="w-4 h-4" />
-            <span>Edit Iklan Saya</span>
+            <span>Kelola Iklan</span>
           </Link>
         ) : isSold ? (
           <button
@@ -778,7 +795,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
             className="flex-1 h-11 px-4 rounded-xl bg-blue-600 active:bg-blue-700 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs"
           >
             <MessageCircle className="w-4 h-4" />
-            <span>Hubungi Seller</span>
+            <span>Hubungi Penjual</span>
           </button>
         )}
       </aside>
