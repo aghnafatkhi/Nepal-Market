@@ -133,8 +133,8 @@ export const PublicSellerProfileView: React.FC<PublicSellerProfileViewProps> = (
   if (notFound || !profile) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-4">
-          <User className="w-8 h-8" />
+        <div className="w-14 h-14 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 mb-4">
+          <User className="w-7 h-7" />
         </div>
         <h1 className="text-lg font-bold text-slate-900 mb-1">Penjual Tidak Ditemukan</h1>
         <p className="text-xs sm:text-sm text-slate-500 max-w-sm mb-6 leading-relaxed">
@@ -143,7 +143,7 @@ export const PublicSellerProfileView: React.FC<PublicSellerProfileViewProps> = (
         <Link
           id="btn-seller-not-found-back"
           href="/"
-          className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition-colors shadow-xs"
+          className="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition-colors shadow-xs"
         >
           Kembali ke Beranda
         </Link>
@@ -195,7 +195,7 @@ export const PublicSellerProfileView: React.FC<PublicSellerProfileViewProps> = (
       <main className="max-w-4xl mx-auto px-4 pt-6 space-y-6">
         {/* Banner Pemilik jika melihat profil sendiri */}
         {isOwnProfile && (
-          <div className="p-4 bg-blue-50/90 border border-blue-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="p-4 bg-blue-50/90 border border-blue-200 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-2.5 text-blue-900">
               <User className="w-5 h-5 text-blue-600 shrink-0" />
               <div className="text-xs sm:text-sm">
@@ -208,13 +208,13 @@ export const PublicSellerProfileView: React.FC<PublicSellerProfileViewProps> = (
             <div className="flex items-center gap-2">
               <Link
                 href="/profile"
-                className="px-3 py-2 bg-white hover:bg-blue-100 text-blue-700 text-xs font-semibold rounded-xl border border-blue-200 transition-colors shadow-2xs"
+                className="px-3 py-2 bg-white hover:bg-blue-100 text-blue-700 text-xs font-semibold rounded-lg border border-blue-200 transition-colors shadow-2xs"
               >
                 Edit Profil
               </Link>
               <Link
                 href="/sell"
-                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition-colors shadow-2xs"
+                className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs"
               >
                 Pasang Iklan
               </Link>
@@ -225,7 +225,7 @@ export const PublicSellerProfileView: React.FC<PublicSellerProfileViewProps> = (
         {/* Profile Card Header */}
         <section 
           id="seller-profile-card"
-          className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-7 shadow-xs space-y-5"
+          className="bg-white border border-slate-200/90 rounded-xl p-5 sm:p-7 shadow-xs space-y-5"
         >
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
             {/* Avatar */}
@@ -328,9 +328,9 @@ export const PublicSellerProfileView: React.FC<PublicSellerProfileViewProps> = (
             /* Empty State jika seller tidak memiliki produk aktif */
             <div
               id="seller-empty-products"
-              className="bg-white border border-slate-200/90 rounded-2xl p-8 sm:p-12 text-center shadow-xs"
+              className="bg-white border border-slate-200 rounded-xl p-8 sm:p-12 text-center shadow-xs"
             >
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-3.5">
+              <div className="w-14 h-14 mx-auto rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 mb-3.5">
                 <PackageOpen className="w-7 h-7" />
               </div>
               <h3 className="text-sm sm:text-base font-bold text-slate-900">
@@ -344,7 +344,7 @@ export const PublicSellerProfileView: React.FC<PublicSellerProfileViewProps> = (
                   <Link
                     id="btn-seller-add-first-product"
                     href="/sell"
-                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition-colors shadow-xs"
+                    className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition-colors shadow-xs"
                   >
                     <ShoppingBag className="w-4 h-4" />
                     <span>Pasang Barang Jualan Pertama</span>

@@ -802,7 +802,7 @@ function SearchPageContent() {
               /* Specified Empty State: "Barangnya belum ketemu." & "Lihat barang lainnya" */
               <div 
                 id="search-empty-state"
-                className="bg-white border border-slate-200/90 rounded-2xl p-8 sm:p-12 text-center max-w-md mx-auto my-8 shadow-xs"
+                className="bg-white border border-slate-200 rounded-xl p-8 sm:p-12 text-center max-w-md mx-auto my-8 shadow-xs"
               >
                 <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-400">
                   <Search className="w-8 h-8" />

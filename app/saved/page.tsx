@@ -135,10 +135,10 @@ export default function SavedProductsPage() {
           /* Empty State */
           <div
             id="saved-empty-state"
-            className="mt-8 bg-white border border-slate-200/90 rounded-2xl p-8 sm:p-14 text-center max-w-lg mx-auto shadow-xs"
+            className="mt-8 bg-white border border-slate-200 rounded-xl p-8 sm:p-12 text-center max-w-lg mx-auto shadow-xs"
           >
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
-              <Bookmark className="w-8 h-8" />
+            <div className="w-14 h-14 mx-auto rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
+              <Bookmark className="w-7 h-7" />
             </div>
             <h2 className="text-base sm:text-lg font-bold text-slate-900">
               Belum Ada Barang yang Disimpan
@@ -150,7 +150,7 @@ export default function SavedProductsPage() {
               <Link
                 id="btn-explore-from-saved"
                 href="/"
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-semibold transition-colors shadow-xs"
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-semibold transition-colors shadow-xs"
               >
                 <ShoppingBag className="w-4 h-4" />
                 <span>Eksplor Barang di Nepal Market</span>

@@ -26,16 +26,16 @@ export default function NotFound() {
 
       {/* 404 Content */}
       <main className="flex-grow flex items-center justify-center px-4 py-12">
-        <div className="max-w-md w-full text-center bg-white border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-xs">
-          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <ShoppingBag className="w-8 h-8" />
+        <div className="max-w-md w-full text-center bg-white border border-slate-200 rounded-xl p-6 sm:p-8 shadow-xs">
+          <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <ShoppingBag className="w-7 h-7" />
           </div>
           
           <span className="inline-block px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold uppercase tracking-wider mb-2">
             404 - Tidak Ditemukan
           </span>
           
-          <h1 className="text-2xl font-black text-slate-900 mb-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">
             Halaman Tidak Ditemukan
           </h1>
           
@@ -47,7 +47,7 @@ export default function NotFound() {
             <Link
               id="btn-404-home"
               href="/"
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm min-h-[44px] transition-colors shadow-xs"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm min-h-[44px] transition-colors shadow-xs"
             >
               <Home className="w-4 h-4" />
               <span>Ke Beranda</span>
@@ -55,7 +55,7 @@ export default function NotFound() {
             <Link
               id="btn-404-search"
               href="/search"
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm min-h-[44px] transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm min-h-[44px] transition-colors"
             >
               <Search className="w-4 h-4" />
               <span>Cari Barang Lain</span>
