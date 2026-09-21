@@ -21,28 +21,40 @@ export const SavedModal: React.FC<SavedModalProps> = ({
   onRemoveSaved,
   onSelectProduct,
 }) => {
+  // Keyboard Escape listener
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
     <div 
       id="saved-modal-backdrop"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/50 overflow-y-auto"
       onClick={onClose}
     >
       <div 
         id="saved-modal-content"
-        className="relative w-full max-w-lg bg-white rounded-2xl overflow-hidden shadow-xl border border-slate-200/90 my-auto text-left flex flex-col max-h-[85vh]"
+        className="relative w-full max-w-lg bg-white rounded-t-xl sm:rounded-lg overflow-hidden border border-slate-200 text-left flex flex-col max-h-[85vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-200 shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Bookmark className="w-4 h-4 fill-blue-600" />
+            <div className="w-7 h-7 rounded bg-blue-50 text-blue-600 flex items-center justify-center">
+              <Bookmark className="w-3.5 h-3.5 fill-blue-600" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900">Barang Disimpan</h2>
-              <p className="text-xs text-slate-500">{savedProducts.length} barang tersimpan</p>
+              <h2 className="text-sm font-bold text-slate-900">Barang Disimpan</h2>
+              <p className="text-[11px] text-slate-500">{savedProducts.length} barang tersimpan</p>
             </div>
           </div>
           <button
@@ -50,14 +62,14 @@ export const SavedModal: React.FC<SavedModalProps> = ({
             type="button"
             aria-label="Tutup daftar tersimpan"
             onClick={onClose}
-            className="w-10 h-10 rounded-full hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded hover:bg-slate-100 text-slate-500 flex items-center justify-center transition-colors cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Content List */}
-        <div className="p-4 sm:p-5 overflow-y-auto space-y-3 flex-grow">
+        <div className="p-4 sm:p-5 overflow-y-auto space-y-2.5 flex-grow">
           {savedProducts.length === 0 ? (
             <div className="text-center py-12 px-4">
               <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
@@ -72,10 +84,10 @@ export const SavedModal: React.FC<SavedModalProps> = ({
             savedProducts.map((prod) => (
               <div
                 key={prod.id}
-                className="flex items-center gap-3 p-2.5 rounded-xl border border-slate-200 hover:border-blue-300 bg-white transition-colors"
+                className="flex items-center gap-3 p-2.5 rounded-md border border-slate-200 hover:border-slate-300 bg-white transition-colors"
               >
                 <div 
-                  className="relative w-16 h-16 rounded-lg overflow-hidden bg-slate-100 shrink-0 cursor-pointer"
+                  className="relative w-16 h-16 rounded-md overflow-hidden bg-slate-100 shrink-0 cursor-pointer"
                   onClick={() => {
                     onSelectProduct(prod);
                     onClose();
@@ -90,8 +102,8 @@ export const SavedModal: React.FC<SavedModalProps> = ({
                     referrerPolicy="no-referrer"
                   />
                   {prod.isSold && (
-                    <div className="absolute inset-0 bg-slate-950/40 flex items-center justify-center">
-                      <span className="text-[9px] font-bold text-white uppercase tracking-wider px-1 py-0.5 bg-slate-900/80 rounded">
+                    <div className="absolute inset-0 bg-slate-950/50 flex items-center justify-center">
+                      <span className="text-[9px] font-medium text-white uppercase tracking-wider px-1 py-0.5 bg-slate-900/90 rounded">
                         Terjual
                       </span>
                     </div>
@@ -131,7 +143,7 @@ export const SavedModal: React.FC<SavedModalProps> = ({
                       onSelectProduct(prod);
                       onClose();
                     }}
-                    className="w-9 h-9 rounded-lg hover:bg-slate-100 text-slate-600 flex items-center justify-center"
+                    className="w-10 h-10 min-h-[44px] min-w-[44px] rounded-md hover:bg-slate-100 text-slate-600 flex items-center justify-center cursor-pointer"
                   >
                     <ArrowRight className="w-4 h-4" />
                   </button>
@@ -139,7 +151,7 @@ export const SavedModal: React.FC<SavedModalProps> = ({
                     type="button"
                     title="Hapus dari simpanan"
                     onClick={() => onRemoveSaved(prod.id)}
-                    className="w-9 h-9 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center transition-colors"
+                    className="w-10 h-10 min-h-[44px] min-w-[44px] rounded-md hover:bg-rose-50 text-slate-400 hover:text-rose-600 flex items-center justify-center transition-colors cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -150,7 +162,7 @@ export const SavedModal: React.FC<SavedModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-3 bg-slate-50 border-t border-slate-100 text-center shrink-0">
+        <div className="p-3 bg-slate-50 border-t border-slate-200 text-center shrink-0">
           <p className="text-[11px] text-slate-500">
             Daftar simpanan tersimpan aman di browser kamu.
           </p>

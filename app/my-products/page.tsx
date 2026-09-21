@@ -135,7 +135,7 @@ export default function MyProductsPage() {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       {/* Top Bar Navigation */}
-      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-200/90">
+      <div className="sticky top-0 z-20 bg-white border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
           <Link
             href="/"
@@ -147,7 +147,7 @@ export default function MyProductsPage() {
           <span className="text-sm sm:text-base font-bold text-slate-900 truncate">Produk Saya</span>
           <Link
             href="/sell"
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-semibold transition-colors shadow-xs min-h-[38px]"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-medium transition-colors min-h-[44px]"
           >
             <PlusCircle className="w-4 h-4" />
             <span>+ Jual</span>
@@ -160,7 +160,7 @@ export default function MyProductsPage() {
         {actionMessage && (
           <div
             role="status"
-            className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs sm:text-sm font-medium text-emerald-800 shadow-xs animate-in fade-in slide-in-from-top-2"
+            className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-md flex items-center justify-between text-xs sm:text-sm font-medium text-emerald-800 animate-in fade-in slide-in-from-top-2"
           >
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -169,7 +169,7 @@ export default function MyProductsPage() {
             <button
               type="button"
               onClick={() => setActionMessage(null)}
-              className="text-emerald-700 hover:text-emerald-900 p-1"
+              className="text-emerald-700 hover:text-emerald-900 p-1 min-h-[44px] min-w-[44px] inline-flex items-center justify-center cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -177,13 +177,13 @@ export default function MyProductsPage() {
         )}
 
         {/* Tab Navigation */}
-        <div className="bg-white rounded-xl p-1 border border-slate-200 shadow-xs flex items-center gap-1 mb-5">
+        <div className="bg-white rounded-lg p-1 border border-slate-200 flex items-center gap-1 mb-5">
           <button
             type="button"
             onClick={() => setActiveTab('active')}
-            className={`flex-1 min-h-[42px] py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 min-h-[44px] py-2 px-3 rounded-md text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'active'
-                ? 'bg-blue-600 text-white shadow-xs'
+                ? 'bg-blue-600 text-white'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
@@ -200,9 +200,9 @@ export default function MyProductsPage() {
           <button
             type="button"
             onClick={() => setActiveTab('sold')}
-            className={`flex-1 min-h-[42px] py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 min-h-[44px] py-2 px-3 rounded-md text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'sold'
-                ? 'bg-blue-600 text-white shadow-xs'
+                ? 'bg-blue-600 text-white'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
@@ -219,9 +219,9 @@ export default function MyProductsPage() {
           <button
             type="button"
             onClick={() => setActiveTab('draft')}
-            className={`flex-1 min-h-[42px] py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-1.5 ${
+            className={`flex-1 min-h-[44px] py-2 px-3 rounded-md text-xs sm:text-sm font-medium transition-colors flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'draft'
-                ? 'bg-blue-600 text-white shadow-xs'
+                ? 'bg-blue-600 text-white'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
@@ -244,7 +244,7 @@ export default function MyProductsPage() {
           </div>
         ) : currentTabProducts.length === 0 ? (
           /* Empty State */
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-8 sm:p-12 text-center shadow-xs">
+          <div className="bg-white rounded-lg border border-slate-200 p-8 sm:p-12 text-center">
             <div className="w-14 h-14 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
               <Package className="w-7 h-7" />
             </div>
@@ -264,7 +264,7 @@ export default function MyProductsPage() {
             </p>
             <Link
               href="/sell"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-semibold transition-colors shadow-xs min-h-[44px]"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium transition-colors min-h-[44px]"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Jual Barang Sekarang</span>
@@ -279,12 +279,12 @@ export default function MyProductsPage() {
               return (
                 <div
                   key={product.id}
-                  className="bg-white rounded-2xl border border-slate-200/90 shadow-xs overflow-hidden p-3.5 sm:p-4 flex flex-col sm:flex-row gap-3.5 sm:gap-4 transition-all hover:border-slate-300"
+                  className="bg-white rounded-lg border border-slate-200 overflow-hidden p-3.5 sm:p-4 flex flex-col sm:flex-row gap-3.5 sm:gap-4 transition-colors hover:border-slate-300"
                 >
                   {/* Foto Thumbnail */}
                   <Link
                     href={`/product/${product.id}`}
-                    className="relative w-full sm:w-32 aspect-4/3 sm:aspect-square rounded-xl overflow-hidden bg-slate-100 shrink-0 block group"
+                    className="relative w-full sm:w-32 aspect-4/3 sm:aspect-square rounded-md overflow-hidden bg-slate-100 shrink-0 block group"
                   >
                     <Image
                       src={product.imageUrl}
@@ -302,7 +302,7 @@ export default function MyProductsPage() {
                       </div>
                     )}
                     {product.status === 'draft' && (
-                      <div className="absolute top-2 left-2 bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
+                      <div className="absolute top-2 left-2 bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                         Draft
                       </div>
                     )}
@@ -343,7 +343,7 @@ export default function MyProductsPage() {
                       {/* Tombol Edit */}
                       <Link
                         href={`/my-products/${product.id}/edit`}
-                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors min-h-[42px]"
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium transition-colors min-h-[44px]"
                       >
                         <Edit3 className="w-3.5 h-3.5 text-slate-500" />
                         <span>Edit</span>
@@ -355,7 +355,7 @@ export default function MyProductsPage() {
                           type="button"
                           disabled={isItemUpdating}
                           onClick={() => handleToggleStatus(product, 'sold')}
-                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-100 text-emerald-800 text-xs font-semibold transition-colors min-h-[42px] disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-emerald-200 bg-emerald-50/60 hover:bg-emerald-100 text-emerald-800 text-xs font-medium transition-colors min-h-[44px] disabled:opacity-50 cursor-pointer"
                         >
                           {isItemUpdating ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -369,7 +369,7 @@ export default function MyProductsPage() {
                           type="button"
                           disabled={isItemUpdating}
                           onClick={() => handleToggleStatus(product, 'active')}
-                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-blue-200 bg-blue-50/60 hover:bg-blue-100 text-blue-700 text-xs font-semibold transition-colors min-h-[42px] disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md border border-blue-200 bg-blue-50/60 hover:bg-blue-100 text-blue-700 text-xs font-medium transition-colors min-h-[44px] disabled:opacity-50 cursor-pointer"
                         >
                           {isItemUpdating ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -383,7 +383,7 @@ export default function MyProductsPage() {
                       {/* Tombol Lihat Iklan */}
                       <Link
                         href={`/product/${product.id}`}
-                        className="inline-flex items-center gap-1 px-2.5 py-2 rounded-lg text-slate-500 hover:text-slate-800 text-xs font-medium transition-colors min-h-[42px]"
+                        className="inline-flex items-center gap-1 px-2.5 py-2 rounded-md text-slate-500 hover:text-slate-800 text-xs font-medium transition-colors min-h-[44px]"
                         title="Buka halaman barang"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
@@ -394,7 +394,7 @@ export default function MyProductsPage() {
                       <button
                         type="button"
                         onClick={() => setProductToDelete(product)}
-                        className="ml-auto inline-flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors min-h-[42px] min-w-[42px]"
+                        className="ml-auto inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors min-h-[44px] min-w-[44px] cursor-pointer"
                         title="Hapus iklan"
                         aria-label={`Hapus ${product.title}`}
                       >
@@ -414,11 +414,11 @@ export default function MyProductsPage() {
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 overflow-y-auto"
           onClick={() => !isDeleting && setProductToDelete(null)}
         >
           <div
-            className="w-full max-w-sm bg-white rounded-2xl p-5 sm:p-6 shadow-xl border border-slate-200 text-left space-y-4"
+            className="w-full max-w-sm bg-white rounded-lg p-5 sm:p-6 border border-slate-200 text-left space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
@@ -439,7 +439,7 @@ export default function MyProductsPage() {
                 type="button"
                 disabled={isDeleting}
                 onClick={() => setProductToDelete(null)}
-                className="flex-1 min-h-[44px] py-2.5 px-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold text-xs sm:text-sm transition-colors"
+                className="flex-1 min-h-[44px] py-2.5 px-3 rounded-md border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium text-xs sm:text-sm transition-colors cursor-pointer"
               >
                 Batal
               </button>
@@ -447,7 +447,7 @@ export default function MyProductsPage() {
                 type="button"
                 disabled={isDeleting}
                 onClick={handleConfirmDelete}
-                className="flex-1 min-h-[44px] py-2.5 px-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs sm:text-sm transition-colors flex items-center justify-center gap-1.5 shadow-xs disabled:opacity-60"
+                className="flex-1 min-h-[44px] py-2.5 px-3 rounded-md bg-rose-600 hover:bg-rose-700 text-white font-medium text-xs sm:text-sm transition-colors flex items-center justify-center gap-1.5 disabled:opacity-60 cursor-pointer"
               >
                 {isDeleting ? (
                   <>

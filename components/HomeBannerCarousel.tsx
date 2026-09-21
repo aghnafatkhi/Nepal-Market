@@ -3,9 +3,6 @@
 import React, { useState, useEffect, useCallback, useRef, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  Sparkles, 
-  ShoppingBag, 
-  Handshake, 
   ChevronLeft, 
   ChevronRight, 
   ArrowRight 
@@ -14,8 +11,11 @@ import { getPromoBanners, PromoBanner } from '@/data/banners';
 
 interface HomeBannerCarouselProps {
   onOpenSellModal?: () => void;
+  onOpenCodGuideModal?: () => void;
   banners?: PromoBanner[];
   hasActiveProducts?: boolean;
+  isError?: boolean;
+  isLoading?: boolean;
   autoSlideInterval?: number;
 }
 
@@ -36,14 +36,17 @@ const getReducedMotionServerSnapshot = () => false;
 
 export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
   onOpenSellModal,
+  onOpenCodGuideModal,
   banners: propBanners,
   hasActiveProducts = false,
+  isError = false,
+  isLoading = false,
   autoSlideInterval = 5000,
 }) => {
   const router = useRouter();
   
   // Dapatkan daftar banner sesuai ketersediaan produk aktif jika banners tidak dioper eksplisit
-  const banners = propBanners || getPromoBanners(hasActiveProducts);
+  const banners = propBanners || getPromoBanners(hasActiveProducts, isError);
   const count = banners.length;
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -105,20 +108,22 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
 
   // Auto-advance timer (every ~5 seconds), paused during interaction or reduced motion
   useEffect(() => {
-    if (count <= 1 || isPaused || prefersReducedMotion) return;
+    if (isLoading || count <= 1 || isPaused || prefersReducedMotion) return;
 
     const timer = setInterval(() => {
       handleNext();
     }, autoSlideInterval);
 
     return () => clearInterval(timer);
-  }, [count, isPaused, prefersReducedMotion, autoSlideInterval, handleNext, timerKey]);
+  }, [count, isPaused, prefersReducedMotion, autoSlideInterval, handleNext, timerKey, isLoading]);
 
   // Handle CTA Click
   const handleCtaClick = (banner: PromoBanner) => {
-    if (banner.ctaAction === 'sell_modal' && onOpenSellModal) {
+    if (banner.ctaAction === 'cod_guide_modal' && onOpenCodGuideModal) {
+      onOpenCodGuideModal();
+    } else if (banner.ctaAction === 'sell_modal' && onOpenSellModal) {
       onOpenSellModal();
-    } else {
+    } else if (banner.ctaHref && banner.ctaHref !== '#') {
       router.push(banner.ctaHref);
     }
   };
@@ -169,26 +174,34 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
     }, 400);
   };
 
-  // Helper to render icon
-  const renderIcon = (iconName: PromoBanner['badgeIcon']) => {
-    switch (iconName) {
-      case 'Sparkles':
-        return <Sparkles className="w-3.5 h-3.5 shrink-0" />;
-      case 'ShoppingBag':
-        return <ShoppingBag className="w-3.5 h-3.5 shrink-0" />;
-      case 'Handshake':
-        return <Handshake className="w-3.5 h-3.5 shrink-0" />;
-      default:
-        return <Sparkles className="w-3.5 h-3.5 shrink-0" />;
-    }
-  };
+  // Tampilkan Skeleton Banner saat data katalog masih dimuat dari database
+  if (isLoading) {
+    return (
+      <section
+        id="home-banner-skeleton"
+        aria-busy="true"
+        aria-label="Memuat banner promosi"
+        className="relative w-full mb-4 select-none"
+      >
+        <div className="relative overflow-hidden rounded-lg border border-slate-200 bg-slate-100 px-4 sm:px-6 py-3.5 sm:py-4 min-h-[105px] sm:min-h-[115px] flex flex-col justify-between animate-pulse">
+          <div className="max-w-xl space-y-1.5">
+            <div className="h-5 w-1/2 sm:w-1/3 rounded bg-slate-300" />
+            <div className="h-3.5 w-3/4 sm:w-2/3 rounded bg-slate-200" />
+          </div>
+          <div className="flex items-center justify-between gap-3 mt-2">
+            <div className="h-8 w-28 sm:w-32 rounded-md bg-slate-300" />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section 
       id="home-banner-carousel"
       aria-roledescription="carousel"
-      aria-label="Promosi dan Panduan Komunitas Nepal Market"
-      className="relative w-full mb-5 select-none"
+      aria-label="Promosi dan Panduan Nepal Market"
+      className="relative w-full mb-4 select-none"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onFocusCapture={() => setIsPaused(true)}
@@ -197,7 +210,7 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
     >
       {/* Outer Card Container */}
       <div 
-        className="relative overflow-hidden rounded-2xl border border-slate-800/10 shadow-xs"
+        className="relative overflow-hidden rounded-lg border border-slate-200"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -219,35 +232,26 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
                 aria-label={`Slide ${index + 1} dari ${count}: ${banner.title}`}
                 aria-hidden={!isActive}
                 inert={!isActive ? true : undefined}
-                className={`w-full shrink-0 relative flex flex-col justify-between ${banner.theme.containerBg} px-4 sm:px-10 py-3.5 sm:py-4.5 min-h-[140px] sm:min-h-[155px]`}
+                className={`w-full shrink-0 relative flex flex-col justify-between ${banner.theme.containerBg} px-4 sm:px-6 py-3.5 sm:py-4 min-h-[105px] sm:min-h-[115px]`}
               >
-                {/* Banner Content (Badge + Title + Subtitle) */}
+                {/* Banner Content (Title + Subtitle) */}
                 <div className="relative z-10 max-w-xl">
-                  {/* Badge */}
-                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-semibold border mb-1.5 backdrop-blur-xs w-fit ${banner.theme.badgeStyle}`}>
-                    {renderIcon(banner.badgeIcon)}
-                    <span>{banner.badge}</span>
-                  </div>
-
-                  {/* Title */}
-                  <h2 className={`text-sm sm:text-base md:text-lg font-bold ${banner.theme.titleColor} tracking-tight leading-snug line-clamp-2`}>
+                  <h2 className={`text-sm sm:text-base font-bold ${banner.theme.titleColor} tracking-tight leading-snug`}>
                     {banner.title}
                   </h2>
-
-                  {/* Description */}
-                  <p className={`mt-1 text-xs sm:text-sm ${banner.theme.descriptionColor} line-clamp-2 leading-relaxed`}>
+                  <p className={`mt-0.5 text-xs sm:text-sm ${banner.theme.descriptionColor} leading-relaxed line-clamp-1 sm:line-clamp-2`}>
                     {banner.description}
                   </p>
                 </div>
 
                 {/* Banner Action Row */}
-                <div className="relative z-10 flex items-center justify-between gap-3 mt-3 pr-24 sm:pr-28">
+                <div className="relative z-10 flex items-center justify-between gap-3 mt-2.5 pr-20 sm:pr-24">
                   <button
                     type="button"
                     id={`btn-carousel-cta-${banner.id}`}
                     onClick={() => handleCtaClick(banner)}
                     tabIndex={isActive ? 0 : -1}
-                    className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-150 cursor-pointer ${banner.theme.ctaStyle} min-h-[44px] focus:outline-hidden focus:ring-2 focus:ring-white/50 active:scale-98`}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors cursor-pointer ${banner.theme.ctaStyle} min-h-[38px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 active:scale-98`}
                   >
                     <span>{banner.ctaText}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -261,7 +265,7 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
         {/* Unified Single Tablist for Slide Indicators */}
         {count > 1 && (
           <div 
-            className="absolute bottom-3.5 right-3.5 sm:right-6 z-20 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-slate-950/45 backdrop-blur-xs border border-white/10"
+            className="absolute bottom-2.5 right-3 sm:right-4 z-20 flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/80 border border-slate-200"
             role="tablist"
             aria-label="Pilih slide banner"
           >
@@ -277,10 +281,10 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
                   aria-label={`Lihat banner ${idx + 1}: ${b.title}`}
                   tabIndex={0}
                   onClick={() => handleSelectSlide(idx)}
-                  className={`h-1.5 transition-all duration-300 rounded-full cursor-pointer focus:outline-hidden focus:ring-1 focus:ring-white ${
+                  className={`h-1.5 transition-all duration-200 rounded-full cursor-pointer focus:outline-hidden focus-visible:ring-1 focus-visible:ring-blue-600 ${
                     isDotActive 
-                      ? 'w-5 bg-white' 
-                      : 'w-1.5 bg-white/40 hover:bg-white/70'
+                      ? 'w-4 bg-blue-600' 
+                      : 'w-1.5 bg-slate-300 hover:bg-slate-400'
                   }`}
                 />
               );
@@ -296,9 +300,9 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
             onClick={handleManualPrev}
             aria-label="Tampilkan banner sebelumnya"
             tabIndex={0}
-            className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-slate-900/40 hover:bg-slate-900/75 text-white/80 hover:text-white backdrop-blur-xs items-center justify-center border border-white/10 transition-all opacity-90 hover:opacity-100 cursor-pointer min-h-[44px] min-w-[44px] focus:outline-hidden focus:ring-2 focus:ring-white/50"
+            className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white hover:bg-slate-50 text-slate-700 items-center justify-center border border-slate-200 transition-colors cursor-pointer min-h-[36px] min-w-[36px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4" />
           </button>
         )}
 
@@ -308,11 +312,11 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
             type="button"
             id="btn-carousel-next"
             onClick={handleManualNext}
-            aria-label="Tampilkan banner berikutnya"
+            aria-label="Tampilkan banner selanjutnya"
             tabIndex={0}
-            className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-slate-900/40 hover:bg-slate-900/75 text-white/80 hover:text-white backdrop-blur-xs items-center justify-center border border-white/10 transition-all opacity-90 hover:opacity-100 cursor-pointer min-h-[44px] min-w-[44px] focus:outline-hidden focus:ring-2 focus:ring-white/50"
+            className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white hover:bg-slate-50 text-slate-700 items-center justify-center border border-slate-200 transition-colors cursor-pointer min-h-[36px] min-w-[36px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4" />
           </button>
         )}
       </div>

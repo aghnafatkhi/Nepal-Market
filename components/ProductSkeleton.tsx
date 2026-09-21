@@ -9,7 +9,7 @@ export const ProductSkeleton: React.FC<{ count?: number }> = ({ count = 8 }) => 
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={`skeleton-${index}`}
-          className="flex flex-col bg-white border border-slate-200/80 rounded-xl overflow-hidden animate-pulse"
+          className="flex flex-col bg-white border border-slate-200 rounded-lg overflow-hidden animate-pulse"
         >
           {/* Skeleton Image */}
           <div className="aspect-square w-full bg-slate-200/80" />

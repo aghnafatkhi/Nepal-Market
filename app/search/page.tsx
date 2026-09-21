@@ -368,14 +368,14 @@ function SearchPageContent() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-28 md:pb-12">
       {/* Top Sticky Header */}
-      <header className="sticky top-0 z-30 bg-white border-b border-slate-200/90 shadow-xs">
+      <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-          <div className="flex items-center gap-3 h-15 sm:h-17">
+          <div className="flex items-center gap-2.5 h-14 sm:h-16">
             {/* Back to Home Button */}
             <Link
               id="btn-back-to-home"
               href="/"
-              className="w-11 h-11 min-w-[44px] min-h-[44px] -ml-1.5 rounded-lg flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+              className="w-9 h-9 min-w-[38px] min-h-[38px] -ml-1.5 rounded-md flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
               aria-label="Kembali ke Beranda"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -383,7 +383,7 @@ function SearchPageContent() {
 
             {/* Search Input Box */}
             <div className="flex-1 relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                 <Search className="w-4 h-4" />
               </div>
               <input
@@ -400,9 +400,9 @@ function SearchPageContent() {
                     }
                   }
                 }}
-                placeholder="Cari nama barang atau kategori..."
+                placeholder="Cari nama barang..."
                 autoFocus={!paramQ}
-                className="w-full pl-10 pr-10 py-2.5 bg-slate-100/90 hover:bg-slate-100 focus:bg-white text-sm text-slate-900 placeholder:text-slate-500 rounded-lg border border-transparent focus:border-blue-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 transition-all min-h-[44px]"
+                className="w-full pl-9 pr-9 py-2 bg-slate-100 focus:bg-white text-sm text-slate-900 placeholder:text-slate-400 rounded-md border border-slate-200 focus:border-blue-600 focus:outline-hidden min-h-[40px] transition-colors"
               />
               {searchQuery && (
                 <button
@@ -413,7 +413,7 @@ function SearchPageContent() {
                     setSearchQuery('');
                     updateUrlParams({ q: '' });
                   }}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 min-w-[44px] min-h-[44px] justify-center"
+                  className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-600 min-w-[36px] min-h-[36px] justify-center cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -424,9 +424,9 @@ function SearchPageContent() {
             <button
               id="btn-open-mobile-filter"
               type="button"
-              aria-label="Buka Filter Pencarian"
+              aria-label="Buka Filter"
               onClick={() => setIsFilterSheetOpen(true)}
-              className={`md:hidden flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-semibold min-h-[44px] transition-colors shrink-0 ${
+              className={`md:hidden flex items-center gap-1.5 px-3 py-2 rounded-md border text-xs font-semibold min-h-[40px] transition-colors shrink-0 cursor-pointer ${
                 activeFilterCount > 0
                   ? 'bg-blue-50 border-blue-600 text-blue-700'
                   : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
@@ -442,27 +442,26 @@ function SearchPageContent() {
             </button>
           </div>
 
-          {/* Search History Row (below search input field for quick re-access) */}
+          {/* Search History Row (Clean plain text, not decorative badges) */}
           {searchHistory.length > 0 && (
             <div
               id="search-history-container"
-              className="pb-2.5 pt-0.5 flex items-center justify-between gap-2 overflow-x-auto text-xs"
+              className="pb-2 pt-0.5 flex items-center justify-between gap-2 overflow-x-auto text-xs"
             >
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 min-w-0">
-                <span className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 shrink-0 select-none">
-                  <History className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Riwayat:</span>
+              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 min-w-0">
+                <span className="text-[11px] text-slate-400 shrink-0 select-none">
+                  Terakhir dicari:
                 </span>
                 {searchHistory.map((queryText, index) => (
                   <div
                     key={`${queryText}-${index}`}
-                    className="inline-flex items-center rounded-full bg-slate-100 hover:bg-blue-50 border border-slate-200/80 hover:border-blue-200 text-slate-700 hover:text-blue-700 transition-colors shrink-0 group text-xs"
+                    className="inline-flex items-center gap-1 text-slate-600 hover:text-slate-900 transition-colors shrink-0 text-xs"
                   >
                     <button
                       type="button"
                       id={`btn-search-history-${index}`}
                       onClick={() => handleSelectHistory(queryText)}
-                      className="pl-2.5 pr-1 py-1 font-medium truncate max-w-[130px] sm:max-w-[200px] text-left cursor-pointer"
+                      className="hover:underline cursor-pointer truncate max-w-[140px]"
                       title={`Cari ulang "${queryText}"`}
                     >
                       {queryText}
@@ -475,10 +474,13 @@ function SearchPageContent() {
                         handleRemoveHistoryItem(queryText);
                       }}
                       aria-label={`Hapus ${queryText} dari riwayat`}
-                      className="pr-2 pl-0.5 py-1 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                      className="text-slate-300 hover:text-rose-600 transition-colors cursor-pointer p-0.5"
                     >
                       <X className="w-3 h-3" />
                     </button>
+                    {index < searchHistory.length - 1 && (
+                      <span className="text-slate-300 select-none mx-0.5">•</span>
+                    )}
                   </div>
                 ))}
               </div>
@@ -487,7 +489,7 @@ function SearchPageContent() {
                 type="button"
                 id="btn-clear-all-history"
                 onClick={handleClearHistory}
-                className="text-[11px] font-medium text-slate-400 hover:text-rose-600 transition-colors shrink-0 whitespace-nowrap pl-1 cursor-pointer"
+                className="text-[11px] text-slate-400 hover:text-rose-600 transition-colors shrink-0 whitespace-nowrap cursor-pointer"
                 title="Hapus semua riwayat pencarian"
               >
                 Hapus
@@ -504,19 +506,16 @@ function SearchPageContent() {
           {/* Desktop Filter Panel (Left Sidebar) */}
           <aside 
             id="desktop-filter-panel"
-            className="hidden md:block w-64 lg:w-72 shrink-0 bg-white border border-slate-200/90 rounded-xl p-5 sticky top-22 shadow-xs space-y-6 text-slate-800"
+            className="hidden md:block w-60 lg:w-64 shrink-0 bg-white border border-slate-200 rounded-lg p-4 sticky top-20 space-y-5 text-slate-800"
           >
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <SlidersHorizontal className="w-4 h-4 text-blue-600" />
-                <h2 className="text-sm font-bold text-slate-900">Filter Pencarian</h2>
-              </div>
+            <div className="flex items-center justify-between pb-2.5 border-b border-slate-100">
+              <h2 className="text-sm font-bold text-slate-900">Filter</h2>
               {activeFilterCount > 0 && (
                 <button
                   id="btn-desktop-reset-filter"
                   type="button"
                   onClick={handleResetFilters}
-                  className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                  className="text-xs font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer"
                 >
                   <RotateCcw className="w-3 h-3" />
                   <span>Reset</span>
@@ -524,10 +523,10 @@ function SearchPageContent() {
               )}
             </div>
 
-            {/* Urutkan (Sorting) */}
+            {/* Urutkan */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wider">
-                Urutan
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wide">
+                Urutkan
               </label>
               <div className="relative">
                 <select
@@ -537,50 +536,20 @@ function SearchPageContent() {
                     const newSort = e.target.value as SortOption;
                     updateUrlParams({ sort: newSort });
                   }}
-                  className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-800 text-xs font-medium py-2.5 pl-3 pr-8 rounded-lg focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-800 text-xs font-medium py-2 pl-2.5 pr-7 rounded-md focus:outline-hidden focus:border-blue-600 cursor-pointer"
                 >
                   <option value="terbaru">Terbaru</option>
                   <option value="harga-rendah">Harga Terendah</option>
                   <option value="harga-tinggi">Harga Tertinggi</option>
                 </select>
-                <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-3 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Kategori */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wider">
-                Kategori
-              </label>
-              <div className="space-y-1 max-h-48 overflow-y-auto pr-1">
-                {CATEGORIES.map((cat) => {
-                  const isSelected = selectedCategory === cat.slug;
-                  return (
-                    <button
-                      key={cat.slug}
-                      id={`desktop-cat-${cat.slug}`}
-                      type="button"
-                      onClick={() => {
-                        updateUrlParams({ category: cat.slug });
-                      }}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center justify-between ${
-                        isSelected
-                          ? 'bg-blue-50 text-blue-700 font-semibold'
-                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                      }`}
-                    >
-                      <span>{cat.label}</span>
-                      {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />}
-                    </button>
-                  );
-                })}
+                <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2 top-2.5 pointer-events-none" />
               </div>
             </div>
 
             {/* Kondisi */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wider">
-                Kondisi Barang
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wide">
+                Kondisi
               </label>
               <div className="grid grid-cols-2 gap-1.5">
                 {[
@@ -599,7 +568,7 @@ function SearchPageContent() {
                         const newCond = cond.id as ConditionFilter;
                         updateUrlParams({ condition: newCond });
                       }}
-                      className={`px-2.5 py-2 rounded-lg text-xs font-medium border text-center transition-colors ${
+                      className={`px-2 py-1.5 rounded-md text-xs font-medium border text-center transition-colors cursor-pointer ${
                         isSelected
                           ? 'bg-blue-50 border-blue-600 text-blue-700 font-semibold'
                           : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
@@ -612,12 +581,42 @@ function SearchPageContent() {
               </div>
             </div>
 
-            {/* Rentang Harga */}
+            {/* Kategori */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2 uppercase tracking-wider">
-                Rentang Harga
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wide">
+                Kategori
               </label>
-              <div className="space-y-2">
+              <div className="space-y-0.5 max-h-48 overflow-y-auto pr-1">
+                {CATEGORIES.map((cat) => {
+                  const isSelected = selectedCategory === cat.slug;
+                  return (
+                    <button
+                      key={cat.slug}
+                      id={`desktop-cat-${cat.slug}`}
+                      type="button"
+                      onClick={() => {
+                        updateUrlParams({ category: cat.slug });
+                      }}
+                      className={`w-full text-left px-2 py-1 rounded-md text-xs font-medium transition-colors flex items-center justify-between cursor-pointer ${
+                        isSelected
+                          ? 'bg-blue-50 text-blue-700 font-semibold'
+                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                      }`}
+                    >
+                      <span>{cat.label}</span>
+                      {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Harga */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1.5 uppercase tracking-wide">
+                Harga
+              </label>
+              <div className="space-y-1.5">
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-2.5 flex items-center text-xs text-slate-400 pointer-events-none font-medium">
                     Rp
@@ -635,8 +634,8 @@ function SearchPageContent() {
                         updateUrlParams({ minPrice: (e.target as HTMLInputElement).value });
                       }
                     }}
-                    placeholder="Harga Minimum"
-                    className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-hidden"
+                    placeholder="Minimum"
+                    className="w-full pl-8 pr-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-hidden"
                   />
                 </div>
                 <div className="relative">
@@ -656,8 +655,8 @@ function SearchPageContent() {
                         updateUrlParams({ maxPrice: (e.target as HTMLInputElement).value });
                       }
                     }}
-                    placeholder="Harga Maksimum"
-                    className="w-full pl-8 pr-2.5 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:bg-white focus:border-blue-500 focus:outline-hidden"
+                    placeholder="Maksimum"
+                    className="w-full pl-8 pr-2 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-md text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-hidden"
                   />
                 </div>
               </div>
@@ -695,16 +694,16 @@ function SearchPageContent() {
 
             {/* Active Filters Chips Bar (Mobile & Desktop) */}
             {activeFilterCount > 0 && (
-              <div className="flex flex-wrap items-center gap-1.5 py-2.5">
+              <div className="flex flex-wrap items-center gap-1.5 py-2">
                 {selectedCategory !== 'semua' && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 border border-blue-200 text-blue-700 rounded-full text-xs font-medium">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 rounded text-xs font-medium">
                     <span>Kategori: {CATEGORIES.find((c) => c.slug === selectedCategory)?.label}</span>
                     <button
                       type="button"
                       onClick={() => {
                         updateUrlParams({ category: 'semua' });
                       }}
-                      className="hover:text-blue-900"
+                      className="text-slate-400 hover:text-slate-800 p-0.5"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -712,14 +711,14 @@ function SearchPageContent() {
                 )}
 
                 {selectedCondition !== 'semua' && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 border border-blue-200 text-blue-700 rounded-full text-xs font-medium">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 rounded text-xs font-medium">
                     <span>Kondisi: {selectedCondition}</span>
                     <button
                       type="button"
                       onClick={() => {
                         updateUrlParams({ condition: 'semua' });
                       }}
-                      className="hover:text-blue-900"
+                      className="text-slate-400 hover:text-slate-800 p-0.5"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -727,7 +726,7 @@ function SearchPageContent() {
                 )}
 
                 {(minPrice || maxPrice) && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 border border-blue-200 text-blue-700 rounded-full text-xs font-medium">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 rounded text-xs font-medium">
                     <span>
                       Harga: {minPrice ? `Rp${Number(minPrice).toLocaleString('id-ID')}` : '0'} - {maxPrice ? `Rp${Number(maxPrice).toLocaleString('id-ID')}` : 'Bebas'}
                     </span>
@@ -736,7 +735,7 @@ function SearchPageContent() {
                       onClick={() => {
                         updateUrlParams({ minPrice: '', maxPrice: '' });
                       }}
-                      className="hover:text-blue-900"
+                      className="text-slate-400 hover:text-slate-800 p-0.5"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -744,14 +743,14 @@ function SearchPageContent() {
                 )}
 
                 {sortBy !== 'terbaru' && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 border border-blue-200 text-blue-700 rounded-full text-xs font-medium">
-                    <span>Urut: {sortBy === 'harga-rendah' ? 'Harga Terendah' : 'Harga Tertinggi'}</span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 border border-slate-200 text-slate-700 rounded text-xs font-medium">
+                    <span>Urutkan: {sortBy === 'harga-rendah' ? 'Harga Terendah' : 'Harga Tertinggi'}</span>
                     <button
                       type="button"
                       onClick={() => {
                         updateUrlParams({ sort: 'terbaru' });
                       }}
-                      className="hover:text-blue-900"
+                      className="text-slate-400 hover:text-slate-800 p-0.5"
                     >
                       <X className="w-3 h-3" />
                     </button>

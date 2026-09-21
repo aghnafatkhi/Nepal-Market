@@ -1,9 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Bookmark, MapPin, Clock } from 'lucide-react';
+import { Bookmark, ImageIcon } from 'lucide-react';
 import { Product } from '@/types/market';
 import { formatRupiah } from '@/data/products';
 
@@ -20,57 +20,58 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onToggleSave,
 }) => {
   const isSold = Boolean(product.isSold || !product.isAvailable);
+  const [imgError, setImgError] = useState(false);
+
+  const hasImage = Boolean(product.imageUrl && product.imageUrl.trim().length > 0 && !imgError);
 
   return (
     <article
       id={`product-card-${product.id}`}
-      className={`group relative flex flex-col bg-white border rounded-xl overflow-hidden transition-all duration-200 focus-within:ring-2 focus-within:ring-blue-600/30 ${
-        isSold 
-          ? 'border-slate-200/90 bg-slate-50/60' 
-          : 'border-slate-200/90 hover:border-blue-400/80'
+      className={`group relative flex flex-col bg-white border rounded-lg overflow-hidden transition-colors focus-within:ring-2 focus-within:ring-blue-600 ${
+        isSold ? 'border-slate-200 bg-slate-50/40' : 'border-slate-200 hover:border-slate-300'
       }`}
     >
-      {/* Container Foto Produk */}
-      <Link 
-        href={`/product/${product.id}`}
-        className="relative aspect-square w-full bg-slate-100 overflow-hidden block"
-        aria-label={`Lihat detail ${product.title} ${isSold ? '(Sudah terjual)' : ''}`}
-      >
-        <Image
-          src={product.imageUrl}
-          alt={product.title}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-          className={`object-cover transition-transform duration-200 ${
-            isSold ? 'grayscale contrast-75 brightness-95' : 'group-hover:scale-103'
-          }`}
-          referrerPolicy="no-referrer"
-          priority={false}
-        />
+      {/* Container Foto Produk (Aspect 1:1 Konsisten) */}
+      <div className="relative aspect-square w-full bg-slate-100 overflow-hidden">
+        <Link 
+          href={`/product/${product.id}`}
+          className="relative w-full h-full block focus:outline-hidden"
+          aria-label={`Lihat detail ${product.title} ${isSold ? '(Sudah terjual)' : ''}`}
+        >
+          {hasImage ? (
+            <Image
+              src={product.imageUrl}
+              alt={product.title}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+              className={`object-cover transition-transform duration-150 ${
+                isSold ? 'opacity-70 grayscale-[0.4]' : 'group-hover:scale-[1.02]'
+              }`}
+              referrerPolicy="no-referrer"
+              priority={false}
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 p-2 text-center">
+              <ImageIcon className="w-6 h-6 stroke-1 mb-1" />
+              <span className="text-[10px] text-slate-400 font-medium">Foto belum ada</span>
+            </div>
+          )}
 
-        {/* Overlay Khusus Produk Terjual */}
-        {isSold ? (
-          <div className="absolute inset-0 bg-slate-950/35 flex items-center justify-center p-2 z-10 pointer-events-none">
-            <span 
-              id={`badge-sold-overlay-${product.id}`}
-              className="inline-block bg-slate-950/90 backdrop-blur-xs text-white text-[11px] sm:text-xs font-bold px-3 py-1 rounded-lg shadow-sm uppercase tracking-wider"
-            >
-              Sudah Terjual
-            </span>
-          </div>
-        ) : (
-          /* Badge Kondisi di Atas Foto */
-          <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-            <span 
-              id={`badge-condition-${product.id}`}
-              className="inline-block bg-slate-900/80 backdrop-blur-xs text-white text-[11px] font-medium px-2 py-0.5 rounded-md shadow-xs"
-            >
-              {product.condition}
-            </span>
-          </div>
-        )}
+          {/* Badge Sold Out (Jelas tapi tidak menutupi gambar) */}
+          {isSold && (
+            <div className="absolute top-2 left-2 z-10 pointer-events-none">
+              <span 
+                id={`badge-sold-${product.id}`}
+                className="inline-block bg-slate-900/90 text-white text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-sm uppercase tracking-wide"
+              >
+                Terjual
+              </span>
+            </div>
+          )}
+        </Link>
 
-        {/* Tombol Simpan (Bookmark) - Touch Target minimal 44x44px */}
+        {/* Tombol Simpan (Bookmark) - Akses cepat, tidak tertutup link */}
         <button
           id={`btn-save-${product.id}`}
           type="button"
@@ -80,59 +81,52 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             e.stopPropagation();
             onToggleSave(product.id);
           }}
-          className={`absolute top-1.5 right-1.5 z-10 w-11 h-11 flex items-center justify-center rounded-full transition-colors duration-150 shadow-xs active:scale-95 ${
-            isSold 
-              ? 'bg-white/75 hover:bg-white text-slate-400 hover:text-slate-600' 
-              : 'bg-white/90 hover:bg-white text-slate-700 hover:text-blue-600'
-          }`}
+          className="absolute top-2 right-2 z-20 w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-full bg-white/90 hover:bg-white text-slate-700 hover:text-blue-600 transition-colors border border-slate-200/90 cursor-pointer min-h-[36px] min-w-[36px] active:scale-95"
         >
           <Bookmark 
-            className={`w-5 h-5 transition-transform duration-150 ${
-              isSaved ? 'fill-blue-600 text-blue-600' : isSold ? 'text-slate-400' : 'text-slate-600'
+            className={`w-4 h-4 transition-colors ${
+              isSaved ? 'fill-blue-600 text-blue-600' : 'text-slate-500'
             }`} 
           />
         </button>
-      </Link>
+      </div>
 
-      {/* Rincian Produk */}
+      {/* Rincian Produk: Rapat, Prioritas Harga, Nama, Kondisi, Lokasi, Seller */}
       <Link
         href={`/product/${product.id}`}
-        className="p-3 sm:p-3.5 flex flex-col flex-grow justify-between block focus:outline-hidden"
+        className="p-2.5 sm:p-3 flex flex-col flex-1 justify-between focus:outline-hidden block text-left"
       >
         <div>
-          {/* Harga Rupiah */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className={`tracking-tight ${
+          {/* Baris Harga & Kondisi */}
+          <div className="flex items-baseline justify-between gap-1.5 flex-wrap">
+            <span className={`tracking-tight truncate ${
               isSold 
                 ? 'text-sm sm:text-base font-semibold text-slate-400 line-through' 
                 : 'text-base sm:text-lg font-bold text-slate-900'
             }`}>
               {formatRupiah(product.price)}
             </span>
-            {isSold && (
-              <span className="text-[11px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
-                Terjual
-              </span>
-            )}
+            <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium shrink-0 bg-slate-100 px-1.5 py-0.5 rounded-sm">
+              {product.condition}
+            </span>
           </div>
 
-          {/* Nama Produk (maksimal 2 baris) */}
-          <h3 className={`mt-1 text-[13px] sm:text-[14px] font-medium leading-snug line-clamp-2 min-h-[2.5rem] transition-colors ${
-            isSold ? 'text-slate-500' : 'text-slate-700 group-hover:text-blue-600'
+          {/* Nama Produk (Maksimal 2 baris) */}
+          <h3 className={`mt-1 text-xs sm:text-sm font-medium leading-snug line-clamp-2 transition-colors ${
+            isSold ? 'text-slate-500' : 'text-slate-800 group-hover:text-blue-600'
           }`}>
             {product.title}
           </h3>
         </div>
 
-        {/* Lokasi & Waktu Serah Terima */}
-        <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 text-[11px] sm:text-xs text-slate-500">
-          <div className="flex items-center gap-1 min-w-0 truncate">
-            <MapPin className="w-3.5 h-3.5 shrink-0 text-slate-400" />
-            <span className="truncate">{product.location}</span>
-          </div>
-          <div className="shrink-0 text-slate-400 whitespace-nowrap text-[10px] sm:text-[11px]">
-            {product.postedAt}
-          </div>
+        {/* Lokasi & Seller (Ringkas di bagian bawah) */}
+        <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 gap-1.5">
+          <span className="truncate text-slate-600 font-medium">
+            {product.location || 'Lokasi COD'}
+          </span>
+          <span className="truncate text-slate-400 text-right shrink-0 max-w-[45%]">
+            {product.seller?.name || 'Penjual'}
+          </span>
         </div>
       </Link>
     </article>

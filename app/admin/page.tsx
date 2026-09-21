@@ -142,6 +142,18 @@ export default function AdminPage() {
     };
   }, [user, session, authLoading, router]);
 
+  // Escape listener untuk dialog modal tindakan admin
+  useEffect(() => {
+    if (!pendingAction) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isExecutingAction) {
+        setPendingAction(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [pendingAction, isExecutingAction]);
+
   // 2. Load dashboard data jika admin terverifikasi
   const loadDashboard = useCallback(async () => {
     setIsLoadingData(true);
@@ -437,93 +449,81 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* METRICS SUMMARY SECTION */}
-        <section id="admin-summary-grid" className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs">
-            <div className="flex items-center justify-between text-slate-500 mb-1">
-              <span className="text-xs font-semibold uppercase tracking-wider">Laporan Pending</span>
-              <div className="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">
-                <AlertTriangle className="w-4 h-4" />
+        {/* METRICS SUMMARY STRIP (Padat & Ringkas, Tidak Memakan Ruang Vertikal) */}
+        <section id="admin-summary-grid" className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+          <div className="bg-white border border-slate-200 rounded-lg p-3 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Laporan Menunggu</p>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-xl font-bold text-slate-900">{summary.pendingReports}</span>
+                {summary.pendingReports > 0 && (
+                  <span className="text-[10px] font-semibold text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded">
+                    Perlu Ditinjau
+                  </span>
+                )}
               </div>
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                {summary.pendingReports}
-              </span>
-              {summary.pendingReports > 0 && (
-                <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">
-                  Perlu Ditinjau
-                </span>
-              )}
+            <div className="w-8 h-8 rounded-md bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+              <AlertTriangle className="w-4 h-4" />
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Laporan barang yang belum selesai dimoderasi</p>
           </div>
 
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs">
-            <div className="flex items-center justify-between text-slate-500 mb-1">
-              <span className="text-xs font-semibold uppercase tracking-wider">Produk Aktif</span>
-              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                <CheckCircle2 className="w-4 h-4" />
+          <div className="bg-white border border-slate-200 rounded-lg p-3 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Iklan Aktif</p>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-xl font-bold text-slate-900">{summary.activeProducts}</span>
+                <span className="text-[10px] text-slate-500">Tayang</span>
               </div>
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                {summary.activeProducts}
-              </span>
-              <span className="text-[11px] text-slate-500">Tayang di pasar</span>
+            <div className="w-8 h-8 rounded-md bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-4 h-4" />
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Iklan yang saat ini dapat dilihat dan dibeli</p>
           </div>
 
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs">
-            <div className="flex items-center justify-between text-slate-500 mb-1">
-              <span className="text-xs font-semibold uppercase tracking-wider">Total Produk</span>
-              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                <Package className="w-4 h-4" />
+          <div className="bg-white border border-slate-200 rounded-lg p-3 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Total Barang</p>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-xl font-bold text-slate-900">{summary.totalProducts}</span>
+                <span className="text-[10px] text-slate-500">Semua riwayat</span>
               </div>
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                {summary.totalProducts}
-              </span>
-              <span className="text-[11px] text-slate-500">Semua riwayat</span>
+            <div className="w-8 h-8 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <Package className="w-4 h-4" />
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Termasuk iklan aktif, terjual, dan dimoderasi</p>
           </div>
 
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs">
-            <div className="flex items-center justify-between text-slate-500 mb-1">
-              <span className="text-xs font-semibold uppercase tracking-wider">Total Pengguna</span>
-              <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
-                <User className="w-4 h-4" />
+          <div className="bg-white border border-slate-200 rounded-lg p-3 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Total Pengguna</p>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-xl font-bold text-slate-900">{summary.totalUsers}</span>
+                <span className="text-[10px] text-slate-500">Akun terdaftar</span>
               </div>
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                {summary.totalUsers}
-              </span>
-              <span className="text-[11px] text-slate-500">Akun terdaftar</span>
+            <div className="w-8 h-8 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+              <User className="w-4 h-4" />
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Siswa dan staf dengan profil aktif</p>
           </div>
         </section>
 
         {/* TAB NAVIGATION & TOOLBAR */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-3 sm:p-4 shadow-xs space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+        <div className="bg-white border border-slate-200 rounded-lg p-3 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             {/* Tabs */}
-            <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl self-start">
+            <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-md self-start">
               <button
                 type="button"
                 onClick={() => setActiveTab('reports')}
-                className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-colors cursor-pointer ${
                   activeTab === 'reports'
                     ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
-                <span>Daftar Laporan</span>
+                <span>Laporan</span>
                 {summary.pendingReports > 0 && (
                   <span className="px-1.5 py-0.2 rounded-full bg-rose-600 text-white text-[10px] font-mono">
                     {summary.pendingReports}
@@ -534,38 +534,38 @@ export default function AdminPage() {
               <button
                 type="button"
                 onClick={() => setActiveTab('guidelines')}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-colors cursor-pointer ${
                   activeTab === 'guidelines'
                     ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <FileText className="w-3.5 h-3.5 text-blue-600" />
-                <span>Aturan Produk Terlarang</span>
+                <span>Aturan Terlarang</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setActiveTab('logs')}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold transition-colors cursor-pointer ${
                   activeTab === 'logs'
                     ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 <History className="w-3.5 h-3.5 text-slate-600" />
-                <span>Riwayat Moderasi</span>
+                <span>Riwayat Audit</span>
               </button>
             </div>
 
             {/* Filter Status (hanya di tab laporan) */}
             {activeTab === 'reports' && (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-400 font-medium">Status:</span>
+                <span className="text-xs text-slate-500 font-medium">Status:</span>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value as FilterReportStatus)}
-                  className="bg-slate-50 border border-slate-200 text-xs font-medium rounded-lg px-2.5 py-1.5 text-slate-700 focus:outline-hidden focus:border-blue-500"
+                  className="bg-slate-50 border border-slate-200 text-xs font-medium rounded-md px-2.5 py-1.5 text-slate-800 focus:outline-hidden focus:border-blue-600 min-h-[36px]"
                 >
                   <option value="all">Semua Laporan</option>
                   <option value="pending">Hanya Menunggu (Pending)</option>
@@ -583,14 +583,14 @@ export default function AdminPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari berdasarkan nama barang, alasan, nama seller, atau pelapor..."
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:outline-hidden"
+                placeholder="Cari barang, alasan, nama seller, atau pelapor..."
+                className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-md text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-600 focus:outline-hidden min-h-[38px]"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -629,17 +629,17 @@ export default function AdminPage() {
                   return (
                     <article
                       key={report.id}
-                      className={`bg-white border rounded-2xl p-5 shadow-xs transition-all ${
+                      className={`bg-white border rounded-lg p-3.5 sm:p-4 transition-colors ${
                         isPending
-                          ? 'border-rose-200 bg-linear-to-b from-rose-50/20 to-white'
-                          : 'border-slate-200/90'
+                          ? 'border-rose-300 shadow-xs'
+                          : 'border-slate-200'
                       }`}
                     >
                       {/* Report Meta Header */}
-                      <div className="flex flex-wrap items-center justify-between gap-2 pb-3.5 border-b border-slate-100 text-xs">
+                      <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-100 text-xs">
                         <div className="flex flex-wrap items-center gap-2">
                           <span
-                            className={`px-2.5 py-0.5 rounded-full font-semibold text-[11px] inline-flex items-center gap-1 ${
+                            className={`px-2 py-0.5 rounded font-semibold text-[10px] inline-flex items-center gap-1 ${
                               isPending
                                 ? 'bg-rose-100 text-rose-700'
                                 : 'bg-emerald-100 text-emerald-700'
@@ -670,7 +670,7 @@ export default function AdminPage() {
 
                         {/* Pelapor */}
                         <div className="text-[11px] text-slate-500">
-                          Dilaporkan oleh:{' '}
+                          Pelapor:{' '}
                           <strong className="text-slate-800">
                             {reporter?.name || 'Pengguna'}
                           </strong>{' '}
@@ -682,9 +682,9 @@ export default function AdminPage() {
 
                       {/* Keterangan Pelapor */}
                       {report.description && (
-                        <div className="my-3 p-3 bg-slate-50 border border-slate-200/80 rounded-xl text-xs space-y-1">
-                          <span className="font-semibold text-slate-700 uppercase tracking-wider text-[10px] block">
-                            Keterangan / Catatan Pelapor:
+                        <div className="my-2.5 p-2.5 bg-slate-50 border border-slate-200 rounded-md text-xs">
+                          <span className="font-semibold text-slate-600 uppercase tracking-wider text-[10px] block mb-0.5">
+                            Catatan Pelapor:
                           </span>
                           <p className="text-slate-800 italic leading-relaxed">
                             &quot;{report.description}&quot;
@@ -693,17 +693,17 @@ export default function AdminPage() {
                       )}
 
                       {/* Detail Produk & Seller Grid */}
-                      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
                         {/* Kolom 1 & 2: Detail Produk yang Dilaporkan */}
-                        <div className="md:col-span-2 flex gap-3.5 p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-xl">
+                        <div className="md:col-span-2 flex gap-3 p-3 bg-slate-50 border border-slate-200 rounded-md">
                           {/* Thumbnail */}
-                          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg bg-slate-200 overflow-hidden relative shrink-0">
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded bg-slate-200 overflow-hidden relative shrink-0">
                             {product?.images?.[0] ? (
                               <Image
                                 src={product.images[0]}
                                 alt={product.title}
                                 fill
-                                sizes="96px"
+                                sizes="80px"
                                 className="object-cover"
                                 referrerPolicy="no-referrer"
                               />
@@ -715,10 +715,10 @@ export default function AdminPage() {
                           </div>
 
                           {/* Info Produk */}
-                          <div className="flex-1 min-w-0 space-y-1">
+                          <div className="flex-1 min-w-0 space-y-0.5">
                             <div className="flex items-center gap-2">
                               <span
-                                className={`text-[10px] font-mono px-2 py-0.2 rounded font-semibold uppercase ${
+                                className={`text-[10px] font-mono px-1.5 py-0.2 rounded font-semibold uppercase ${
                                   product?.status === 'active'
                                     ? 'bg-emerald-100 text-emerald-800'
                                     : product?.status === 'hidden'
@@ -733,26 +733,26 @@ export default function AdminPage() {
                               </span>
                             </div>
 
-                            <h4 className="text-sm font-bold text-slate-900 truncate">
+                            <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate">
                               {product?.title || 'Produk tidak ditemukan'}
                             </h4>
 
-                            <p className="text-xs font-extrabold text-blue-600">
+                            <p className="text-xs font-bold text-blue-600">
                               {product ? formatRupiah(product.price) : '-'}
                             </p>
 
-                            <p className="text-[11px] text-slate-500 line-clamp-2">
+                            <p className="text-[11px] text-slate-500 line-clamp-1">
                               {product?.description || 'Tidak ada deskripsi.'}
                             </p>
 
                             {product && (
-                              <div className="pt-1">
+                              <div className="pt-0.5">
                                 <Link
                                   href={`/product/${product.id}`}
                                   target="_blank"
-                                  className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700"
+                                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-700"
                                 >
-                                  <span>Buka halaman produk asli</span>
+                                  <span>Buka halaman produk</span>
                                   <ExternalLink className="w-3 h-3" />
                                 </Link>
                               </div>
@@ -761,19 +761,19 @@ export default function AdminPage() {
                         </div>
 
                         {/* Kolom 3: Identitas Seller Secukupnya */}
-                        <div className="p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-xl space-y-2.5 flex flex-col justify-between">
+                        <div className="p-3 bg-slate-50 border border-slate-200 rounded-md space-y-2 flex flex-col justify-between">
                           <div>
-                            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
-                              Identitas Penjual (Seller)
+                            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block mb-1">
+                              Penjual (Seller)
                             </span>
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden relative">
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-[11px] shrink-0 overflow-hidden relative">
                                 {seller?.avatar_url ? (
                                   <Image
                                     src={seller.avatar_url}
                                     alt={seller.name}
                                     fill
-                                    sizes="36px"
+                                    sizes="28px"
                                     className="object-cover"
                                     referrerPolicy="no-referrer"
                                   />
@@ -786,7 +786,7 @@ export default function AdminPage() {
                                   {seller?.name || product?.seller?.name || 'Anonim'}
                                 </p>
                                 {seller?.username && (
-                                  <p className="text-[11px] font-mono text-slate-500 truncate">
+                                  <p className="text-[10px] font-mono text-slate-500 truncate">
                                     @{seller.username}
                                   </p>
                                 )}
@@ -794,7 +794,7 @@ export default function AdminPage() {
                             </div>
 
                             {/* Status Akun Seller */}
-                            <div className="mt-2.5 pt-2 border-t border-slate-200 text-[11px]">
+                            <div className="mt-2 pt-1.5 border-t border-slate-200 text-[10px]">
                               {seller?.is_suspended ? (
                                 <span className="inline-flex items-center gap-1 text-rose-600 font-semibold">
                                   <UserX className="w-3 h-3" />
@@ -803,7 +803,7 @@ export default function AdminPage() {
                               ) : (
                                 <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
                                   <UserCheck className="w-3 h-3" />
-                                  <span>Akun Aktif Normal</span>
+                                  <span>Akun Aktif</span>
                                 </span>
                               )}
                             </div>
@@ -813,7 +813,7 @@ export default function AdminPage() {
                             <Link
                               href={`/profile/${seller.username}`}
                               target="_blank"
-                              className="text-[11px] text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1 pt-1"
+                              className="text-[11px] text-blue-600 hover:text-blue-700 font-medium inline-flex items-center gap-1"
                             >
                               <span>Lihat profil seller</span>
                               <ExternalLink className="w-3 h-3" />
@@ -823,8 +823,8 @@ export default function AdminPage() {
                       </div>
 
                       {/* MODERATION ACTION BUTTONS */}
-                      <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex flex-wrap items-center gap-2">
+                      <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5">
                           {/* 1. Tombol Sembunyikan Produk */}
                           {product?.status === 'active' && (
                             <button
@@ -834,18 +834,18 @@ export default function AdminPage() {
                                 setPendingAction({
                                   type: 'hide',
                                   title: 'Sembunyikan Produk',
-                                  description: `Iklan "${product.title}" akan disembunyikan dari daftar pencarian dan beranda publik Nepal Market.`,
+                                  description: `Iklan "${product.title}" akan diturunkan dari pencarian publik agar dapat ditinjau lebih lanjut.`,
                                   targetId: product.id,
                                   targetTitle: product.title,
                                   reportId: report.id,
-                                  confirmButtonText: 'Ya, Sembunyikan Produk',
+                                  confirmButtonText: 'Sembunyikan',
                                   isDestructive: false,
                                 });
                               }}
-                              className="px-3 py-1.5 rounded-lg border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 text-xs font-semibold transition-colors inline-flex items-center gap-1.5"
+                              className="px-2.5 py-1 rounded-md border border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100 text-xs font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer min-h-[32px]"
                             >
                               <EyeOff className="w-3.5 h-3.5 text-amber-600" />
-                              <span>Sembunyikan Produk</span>
+                              <span>Sembunyikan</span>
                             </button>
                           )}
 
@@ -858,15 +858,15 @@ export default function AdminPage() {
                                 setPendingAction({
                                   type: 'remove',
                                   title: 'Hapus Produk dari Pasar',
-                                  description: `Iklan "${product.title}" akan ditandai dihapus (removed) dan tidak dapat lagi diakses publik.`,
+                                  description: `Iklan "${product.title}" akan dihapus permanen dari etalase pasar.`,
                                   targetId: product.id,
                                   targetTitle: product.title,
                                   reportId: report.id,
-                                  confirmButtonText: 'Hapus Iklan Ini',
+                                  confirmButtonText: 'Hapus Produk',
                                   isDestructive: true,
                                 });
                               }}
-                              className="px-3 py-1.5 rounded-lg border border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 text-xs font-semibold transition-colors inline-flex items-center gap-1.5"
+                              className="px-2.5 py-1 rounded-md border border-rose-300 bg-rose-50 text-rose-800 hover:bg-rose-100 text-xs font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer min-h-[32px]"
                             >
                               <Trash2 className="w-3.5 h-3.5 text-rose-600" />
                               <span>Hapus Produk</span>
@@ -890,10 +890,10 @@ export default function AdminPage() {
                                   isDestructive: false,
                                 });
                               }}
-                              className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 text-xs font-semibold transition-colors inline-flex items-center gap-1.5"
+                              className="px-2.5 py-1 rounded-md border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 text-xs font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer min-h-[32px]"
                             >
                               <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
-                              <span>Kembalikan Produk (Aktifkan)</span>
+                              <span>Aktifkan Kembali</span>
                             </button>
                           )}
 
@@ -906,17 +906,17 @@ export default function AdminPage() {
                                 setPendingAction({
                                   type: 'suspend_user',
                                   title: 'Nonaktifkan Akun Seller',
-                                  description: `Akun "${seller.name}" (@${seller.username}) akan dinonaktifkan sehingga tidak dapat membuat iklan baru di Nepal Market.`,
+                                  description: `Akun "${seller.name}" (@${seller.username}) akan dinonaktifkan dari Nepal Market.`,
                                   targetId: seller.id,
                                   targetTitle: seller.name,
-                                  confirmButtonText: 'Nonaktifkan Akun Ini',
+                                  confirmButtonText: 'Nonaktifkan Akun',
                                   isDestructive: true,
                                 });
                               }}
-                              className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-700 hover:text-rose-700 hover:border-rose-300 text-xs font-medium transition-colors inline-flex items-center gap-1.5"
+                              className="px-2.5 py-1 rounded-md border border-slate-300 bg-white text-slate-700 hover:text-rose-700 hover:border-rose-300 text-xs font-medium transition-colors inline-flex items-center gap-1 cursor-pointer min-h-[32px]"
                             >
                               <UserX className="w-3.5 h-3.5 text-rose-600" />
-                              <span>Nonaktifkan Akun Seller</span>
+                              <span>Nonaktifkan Seller</span>
                             </button>
                           )}
 
@@ -936,10 +936,10 @@ export default function AdminPage() {
                                   isDestructive: false,
                                 });
                               }}
-                              className="px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-xs font-semibold transition-colors inline-flex items-center gap-1.5"
+                              className="px-2.5 py-1 rounded-md border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-xs font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer min-h-[32px]"
                             >
                               <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
-                              <span>Pulihkan Akun Seller</span>
+                              <span>Pulihkan Seller</span>
                             </button>
                           )}
                         </div>
@@ -960,7 +960,7 @@ export default function AdminPage() {
                                 isDestructive: false,
                               });
                             }}
-                            className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition-colors inline-flex items-center gap-1.5"
+                            className="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-xs font-semibold transition-colors inline-flex items-center gap-1.5 cursor-pointer min-h-[32px]"
                           >
                             <Check className="w-3.5 h-3.5 text-emerald-400" />
                             <span>Tandai Selesai</span>
@@ -977,47 +977,47 @@ export default function AdminPage() {
 
         {/* TAB 2: ATURAN PRODUK TERLARANG (Pedoman Pengawasan) */}
         {activeTab === 'guidelines' && (
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-xs space-y-6">
-            <div className="border-b border-slate-100 pb-4">
-              <div className="flex items-center gap-2 text-rose-600 mb-1">
-                <AlertOctagon className="w-5 h-5" />
-                <h2 className="text-base font-bold text-slate-900">
+          <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-4">
+            <div className="border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-1.5 text-rose-600 mb-1">
+                <AlertOctagon className="w-4 h-4" />
+                <h2 className="text-sm font-bold text-slate-900">
                   Pedoman Aturan Produk Terlarang Nepal Market
                 </h2>
               </div>
               <p className="text-xs text-slate-500 leading-relaxed max-w-2xl">
-                Sebagai wadah jual-beli komunitas sekolah dan lingkungan Nepal, seluruh barang berikut mutlak dilarang diiklankan ataupun ditransaksikan. Administrator berhak menghapus barang dan menonaktifkan akun yang melanggar.
+                Seluruh barang berikut mutlak dilarang diiklankan ataupun ditransaksikan di lingkungan Nepal Market. Administrator berhak menurunkan barang dan menonaktifkan akun yang melanggar.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {PROHIBITED_ITEMS_GUIDELINES.map((guide, idx) => (
                 <div
                   key={guide.id}
-                  className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1.5 text-xs"
+                  className="p-3 rounded-md border border-slate-200 bg-slate-50 space-y-1 text-xs"
                 >
                   <div className="flex items-center gap-2 text-slate-900 font-bold">
-                    <span className="w-5 h-5 rounded-full bg-rose-100 text-rose-700 font-mono text-[10px] flex items-center justify-center shrink-0">
+                    <span className="w-4.5 h-4.5 rounded-full bg-rose-100 text-rose-700 font-mono text-[10px] flex items-center justify-center shrink-0">
                       {idx + 1}
                     </span>
                     <h4>{guide.title}</h4>
                   </div>
-                  <p className="text-slate-600 pl-7 leading-relaxed text-[11.5px]">
+                  <p className="text-slate-600 pl-6 leading-relaxed text-[11.5px]">
                     {guide.description}
                   </p>
                 </div>
               ))}
             </div>
 
-            <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 space-y-1">
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-xs text-blue-900 space-y-1">
               <p className="font-semibold flex items-center gap-1.5">
                 <Info className="w-4 h-4 text-blue-600" />
-                <span>Protokol Tindakan Administrator:</span>
+                <span>Panduan Tindakan Cepat:</span>
               </p>
-              <ul className="list-disc pl-5 space-y-1 text-[11px] text-blue-800">
-                <li>Untuk indikasi awal yang belum pasti, gunakan tindakan <strong>Sembunyikan Produk</strong> untuk verifikasi lanjutan.</li>
-                <li>Untuk barang yang jelas melanggar kategori rokok, vape, obat, senjata, atau konten dewasa, gunakan tindakan <strong>Hapus Produk</strong>.</li>
-                <li>Jika seorang penjual mengulang pelanggaran setelah peringatan, lakukan <strong>Nonaktifkan Akun Seller</strong>.</li>
+              <ul className="list-disc pl-5 space-y-0.5 text-[11px] text-blue-800">
+                <li>Untuk indikasi awal yang belum terbukti, pilih <strong>Sembunyikan</strong> untuk klarifikasi penjual.</li>
+                <li>Untuk barang yang jelas melanggar aturan terlarang, pilih <strong>Hapus Produk</strong>.</li>
+                <li>Jika penjual berulang kali melanggar, lakukan <strong>Nonaktifkan Seller</strong>.</li>
               </ul>
             </div>
           </div>
@@ -1025,66 +1025,66 @@ export default function AdminPage() {
 
         {/* TAB 3: RIWAYAT MODERASI SEDERHANA */}
         {activeTab === 'logs' && (
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-xs space-y-4">
-            <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+          <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-3">
+            <div className="border-b border-slate-100 pb-2.5 flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-bold text-slate-900">
-                  Riwayat Moderasi Sederhana
+                  Riwayat Audit Moderasi
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Catatan jejak audit aksi dan alasan yang dilakukan oleh tim admin.
+                  Catatan jejak aksi dan alasan penindakan oleh administrator.
                 </p>
               </div>
-              <span className="text-xs font-mono text-slate-400">
-                {moderationLogs.length} entri tercatat
+              <span className="text-xs font-mono text-slate-500">
+                {moderationLogs.length} entri
               </span>
             </div>
 
             {moderationLogs.length === 0 ? (
-              <div className="py-12 text-center text-xs text-slate-400">
+              <div className="py-10 text-center text-xs text-slate-400">
                 Belum ada riwayat moderasi yang tercatat.
               </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto border border-slate-200 rounded-md">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-200 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                      <th className="py-2.5 px-3">Waktu</th>
-                      <th className="py-2.5 px-3">Admin</th>
-                      <th className="py-2.5 px-3">Tindakan</th>
-                      <th className="py-2.5 px-3">Target</th>
-                      <th className="py-2.5 px-3">Alasan Tindakan</th>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                      <th className="py-2 px-3">Waktu</th>
+                      <th className="py-2 px-3">Admin</th>
+                      <th className="py-2 px-3">Tindakan</th>
+                      <th className="py-2 px-3">Target</th>
+                      <th className="py-2 px-3">Alasan Tindakan</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {moderationLogs.map((log) => {
                       const actionBadge = {
-                        hide_product: { text: 'Sembunyikan Produk', color: 'bg-amber-100 text-amber-800' },
+                        hide_product: { text: 'Sembunyikan', color: 'bg-amber-100 text-amber-800' },
                         remove_product: { text: 'Hapus Produk', color: 'bg-rose-100 text-rose-800' },
-                        restore_product: { text: 'Kembalikan Produk', color: 'bg-emerald-100 text-emerald-800' },
+                        restore_product: { text: 'Kembalikan', color: 'bg-emerald-100 text-emerald-800' },
                         suspend_user: { text: 'Nonaktifkan Akun', color: 'bg-rose-100 text-rose-800' },
                         unsuspend_user: { text: 'Pulihkan Akun', color: 'bg-emerald-100 text-emerald-800' },
-                        resolve_report: { text: 'Laporan Selesai', color: 'bg-blue-100 text-blue-800' },
-                        dismiss_report: { text: 'Laporan Ditolak', color: 'bg-slate-100 text-slate-700' },
+                        resolve_report: { text: 'Selesai', color: 'bg-blue-100 text-blue-800' },
+                        dismiss_report: { text: 'Ditolak', color: 'bg-slate-100 text-slate-700' },
                       }[log.action] || { text: log.action, color: 'bg-slate-100 text-slate-700' };
 
                       return (
                         <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
-                          <td className="py-3 px-3 text-slate-500 whitespace-nowrap font-mono text-[11px]">
+                          <td className="py-2.5 px-3 text-slate-500 whitespace-nowrap font-mono text-[11px]">
                             {new Date(log.created_at).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' })}
                           </td>
-                          <td className="py-3 px-3 font-medium text-slate-800">
+                          <td className="py-2.5 px-3 font-medium text-slate-800">
                             {log.admin?.name || 'Admin'}
                           </td>
-                          <td className="py-3 px-3">
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${actionBadge.color}`}>
+                          <td className="py-2.5 px-3">
+                            <span className={`px-1.5 py-0.2 rounded text-[10px] font-semibold ${actionBadge.color}`}>
                               {actionBadge.text}
                             </span>
                           </td>
-                          <td className="py-3 px-3 text-slate-800 font-medium max-w-[180px] truncate">
+                          <td className="py-2.5 px-3 text-slate-800 font-medium max-w-[180px] truncate">
                             {log.target_title || log.target_id.slice(0, 8)}
                           </td>
-                          <td className="py-3 px-3 text-slate-600 max-w-xs leading-relaxed">
+                          <td className="py-2.5 px-3 text-slate-600 max-w-xs leading-relaxed">
                             {log.reason || '-'}
                           </td>
                         </tr>
@@ -1134,14 +1134,49 @@ export default function AdminPage() {
             </div>
 
             {/* Body Dialog */}
-            <div className="p-5 space-y-4 text-xs">
+            <div className="p-5 space-y-3.5 text-xs">
               <p className="text-slate-600 leading-relaxed">
                 {pendingAction.description}
               </p>
 
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Target Tindakan:</span>
-                <p className="font-bold text-slate-900 text-sm">{pendingAction.targetTitle}</p>
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-0.5">
+                <span className="text-[10px] text-slate-500 uppercase font-semibold">Target Tindakan:</span>
+                <p className="font-bold text-slate-900 text-sm truncate">{pendingAction.targetTitle}</p>
+              </div>
+
+              {/* Kotak Konsekuensi yang Jelas */}
+              <div
+                className={`p-3 rounded-lg border text-xs leading-relaxed ${
+                  pendingAction.type === 'remove'
+                    ? 'bg-rose-50 border-rose-200 text-rose-800'
+                    : pendingAction.type === 'suspend_user'
+                    ? 'bg-rose-50 border-rose-200 text-rose-800'
+                    : pendingAction.type === 'hide'
+                    ? 'bg-amber-50 border-amber-200 text-amber-800'
+                    : 'bg-blue-50 border-blue-200 text-blue-800'
+                }`}
+              >
+                <span className="font-bold block mb-0.5 uppercase tracking-wider text-[10px]">
+                  Konsekuensi Tindakan:
+                </span>
+                {pendingAction.type === 'remove' && (
+                  <span>Iklan ini akan dihapus permanen dari etalase pasar. Pembeli tidak dapat lagi menemukan atau melihat rincian barang.</span>
+                )}
+                {pendingAction.type === 'suspend_user' && (
+                  <span>Akun penjual akan dinonaktifkan. Penjual tidak dapat memasang iklan baru atau mengedit barang yang ada.</span>
+                )}
+                {pendingAction.type === 'hide' && (
+                  <span>Iklan diturunkan sementara dari pencarian publik untuk peninjauan lebih lanjut, tetapi data barang tetap tersimpan.</span>
+                )}
+                {pendingAction.type === 'restore' && (
+                  <span>Iklan akan kembali aktif dan langsung tayang di katalog pasar Nepal Market.</span>
+                )}
+                {pendingAction.type === 'unsuspend_user' && (
+                  <span>Sanksi dicabut dan penjual kembali dapat menggunakan seluruh fitur pasar secara normal.</span>
+                )}
+                {pendingAction.type === 'resolve_report' && (
+                  <span>Laporan ini akan ditandai selesai/diarsipkan tanpa perubahan pada status barang.</span>
+                )}
               </div>
 
               {actionError && (
@@ -1159,23 +1194,23 @@ export default function AdminPage() {
                 <textarea
                   value={adminReason}
                   onChange={(e) => setAdminReason(e.target.value)}
-                  rows={3}
-                  placeholder="Tuliskan alasan tindakan ini untuk pencatatan log audit (misal: Terbukti melanggar aturan produk terlarang rokok/vape)..."
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:outline-hidden resize-none"
+                  rows={2}
+                  placeholder="Tuliskan alasan untuk audit log (contoh: Barang terbukti melanggar aturan)..."
+                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-md text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-600 focus:outline-hidden resize-none"
                   autoFocus
                 />
-                <p className="text-[10px] text-slate-400 mt-1">
-                  Alasan ini akan tercatat permanen di riwayat moderasi sistem.
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  Alasan ini akan tercatat permanen di riwayat audit.
                 </p>
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-2 flex items-center justify-end gap-2.5 border-t border-slate-100">
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setPendingAction(null)}
                   disabled={isExecutingAction}
-                  className="px-4 py-2 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-xl min-h-[40px]"
+                  className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-md min-h-[36px] cursor-pointer"
                 >
                   Batal
                 </button>
@@ -1183,7 +1218,7 @@ export default function AdminPage() {
                   type="button"
                   onClick={handleExecuteAction}
                   disabled={isExecutingAction}
-                  className={`px-4 py-2 text-white text-xs font-semibold rounded-xl min-h-[40px] shadow-xs flex items-center gap-1.5 disabled:opacity-60 transition-colors ${
+                  className={`px-4 py-1.5 text-white text-xs font-semibold rounded-md min-h-[36px] flex items-center gap-1.5 disabled:opacity-60 transition-colors cursor-pointer ${
                     pendingAction.isDestructive
                       ? 'bg-rose-600 hover:bg-rose-700'
                       : 'bg-blue-600 hover:bg-blue-700'

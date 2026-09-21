@@ -1,18 +1,17 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { 
   X, 
   MapPin, 
-  Clock, 
   Bookmark, 
   MessageCircle, 
-  ShieldCheck, 
   Instagram, 
   AlertCircle, 
-  ExternalLink 
+  ExternalLink,
+  ImageIcon
 } from 'lucide-react';
 import { Product } from '@/types/market';
 import { formatRupiah } from '@/data/products';
@@ -32,21 +31,23 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
   onClose,
   onToggleSave,
 }) => {
+  const [imgError, setImgError] = useState(false);
+
   if (!isOpen || !product) return null;
 
   const isSold = Boolean(product.isSold || !product.isAvailable);
   const seller = product.seller;
-  const rawPhone = (seller.whatsapp || '').trim();
+  const rawPhone = (seller?.whatsapp || '').trim();
   const cleanPhone = rawPhone.replace(/\D/g, '').replace(/^0/, '62');
   const hasWhatsApp = Boolean(cleanPhone && cleanPhone.length >= 8);
 
-  const rawIg = (seller.instagram || '').trim().replace(/^@/, '');
+  const rawIg = (seller?.instagram || '').trim().replace(/^@/, '');
   const hasInstagram = Boolean(rawIg);
   const instagramUrl = hasInstagram ? `https://instagram.com/${rawIg}` : null;
 
   const handleContactWhatsApp = () => {
     if (!hasWhatsApp) return;
-    const defaultWaMessage = `Halo ${seller.name || 'Penjual'}, saya tertarik dengan barang "${product.title}" (${formatRupiah(product.price)}) yang dipasang di Nepal Market. Apakah masih ada?`;
+    const defaultWaMessage = `Halo ${seller?.name || 'Penjual'}, saya tertarik dengan barang "${product.title}" (${formatRupiah(product.price)}) di Nepal Market. Apakah masih ada?`;
     window.open(
       `https://wa.me/${cleanPhone}?text=${encodeURIComponent(defaultWaMessage)}`,
       '_blank',
@@ -59,206 +60,183 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
     window.open(instagramUrl, '_blank', 'noopener,noreferrer');
   };
 
+  const hasImage = Boolean(product.imageUrl && product.imageUrl.trim().length > 0 && !imgError);
+
   return (
     <div 
       id="quick-view-modal-backdrop"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 overflow-y-auto"
       onClick={onClose}
     >
       <div 
         id="quick-view-modal-content"
-        className="relative w-full max-w-lg bg-white rounded-2xl overflow-hidden shadow-xl border border-slate-200/90 my-auto text-left"
+        className="relative w-full max-w-lg bg-white rounded-lg overflow-hidden border border-slate-200 my-auto text-left"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Tombol Tutup */}
         <button
           id="btn-close-quickview"
           type="button"
-          aria-label="Tutup jendela detail"
+          aria-label="Tutup jendela ringkas"
           onClick={onClose}
-          className="absolute top-3 right-3 z-20 w-10 h-10 rounded-full bg-white/90 hover:bg-white text-slate-700 flex items-center justify-center shadow-xs transition-colors"
+          className="absolute top-2.5 right-2.5 z-20 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-slate-700 flex items-center justify-center border border-slate-200 transition-colors cursor-pointer min-h-[36px] min-w-[36px]"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
         {/* Gambar Produk */}
-        <div className="relative w-full aspect-4/3 sm:aspect-16/10 bg-slate-100">
-          <Image
-            src={product.imageUrl}
-            alt={product.title}
-            fill
-            sizes="(max-width: 640px) 100vw, 600px"
-            className={`object-cover ${isSold ? 'grayscale contrast-75 brightness-95' : ''}`}
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute bottom-3 left-3 flex items-center gap-1.5">
-            <span className="inline-block bg-slate-900/85 backdrop-blur-xs text-white text-xs font-medium px-2.5 py-1 rounded-md shadow-xs">
-              Kondisi: {product.condition}
+        <div className="relative w-full aspect-4/3 bg-slate-100">
+          {hasImage ? (
+            <Image
+              src={product.imageUrl}
+              alt={product.title}
+              fill
+              sizes="(max-width: 640px) 100vw, 600px"
+              className={`object-cover ${isSold ? 'opacity-70 grayscale-[0.4]' : ''}`}
+              referrerPolicy="no-referrer"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400 p-4 text-center">
+              <ImageIcon className="w-10 h-10 stroke-1 mb-1 text-slate-300" />
+              <span className="text-xs text-slate-400">Foto barang tidak tersedia</span>
+            </div>
+          )}
+
+          {/* Badge Status */}
+          <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5">
+            <span className="inline-block bg-slate-900/85 text-white text-xs font-medium px-2 py-0.5 rounded-sm">
+              {product.condition}
             </span>
             {isSold && (
-              <span className="inline-block bg-slate-950/90 backdrop-blur-xs text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-xs uppercase tracking-wider">
-                Sudah Terjual
+              <span className="inline-block bg-slate-900 text-white text-xs font-semibold px-2 py-0.5 rounded-sm uppercase tracking-wide">
+                Terjual
               </span>
             )}
           </div>
         </div>
 
-        {/* Info Produk */}
-        <div className="p-4 sm:p-5">
+        {/* Info Inti Produk */}
+        <div className="p-4 sm:p-5 space-y-3">
+          {/* Header Info: Harga, Judul, Bookmark */}
           <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <div className={`text-xl sm:text-2xl tracking-tight ${
+            <div className="min-w-0 flex-1">
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className={`tracking-tight ${
                   isSold 
-                    ? 'font-bold text-slate-400 line-through' 
-                    : 'font-bold text-slate-900'
+                    ? 'text-lg sm:text-xl font-semibold text-slate-400 line-through' 
+                    : 'text-xl sm:text-2xl font-bold text-slate-900'
                 }`}>
                   {formatRupiah(product.price)}
-                </div>
+                </span>
                 {isSold && (
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
-                    Terjual
+                  <span className="text-xs font-medium text-slate-500 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded-sm">
+                    Sudah Terjual
                   </span>
                 )}
               </div>
-              <h2 className="mt-1 text-base sm:text-lg font-semibold text-slate-800 leading-snug">
+              <h2 className="mt-1 text-sm sm:text-base font-semibold text-slate-900 leading-snug break-words">
                 {product.title}
               </h2>
             </div>
 
-            {/* Bookmark button */}
             <button
               id="btn-quickview-save"
               type="button"
               onClick={() => onToggleSave(product.id)}
               aria-label={isSaved ? 'Hapus dari simpanan' : 'Simpan barang'}
-              className="w-11 h-11 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors shrink-0"
+              className="w-9 h-9 rounded-md border border-slate-200 flex items-center justify-center hover:bg-slate-50 text-slate-600 transition-colors shrink-0 cursor-pointer min-h-[38px] min-w-[38px]"
             >
-              <Bookmark className={`w-5 h-5 ${isSaved ? 'fill-blue-600 text-blue-600' : 'text-slate-600'}`} />
+              <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-blue-600 text-blue-600' : ''}`} />
             </button>
           </div>
 
-          {/* Lokasi & Waktu */}
-          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 pb-3 border-b border-slate-100">
-            <div className="flex items-center gap-1.5">
-              <MapPin className="w-4 h-4 text-blue-600" />
-              <span>Lokasi COD: <strong className="text-slate-700 font-medium">{product.location}</strong></span>
+          {/* Lokasi COD & Penjual (Pemisah garis biasa tanpa nesting kartu) */}
+          <div className="pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between text-xs text-slate-600 gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+              <span className="truncate">Lokasi COD: <strong className="text-slate-900 font-semibold">{product.location || 'Sesuai kesepakatan'}</strong></span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-              <span>{product.postedAt}</span>
+            <div className="truncate text-slate-500">
+              Penjual: <strong className="text-slate-800 font-medium">{seller?.name || 'Warga'}</strong>
             </div>
           </div>
 
-          {/* Deskripsi */}
-          <div className="mt-3.5">
-            <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Deskripsi Barang
-            </h4>
-            <p className="mt-1 text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+          {/* Deskripsi Barang */}
+          {product.description && (
+            <div className="pt-2.5 border-t border-slate-100 text-xs sm:text-sm text-slate-600 leading-relaxed max-h-32 overflow-y-auto whitespace-pre-line">
               {product.description}
-            </p>
-          </div>
-
-          {/* Info Penjual */}
-          <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center justify-center text-sm">
-                {product.seller.name.charAt(0)}
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-medium text-slate-900">{product.seller.name}</span>
-                  {product.seller.isVerified && (
-                    <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                  )}
-                </div>
-                <div className="text-[11px] text-slate-500">Penjual Aktif • {product.seller.location}</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Alert jika penjual tidak memiliki kontak */}
-          {!isSold && !hasWhatsApp && !hasInstagram && (
-            <div className="mt-3.5 p-3 bg-amber-50 border border-amber-200/80 rounded-xl text-xs text-amber-800 flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <div className="space-y-0.5">
-                <p className="font-semibold">Penjual belum mencantumkan kontak</p>
-                <p className="text-amber-700">Nomor WhatsApp atau akun Instagram belum tersedia di profil ini.</p>
-              </div>
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="mt-5 flex gap-2.5">
+          {/* Langkah Selanjutnya untuk Pembeli & Penjual */}
+          <div className="pt-2.5 border-t border-slate-100 text-[11px] text-slate-500 space-y-1">
+            <div className="font-semibold text-slate-700">Langkah Transaksi COD:</div>
+            <p>1. Hubungi penjual untuk menyepakati harga dan titik temu.</p>
+            <p>2. Periksa langsung kondisi barang di tempat sebelum melakukan pembayaran.</p>
+          </div>
+
+          {/* Kontak Seller Buttons */}
+          <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row gap-2">
             {isSold ? (
               <button
-                id="btn-contact-seller"
                 type="button"
                 disabled
-                className="flex-1 min-h-[44px] inline-flex items-center justify-center px-4 py-2.5 bg-slate-200 text-slate-400 text-sm font-semibold rounded-xl cursor-not-allowed text-center"
+                className="w-full py-2 px-3 bg-slate-100 text-slate-400 text-xs sm:text-sm font-medium rounded-md cursor-not-allowed border border-slate-200 text-center min-h-[40px]"
               >
                 Barang Sudah Terjual
               </button>
             ) : hasWhatsApp ? (
-              <button
-                id="btn-contact-seller"
-                type="button"
-                onClick={handleContactWhatsApp}
-                className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-sm font-medium rounded-xl transition-colors shadow-xs"
-              >
-                <MessageCircle className="w-4 h-4" />
-                <span>Hubungi via WhatsApp</span>
-              </button>
+              <>
+                <button
+                  id="btn-quickview-whatsapp"
+                  type="button"
+                  onClick={handleContactWhatsApp}
+                  className="flex-1 min-h-[40px] inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-medium rounded-md transition-colors cursor-pointer"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  <span>Hubungi via WhatsApp</span>
+                </button>
+                {hasInstagram && (
+                  <button
+                    id="btn-quickview-instagram"
+                    type="button"
+                    onClick={handleContactInstagram}
+                    className="sm:w-auto px-3 py-2 border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-medium rounded-md transition-colors inline-flex items-center justify-center gap-1.5 min-h-[40px] cursor-pointer"
+                  >
+                    <Instagram className="w-4 h-4" />
+                    <span>Instagram</span>
+                  </button>
+                )}
+              </>
             ) : hasInstagram ? (
               <button
-                id="btn-contact-seller"
+                id="btn-quickview-instagram"
                 type="button"
                 onClick={handleContactInstagram}
-                className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:opacity-95 active:opacity-90 text-white text-sm font-medium rounded-xl transition-opacity shadow-xs"
+                className="flex-1 min-h-[40px] inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-medium rounded-md transition-colors cursor-pointer"
               >
                 <Instagram className="w-4 h-4" />
-                <span>Pesan Instagram (@{rawIg})</span>
+                <span>Hubungi via Instagram (@{rawIg})</span>
               </button>
             ) : (
-              <Link
-                id="btn-contact-seller"
-                href={`/product/${product.id}`}
-                onClick={onClose}
-                className="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium rounded-xl transition-colors shadow-xs text-center"
-              >
-                <ExternalLink className="w-4 h-4" />
-                <span>Lihat Rincian Barang</span>
-              </Link>
+              <div className="flex-1 p-2 bg-amber-50 border border-amber-200 rounded-md text-[11px] text-amber-800 flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <span>Penjual belum mencantumkan nomor WhatsApp atau akun Instagram.</span>
+              </div>
             )}
 
-            <button
-              id="btn-close-modal"
-              type="button"
-              onClick={onClose}
-              className="min-h-[44px] px-4 py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-xl transition-colors"
-            >
-              Tutup
-            </button>
-          </div>
-
-          <div className="mt-3 text-center flex flex-col items-center gap-1">
             <Link
               href={`/product/${product.id}`}
               onClick={onClose}
-              className="text-xs text-blue-600 hover:text-blue-700 hover:underline inline-flex items-center gap-1 font-medium min-h-[32px] px-2 py-1"
+              className="px-3 py-2 border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-medium rounded-md transition-colors inline-flex items-center justify-center gap-1 text-center min-h-[40px]"
             >
-              <span>Lihat rincian lengkap barang</span>
-              <ExternalLink className="w-3 h-3" />
+              <span>Halaman Lengkap</span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
             </Link>
-            <span className="text-[11px] text-slate-400">
-              Transaksi & penyerahan barang dilakukan langsung antara kamu dan penjual.
-            </span>
           </div>
-
         </div>
       </div>
     </div>
   );
 };
-

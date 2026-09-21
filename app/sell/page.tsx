@@ -37,6 +37,20 @@ export default function SellPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [firstPhotoPreview, setFirstPhotoPreview] = useState<string | null>(null);
+
+  // Generate thumbnail preview dari foto pertama
+  useEffect(() => {
+    if (photos.length > 0) {
+      const url = URL.createObjectURL(photos[0]);
+      setFirstPhotoPreview(url);
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else {
+      setFirstPhotoPreview(null);
+    }
+  }, [photos]);
 
   // Initialize contact info from logged in user
   useEffect(() => {
@@ -207,11 +221,11 @@ export default function SellPage() {
   return (
     <div className="min-h-screen bg-slate-50 pb-28 sm:pb-16">
       {/* Top Bar Navigation */}
-      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-200/90">
-        <div className="max-w-2xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
+      <div className="sticky top-0 z-20 bg-white border-b border-slate-200">
+        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-slate-900 transition-colors -ml-1 min-h-[44px] px-2"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors -ml-1 min-h-[44px] px-2"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Kembali</span>
@@ -219,7 +233,7 @@ export default function SellPage() {
           <span className="text-sm font-bold text-slate-900 truncate">Pasang Iklan</span>
           <Link
             href="/my-products"
-            className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors min-h-[44px] flex items-center px-2"
+            className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors min-h-[44px] flex items-center px-2"
           >
             Produk Saya
           </Link>
@@ -231,7 +245,7 @@ export default function SellPage() {
         <div className="mb-5">
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
             <span>Jual Barang</span>
-            <span className="text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+            <span className="text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-md inline-flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-blue-600" />
               COD Langsung
             </span>
@@ -245,16 +259,19 @@ export default function SellPage() {
         {generalError && (
           <div
             role="alert"
-            className="mb-5 p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-xs sm:text-sm text-rose-800 shadow-xs"
+            className="mb-5 p-3.5 bg-rose-50 border border-rose-200 rounded-md flex items-start gap-2.5 text-xs sm:text-sm text-rose-800"
           >
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
             <div className="flex-1 font-medium">{generalError}</div>
           </div>
         )}
 
-        <form onSubmit={(e) => handleSubmit(e, 'active')} className="space-y-5">
-          {/* 1. KOTAK UPLOAD FOTO */}
-          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs">
+        <form onSubmit={(e) => handleSubmit(e, 'active')} className="bg-white rounded-lg border border-slate-200 p-5 sm:p-6 space-y-6">
+          {/* 1. FOTO */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-900 mb-1.5">
+              1. Foto Barang <span className="text-rose-600">*</span>
+            </label>
             <ProductPhotoPicker
               files={photos}
               onChange={(newFiles) => {
@@ -267,238 +284,213 @@ export default function SellPage() {
             />
           </div>
 
-          {/* 2. INFORMASI BARANG */}
-          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs space-y-4">
-            <h2 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2.5 flex items-center gap-2">
-              <ShoppingBag className="w-4 h-4 text-blue-600" />
-              <span>Informasi Barang</span>
-            </h2>
+          <hr className="border-slate-100" />
 
-            {/* Nama Barang */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label htmlFor="sell-title" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  Judul Barang *
-                </label>
-                <span className="text-[11px] text-slate-400">
-                  {title.length}/80
-                </span>
-              </div>
-              <input
-                id="sell-title"
-                type="text"
-                maxLength={80}
-                placeholder="Contoh: Jaket Parasut Navy Ukuran L"
-                value={title}
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                  if (errors.title) setErrors((prev) => ({ ...prev, title: '' }));
-                }}
-                className={`w-full px-3.5 py-3 bg-slate-50 border rounded-xl text-base text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-hidden min-h-[46px] transition-colors ${
-                  errors.title ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-500'
-                }`}
-              />
-              {errors.title && (
-                <p role="alert" className="text-xs font-medium text-rose-600 mt-1">
-                  {errors.title}
-                </p>
-              )}
-            </div>
-
-            {/* Harga & Kategori */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {/* Harga */}
-              <div>
-                <label htmlFor="sell-price" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Harga Barang *
-                </label>
-                <div className="relative">
-                  <input
-                    id="sell-price"
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="Contoh: Rp 75.000"
-                    value={displayPrice}
-                    onChange={handlePriceChange}
-                    className={`w-full px-3.5 py-3 bg-slate-50 border rounded-xl text-base font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:outline-hidden min-h-[46px] transition-colors ${
-                      errors.price ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-500'
-                    }`}
-                  />
-                </div>
-                {errors.price ? (
-                  <p role="alert" className="text-xs font-medium text-rose-600 mt-1">
-                    {errors.price}
-                  </p>
-                ) : (
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Cukup ketik nominal angka tanpa titik atau koma.
-                  </p>
-                )}
-              </div>
-
-              {/* Kategori */}
-              <div>
-                <label htmlFor="sell-category" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Kategori *
-                </label>
-                <select
-                  id="sell-category"
-                  value={category}
-                  onChange={(e) => {
-                    setCategory(e.target.value as CategorySlug);
-                    if (errors.category) setErrors((prev) => ({ ...prev, category: '' }));
-                  }}
-                  className={`w-full px-3.5 py-3 bg-slate-50 border rounded-xl text-base text-slate-900 focus:bg-white focus:outline-hidden min-h-[46px] transition-colors ${
-                    errors.category ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-500'
-                  }`}
-                >
-                  {CATEGORIES.filter((c) => c.slug !== 'semua').map((cat) => (
-                    <option key={cat.slug} value={cat.slug}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
-                {errors.category && (
-                  <p role="alert" className="text-xs font-medium text-rose-600 mt-1">
-                    {errors.category}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Pilihan Kondisi Barang */}
-            <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                Kondisi Barang *
+          {/* 2. NAMA BARANG */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label htmlFor="sell-title" className="block text-xs font-semibold text-slate-900">
+                2. Nama Barang <span className="text-rose-600">*</span>
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {CONDITIONS.map((cond) => {
-                  const isSelected = condition === cond.value;
-                  return (
-                    <button
-                      key={cond.value}
-                      type="button"
-                      onClick={() => {
-                        setCondition(cond.value);
-                        if (errors.condition) setErrors((prev) => ({ ...prev, condition: '' }));
-                      }}
-                      className={`text-left p-3 rounded-xl border transition-all min-h-[52px] ${
-                        isSelected
-                          ? 'border-blue-600 bg-blue-50/60 ring-1 ring-blue-600'
-                          : 'border-slate-200 bg-slate-50 hover:bg-slate-100/80 text-slate-700'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className={`text-sm font-semibold ${isSelected ? 'text-blue-700' : 'text-slate-900'}`}>
-                          {cond.label}
-                        </span>
-                        <div
-                          className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                            isSelected ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-300 bg-white'
-                          }`}
-                        >
-                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                        </div>
-                      </div>
-                      <p className="text-[11px] text-slate-500 mt-0.5 leading-tight">
-                        {cond.desc}
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
-              {errors.condition && (
-                <p role="alert" className="text-xs font-medium text-rose-600 mt-1">
-                  {errors.condition}
-                </p>
-              )}
+              <span className="text-[11px] text-slate-400">
+                {title.length}/80
+              </span>
             </div>
-
-            {/* Titik Lokasi COD / Ketemuan */}
-            <div>
-              <label htmlFor="sell-location" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                Lokasi COD *
-              </label>
-              <input
-                id="sell-location"
-                type="text"
-                placeholder="Contoh: Kantin Utama atau Depan Gerbang"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-3.5 py-3 bg-slate-50 border border-slate-200 rounded-xl text-base text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:outline-hidden min-h-[46px]"
-              />
-              <p className="text-[11px] text-slate-400 mt-1">
-                Pilih tempat yang mudah dijangkau dan aman untuk ketemuan.
+            <input
+              id="sell-title"
+              type="text"
+              maxLength={80}
+              placeholder="Contoh: Jaket Parasut Navy Ukuran L"
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (errors.title) setErrors((prev) => ({ ...prev, title: '' }));
+              }}
+              className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-md text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-hidden min-h-[42px] transition-colors ${
+                errors.title ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-300 focus:border-blue-600'
+              }`}
+            />
+            {errors.title && (
+              <p role="alert" className="text-xs font-medium text-rose-600 mt-1">
+                {errors.title}
               </p>
-            </div>
-
-            {/* Deskripsi */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label htmlFor="sell-desc" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  Deskripsi Barang *
-                </label>
-                <span className={`text-[11px] ${description.length < 15 ? 'text-amber-600' : 'text-slate-400'}`}>
-                  {description.length} karakter (min. 15)
-                </span>
-              </div>
-              <textarea
-                id="sell-desc"
-                rows={4}
-                placeholder="Ceritakan kelengkapan barang, riwayat pemakaian, minus fisik jika ada, dan alasan dijual..."
-                value={description}
-                onChange={(e) => {
-                  setDescription(e.target.value);
-                  if (errors.description) setErrors((prev) => ({ ...prev, description: '' }));
-                }}
-                className={`w-full px-3.5 py-3 bg-slate-50 border rounded-xl text-base text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-hidden transition-colors ${
-                  errors.description ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-500'
-                }`}
-              />
-              {errors.description && (
-                <p role="alert" className="text-xs font-medium text-rose-600 mt-1">
-                  {errors.description}
-                </p>
-              )}
-            </div>
+            )}
           </div>
 
-          {/* 3. KONTAK PENJUAL */}
-          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs space-y-3.5">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900">
-                Kontak Penjual
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Cantumkan minimal satu kontak agar pembeli bisa langsung janjian COD.
-              </p>
-            </div>
+          <hr className="border-slate-100" />
 
+          {/* 3. KATEGORI */}
+          <div>
+            <label htmlFor="sell-category" className="block text-xs font-semibold text-slate-900 mb-1.5">
+              3. Kategori <span className="text-rose-600">*</span>
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {CATEGORIES.filter((c) => c.slug !== 'semua').map((cat) => {
+                const isSelected = category === cat.slug;
+                return (
+                  <button
+                    key={cat.slug}
+                    type="button"
+                    onClick={() => {
+                      setCategory(cat.slug);
+                      if (errors.category) setErrors((prev) => ({ ...prev, category: '' }));
+                    }}
+                    className={`px-3 py-2 text-xs font-medium rounded-md border text-center transition-colors min-h-[40px] cursor-pointer ${
+                      isSelected
+                        ? 'bg-blue-50 border-blue-600 text-blue-700 font-semibold'
+                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                );
+              })}
+            </div>
+            {errors.category && (
+              <p role="alert" className="text-xs font-medium text-rose-600 mt-1">
+                {errors.category}
+              </p>
+            )}
+          </div>
+
+          <hr className="border-slate-100" />
+
+          {/* 4. KONDISI */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-900 mb-1.5">
+              4. Kondisi <span className="text-rose-600">*</span>
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {CONDITIONS.map((cond) => {
+                const isSelected = condition === cond.value;
+                return (
+                  <button
+                    key={cond.value}
+                    type="button"
+                    onClick={() => {
+                      setCondition(cond.value);
+                      if (errors.condition) setErrors((prev) => ({ ...prev, condition: '' }));
+                    }}
+                    className={`p-2.5 rounded-md border text-center transition-colors min-h-[42px] cursor-pointer flex flex-col items-center justify-center ${
+                      isSelected
+                        ? 'border-blue-600 bg-blue-50 text-blue-700 font-semibold'
+                        : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
+                    }`}
+                  >
+                    <span className="text-xs">{cond.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {errors.condition && (
+              <p role="alert" className="text-xs font-medium text-rose-600 mt-1">
+                {errors.condition}
+              </p>
+            )}
+          </div>
+
+          <hr className="border-slate-100" />
+
+          {/* 5. HARGA */}
+          <div>
+            <label htmlFor="sell-price" className="block text-xs font-semibold text-slate-900 mb-1.5">
+              5. Harga (Rp) <span className="text-rose-600">*</span>
+            </label>
+            <input
+              id="sell-price"
+              type="text"
+              inputMode="numeric"
+              placeholder="Contoh: 75000"
+              value={displayPrice}
+              onChange={handlePriceChange}
+              className={`w-full max-w-sm px-3.5 py-2.5 bg-slate-50 border rounded-md text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:outline-hidden min-h-[42px] transition-colors ${
+                errors.price ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-300 focus:border-blue-600'
+              }`}
+            />
+            {errors.price && (
+              <p role="alert" className="text-xs font-medium text-rose-600 mt-1">
+                {errors.price}
+              </p>
+            )}
+          </div>
+
+          <hr className="border-slate-100" />
+
+          {/* 6. DESKRIPSI */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label htmlFor="sell-desc" className="block text-xs font-semibold text-slate-900">
+                6. Deskripsi Barang <span className="text-rose-600">*</span>
+              </label>
+              <span className={`text-[11px] ${description.length < 15 ? 'text-amber-600' : 'text-slate-400'}`}>
+                {description.length} karakter (min. 15)
+              </span>
+            </div>
+            <textarea
+              id="sell-desc"
+              rows={3}
+              placeholder="Tuliskan kelengkapan, minus fisik jika ada, atau alasan dijual"
+              value={description}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                if (errors.description) setErrors((prev) => ({ ...prev, description: '' }));
+              }}
+              className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-md text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-hidden transition-colors ${
+                errors.description ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-300 focus:border-blue-600'
+              }`}
+            />
+            {errors.description && (
+              <p role="alert" className="text-xs font-medium text-rose-600 mt-1">
+                {errors.description}
+              </p>
+            )}
+          </div>
+
+          <hr className="border-slate-100" />
+
+          {/* 7. LOKASI COD */}
+          <div>
+            <label htmlFor="sell-location" className="block text-xs font-semibold text-slate-900 mb-1.5">
+              7. Lokasi COD <span className="text-rose-600">*</span>
+            </label>
+            <input
+              id="sell-location"
+              type="text"
+              placeholder="Contoh: Kantin Utama atau Depan Gerbang"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full max-w-md px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-md text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-600 focus:outline-hidden min-h-[42px]"
+            />
+          </div>
+
+          <hr className="border-slate-100" />
+
+          {/* 8. KONTAK */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-900 mb-1.5">
+              8. Kontak (Minimal 1 Kontak) <span className="text-rose-600">*</span>
+            </label>
             {errors.contact && (
-              <p role="alert" className="text-xs font-semibold text-rose-600 p-2.5 bg-rose-50 rounded-lg border border-rose-200">
+              <p role="alert" className="text-xs font-medium text-rose-600 p-2 bg-rose-50 rounded-md border border-rose-200 mb-2">
                 {errors.contact}
               </p>
             )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              {/* WhatsApp */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label htmlFor="sell-wa" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Nomor WhatsApp
-                </label>
+                <span className="text-xs text-slate-600 mb-1 block font-medium">WhatsApp</span>
                 <input
                   id="sell-wa"
                   type="tel"
                   inputMode="tel"
-                  placeholder="Contoh: 081234567890"
+                  placeholder="081234567890"
                   value={whatsapp}
                   onChange={(e) => {
                     setWhatsapp(e.target.value);
                     if (errors.whatsapp) setErrors((prev) => ({ ...prev, whatsapp: '' }));
                     if (errors.contact) setErrors((prev) => ({ ...prev, contact: '' }));
                   }}
-                  className={`w-full px-3.5 py-3 bg-slate-50 border rounded-xl text-base text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-hidden min-h-[46px] transition-colors ${
-                    errors.whatsapp ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-500'
+                  className={`w-full px-3 py-2 bg-slate-50 border rounded-md text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-hidden min-h-[40px] ${
+                    errors.whatsapp ? 'border-rose-300 bg-rose-50/20' : 'border-slate-300 focus:border-blue-600'
                   }`}
                 />
                 {errors.whatsapp && (
@@ -508,15 +500,10 @@ export default function SellPage() {
                 )}
               </div>
 
-              {/* Instagram */}
               <div>
-                <label htmlFor="sell-ig" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
-                  Username Instagram (Opsional)
-                </label>
+                <span className="text-xs text-slate-600 mb-1 block font-medium">Instagram (Opsional)</span>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-medium text-sm">
-                    @
-                  </span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">@</span>
                   <input
                     id="sell-ig"
                     type="text"
@@ -527,8 +514,8 @@ export default function SellPage() {
                       if (errors.instagram) setErrors((prev) => ({ ...prev, instagram: '' }));
                       if (errors.contact) setErrors((prev) => ({ ...prev, contact: '' }));
                     }}
-                    className={`w-full pl-8 pr-3.5 py-3 bg-slate-50 border rounded-xl text-base text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-hidden min-h-[46px] transition-colors ${
-                      errors.instagram ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-500'
+                    className={`w-full pl-7 pr-3 py-2 bg-slate-50 border rounded-md text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-hidden min-h-[40px] ${
+                      errors.instagram ? 'border-rose-300 bg-rose-50/20' : 'border-slate-300 focus:border-blue-600'
                     }`}
                   />
                 </div>
@@ -541,58 +528,93 @@ export default function SellPage() {
             </div>
           </div>
 
-          {/* Action Buttons (Desktop Inline) */}
-          <div className="hidden sm:flex items-center justify-end gap-3 pt-2">
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={(e) => handleSubmit(e, 'draft')}
-              className="px-5 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-colors min-h-[48px] disabled:opacity-50"
-            >
-              Simpan Draf
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-7 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm shadow-xs transition-colors min-h-[48px] flex items-center justify-center gap-2 disabled:opacity-60"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Menerbitkan Iklan...</span>
-                </>
-              ) : (
-                <span>Terbitkan Iklan</span>
-              )}
-            </button>
+          <hr className="border-slate-100" />
+
+          {/* 9. PREVIEW DAN KIRIM */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-900 mb-2">
+              9. Ringkasan Iklan
+            </label>
+            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-md flex items-center gap-3.5">
+              <div className="w-14 h-14 rounded bg-slate-200 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
+                {firstPhotoPreview ? (
+                  <img
+                    src={firstPhotoPreview}
+                    alt="Preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-[10px] text-slate-400 text-center px-1">Belum ada foto</span>
+                )}
+              </div>
+              <div className="flex-1 min-w-0 text-xs text-slate-600 space-y-0.5">
+                <p className="font-bold text-slate-900 text-sm truncate">
+                  {title.trim() || 'Nama Barang'}
+                </p>
+                <p className="font-bold text-slate-900">
+                  {displayPrice || 'Rp 0'}
+                </p>
+                <p className="text-[11px] text-slate-500 truncate">
+                  {CATEGORIES.find((c) => c.slug === category)?.label} &bull; {condition} &bull; {location || 'Kantin'}
+                </p>
+              </div>
+            </div>
+
+            {/* Tombol Aksi: Simpan Draft vs Pasang Iklan */}
+            <div className="flex items-center justify-end gap-3 pt-5">
+              <button
+                id="btn-save-draft-sell"
+                type="button"
+                disabled={isSubmitting}
+                onClick={(e) => handleSubmit(e, 'draft')}
+                className="px-4 py-2 text-xs font-medium rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition-colors min-h-[40px] cursor-pointer disabled:opacity-50"
+              >
+                Simpan Draft
+              </button>
+              <button
+                id="btn-publish-sell"
+                type="submit"
+                disabled={isSubmitting}
+                className="px-5 py-2 text-xs font-semibold rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white transition-colors min-h-[40px] flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Memproses...</span>
+                  </>
+                ) : (
+                  <span>Pasang Iklan</span>
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </main>
 
-      {/* Sticky Bottom Action Bar di Layar HP (Mobile thumb-friendly) */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/90 p-3 pb-[max(12px,env(safe-area-inset-bottom))] shadow-lg">
+      {/* Sticky Bottom Bar di Ponsel */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-slate-200 p-2.5 pb-[max(10px,env(safe-area-inset-bottom))]">
         <div className="max-w-2xl mx-auto flex items-center gap-2">
           <button
             type="button"
             disabled={isSubmitting}
             onClick={(e) => handleSubmit(e, 'draft')}
-            className="w-1/3 min-h-[48px] py-3 px-2 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs rounded-xl transition-colors text-center disabled:opacity-50"
+            className="w-1/3 min-h-[42px] py-2 px-2 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs rounded-md transition-colors text-center cursor-pointer disabled:opacity-50"
           >
-            Simpan Draf
+            Simpan Draft
           </button>
           <button
             type="button"
             disabled={isSubmitting}
             onClick={(e) => handleSubmit(e, 'active')}
-            className="flex-1 min-h-[48px] py-3 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm rounded-xl transition-colors shadow-xs flex items-center justify-center gap-2 disabled:opacity-60"
+            className="flex-1 min-h-[42px] py-2 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-xs rounded-md transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60"
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Menerbitkan...</span>
+                <span>Memproses...</span>
               </>
             ) : (
-              <span>Terbitkan Iklan</span>
+              <span>Pasang Iklan</span>
             )}
           </button>
         </div>

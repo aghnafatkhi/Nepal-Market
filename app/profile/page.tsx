@@ -261,10 +261,10 @@ export default function ProfilePage() {
   const currentDisplayAvatar = avatarPreview || avatarUrl;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-24 sm:pb-16">
+    <div className="min-h-screen bg-slate-50 text-slate-900 pb-20 sm:pb-12">
       {/* Top Header Navigation */}
-      <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-xs">
-        <div className="max-w-2xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
+      <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
+        <div className="max-w-2xl mx-auto px-4 h-14 sm:h-15 flex items-center justify-between">
           <Link
             id="btn-profile-back"
             href="/"
@@ -273,13 +273,13 @@ export default function ProfilePage() {
             <ArrowLeft className="w-4 h-4" />
             <span>Beranda</span>
           </Link>
-          <h1 className="text-sm sm:text-base font-bold text-slate-900">Pengaturan Profil</h1>
+          <h1 className="text-sm sm:text-base font-bold text-slate-900">Profil Saya</h1>
           <button
             id="btn-profile-logout-header"
             type="button"
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-rose-600 hover:text-rose-700 p-2 min-h-[44px]"
+            className="inline-flex items-center gap-1 text-xs sm:text-sm font-medium text-rose-600 hover:text-rose-700 p-2 min-h-[44px]"
           >
             <LogOut className="w-4 h-4" />
             <span className="hidden sm:inline">Keluar</span>
@@ -287,12 +287,12 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 pt-5 sm:pt-7 space-y-6">
+      <main className="max-w-2xl mx-auto px-4 pt-4 sm:pt-6 space-y-4">
         {/* Flash Notifications */}
         {successMessage && (
           <div
             role="status"
-            className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2.5 text-xs sm:text-sm font-medium text-emerald-800 shadow-xs animate-in fade-in"
+            className="p-3 bg-emerald-50 border border-emerald-200 rounded-md flex items-center gap-2 text-xs sm:text-sm font-medium text-emerald-800"
           >
             <Check className="w-4 h-4 text-emerald-600 shrink-0" />
             <span>{successMessage}</span>
@@ -302,118 +302,93 @@ export default function ProfilePage() {
         {generalError && (
           <div
             role="alert"
-            className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2.5 text-xs sm:text-sm font-medium text-rose-800 shadow-xs animate-in fade-in"
+            className="p-3 bg-rose-50 border border-rose-200 rounded-md flex items-center gap-2 text-xs sm:text-sm font-medium text-rose-800"
           >
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
             <span>{generalError}</span>
           </div>
         )}
 
-        {/* Admin Panel Quick Access (Khusus akun admin) */}
-        {profile?.role === 'admin' && (
-          <Link
-            id="link-profile-admin-panel"
-            href="/admin"
-            className="p-4 bg-linear-to-r from-rose-50 to-rose-100/60 border border-rose-200 hover:border-rose-400 rounded-2xl shadow-xs transition-all flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center shadow-xs">
-                <Shield className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-rose-200/80 text-rose-800">
-                    Administrator
-                  </span>
-                </div>
-                <p className="text-sm font-bold text-slate-900 mt-0.5">
-                  Buka Panel Moderasi Pasar
-                </p>
-              </div>
-            </div>
-            <span className="text-xs font-semibold text-rose-700 group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
-              <span>Akses Panel</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </span>
-          </Link>
-        )}
-
-        {/* Quick Access Card: Produk Saya & Lihat Profil Publik */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Akses Cepat Ringkas: Iklan Saya & Barang Tersimpan */}
+        <div className="grid grid-cols-2 gap-2.5">
           <Link
             id="link-profile-my-products"
             href="/my-products"
-            className="p-4 bg-white border border-slate-200/90 hover:border-blue-500 rounded-2xl shadow-xs transition-all flex items-center justify-between group"
+            className="p-3 bg-white border border-slate-200 hover:border-blue-500 rounded-md transition-colors flex items-center gap-3"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                <Package className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-slate-500">Kelola Iklan</p>
-                <p className="text-sm font-bold text-slate-900">
-                  Produk Saya ({myProductCount})
-                </p>
-              </div>
+            <div className="w-9 h-9 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <Package className="w-4 h-4" />
             </div>
-            <span className="text-xs font-semibold text-blue-600 group-hover:translate-x-0.5 transition-transform">
-              Buka &rarr;
-            </span>
+            <div className="min-w-0">
+              <p className="text-xs text-slate-500">Iklan Saya</p>
+              <p className="text-sm font-bold text-slate-900 truncate">
+                {myProductCount} Barang
+              </p>
+            </div>
           </Link>
 
           <Link
             id="link-profile-saved"
             href="/saved"
-            className="p-4 bg-white border border-slate-200/90 hover:border-blue-500 rounded-2xl shadow-xs transition-all flex items-center justify-between group"
+            className="p-3 bg-white border border-slate-200 hover:border-blue-500 rounded-md transition-colors flex items-center gap-3"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                <Bookmark className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-slate-500">Barang Tersimpan</p>
-                <p className="text-sm font-bold text-slate-900">Koleksi Favorit</p>
-              </div>
+            <div className="w-9 h-9 rounded-md bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
+              <Bookmark className="w-4 h-4" />
             </div>
-            <span className="text-xs font-semibold text-blue-600 group-hover:translate-x-0.5 transition-transform">
-              Buka &rarr;
-            </span>
+            <div className="min-w-0">
+              <p className="text-xs text-slate-500">Tersimpan</p>
+              <p className="text-sm font-bold text-slate-900 truncate">Koleksi Favorit</p>
+            </div>
           </Link>
         </div>
+
+        {/* Akses Admin (jika admin) */}
+        {profile?.role === 'admin' && (
+          <Link
+            id="link-profile-admin-panel"
+            href="/admin"
+            className="p-3 bg-rose-50 border border-rose-200 rounded-md flex items-center justify-between hover:bg-rose-100/70 transition-colors"
+          >
+            <div className="flex items-center gap-2.5">
+              <Shield className="w-4 h-4 text-rose-600" />
+              <span className="text-xs sm:text-sm font-bold text-rose-900">Panel Moderasi Pasar (Admin)</span>
+            </div>
+            <ExternalLink className="w-4 h-4 text-rose-600" />
+          </Link>
+        )}
 
         {/* Main Profile Form Card */}
         <form
           onSubmit={handleSubmit}
-          className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs space-y-6"
+          className="bg-white border border-slate-200 rounded-lg p-4 sm:p-5 space-y-5"
         >
           {/* Avatar Section */}
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 pb-6 border-b border-slate-100">
-            <div className="relative group">
-              <div className="w-24 h-24 rounded-full overflow-hidden bg-slate-100 border-2 border-white shadow-md relative flex items-center justify-center">
+          <div className="flex items-center gap-4 pb-4 border-b border-slate-100">
+            <div className="relative shrink-0">
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-100 border border-slate-200 relative flex items-center justify-center">
                 {currentDisplayAvatar ? (
                   <Image
                     src={currentDisplayAvatar}
                     alt={name || 'Avatar'}
                     fill
-                    sizes="96px"
+                    sizes="64px"
                     className="object-cover"
                     referrerPolicy="no-referrer"
                     unoptimized={currentDisplayAvatar.startsWith('blob:')}
                   />
                 ) : (
-                  <User className="w-10 h-10 text-slate-400" />
+                  <User className="w-7 h-7 text-slate-400" />
                 )}
               </div>
 
-              {/* Camera Action Button */}
               <button
                 type="button"
                 id="btn-pick-avatar"
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-md transition-colors"
+                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-xs transition-colors cursor-pointer"
                 aria-label="Ubah foto profil"
               >
-                <Camera className="w-4 h-4" />
+                <Camera className="w-3 h-3" />
               </button>
 
               <input
@@ -425,72 +400,37 @@ export default function ProfilePage() {
               />
             </div>
 
-            <div className="text-center sm:text-left flex-1">
-              <h2 className="text-base font-bold text-slate-900">Foto Profil</h2>
-              <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                Gunakan foto yang jelas agar mudah dikenali saat janjian COD.
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-slate-900 truncate">{name || 'Nama Pengguna'}</p>
+              <p className="text-xs text-slate-500 truncate mt-0.5">
+                @{username || 'username'} &bull; Bergabung {formattedJoinedDate}
               </p>
-              <div className="mt-2.5 flex items-center justify-center sm:justify-start gap-2">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition-colors"
-                >
-                  Pilih Foto Baru
-                </button>
-                {avatarPreview && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAvatarFile(null);
-                      setAvatarPreview(null);
-                    }}
-                    className="px-2.5 py-1.5 text-rose-600 hover:bg-rose-50 text-xs font-semibold rounded-lg transition-colors"
-                  >
-                    Batal
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* User Info Metadata: Join Date & Public Profile Link */}
-          <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs text-slate-600">
-            <div className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-slate-400 shrink-0" />
-              <span>Bergabung sejak <strong className="text-slate-800">{formattedJoinedDate}</strong></span>
-            </div>
-
-            {profile?.username && (
-              <Link
-                id="link-view-public-profile"
-                href={`/profile/${profile.username}`}
-                target="_blank"
-                className="inline-flex items-center gap-1 font-semibold text-blue-600 hover:text-blue-700"
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="text-xs text-blue-600 hover:underline font-medium mt-1 inline-block cursor-pointer"
               >
-                <span>Lihat Profil Publik Saya</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </Link>
-            )}
+                Ganti Foto Profil
+              </button>
+            </div>
           </div>
 
           {/* Form Fields */}
-          <div className="space-y-4">
+          <div className="space-y-3.5">
             {/* Nama Lengkap */}
             <div>
-              <label htmlFor="input-profile-name" className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Nama Lengkap <span className="text-rose-500">*</span>
+              <label htmlFor="input-profile-name" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Nama Lengkap *
               </label>
               <input
                 id="input-profile-name"
                 type="text"
+                required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Nama kamu atau nama panggilan"
-                className={`w-full px-3.5 py-2.5 bg-white text-sm text-slate-900 rounded-xl border transition-colors focus:outline-hidden ${
-                  errors.name
-                    ? 'border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
-                    : 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
+                placeholder="Nama kamu"
+                className={`w-full px-3 py-2 bg-slate-50 border rounded-md text-sm text-slate-900 focus:bg-white focus:outline-hidden min-h-[40px] transition-colors ${
+                  errors.name ? 'border-rose-300' : 'border-slate-200 focus:border-blue-600'
                 }`}
               />
               {errors.name && (
@@ -500,29 +440,25 @@ export default function ProfilePage() {
 
             {/* Username Unik */}
             <div>
-              <label htmlFor="input-profile-username" className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Username <span className="text-rose-500">*</span>
+              <label htmlFor="input-profile-username" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Username *
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-sm text-slate-400 font-mono">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-sm text-slate-400 font-mono">
                   @
                 </span>
                 <input
                   id="input-profile-username"
                   type="text"
+                  required
                   value={username}
                   onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                  placeholder="username_kamu"
-                  className={`w-full pl-8 pr-3.5 py-2.5 bg-white text-sm text-slate-900 rounded-xl border transition-colors focus:outline-hidden font-mono ${
-                    errors.username
-                      ? 'border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
-                      : 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
+                  placeholder="username"
+                  className={`w-full pl-7 pr-3 py-2 bg-slate-50 border rounded-md text-sm text-slate-900 focus:bg-white focus:outline-hidden font-mono min-h-[40px] transition-colors ${
+                    errors.username ? 'border-rose-300' : 'border-slate-200 focus:border-blue-600'
                   }`}
                 />
               </div>
-              <p className="mt-1 text-[11px] text-slate-400">
-                Username digunakan sebagai identitas unik akun dan pembeda nama kamu di Nepal Market.
-              </p>
               {errors.username && (
                 <p className="mt-1 text-xs text-rose-600 font-medium">{errors.username}</p>
               )}
@@ -530,11 +466,11 @@ export default function ProfilePage() {
 
             {/* Nomor WhatsApp */}
             <div>
-              <label htmlFor="input-profile-phone" className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Nomor WhatsApp (Opsional)
+              <label htmlFor="input-profile-phone" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
+                Nomor WhatsApp
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                   <Phone className="w-4 h-4" />
                 </span>
                 <input
@@ -543,16 +479,11 @@ export default function ProfilePage() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="081234567890"
-                  className={`w-full pl-10 pr-3.5 py-2.5 bg-white text-sm text-slate-900 rounded-xl border transition-colors focus:outline-hidden ${
-                    errors.phone
-                      ? 'border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
-                      : 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
+                  className={`w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-md text-sm text-slate-900 focus:bg-white focus:outline-hidden min-h-[40px] transition-colors ${
+                    errors.phone ? 'border-rose-300' : 'border-slate-200 focus:border-blue-600'
                   }`}
                 />
               </div>
-              <p className="mt-1 text-[11px] text-slate-400">
-                Digunakan sebagai kontak saat pembeli ingin janjian COD.
-              </p>
               {errors.phone && (
                 <p className="mt-1 text-xs text-rose-600 font-medium">{errors.phone}</p>
               )}
@@ -560,11 +491,11 @@ export default function ProfilePage() {
 
             {/* Username Instagram */}
             <div>
-              <label htmlFor="input-profile-instagram" className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label htmlFor="input-profile-instagram" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">
                 Username Instagram (Opsional)
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                   <Instagram className="w-4 h-4" />
                 </span>
                 <input
@@ -573,10 +504,8 @@ export default function ProfilePage() {
                   value={instagram}
                   onChange={(e) => setInstagram(e.target.value.replace(/^@/, ''))}
                   placeholder="username_ig"
-                  className={`w-full pl-10 pr-3.5 py-2.5 bg-white text-sm text-slate-900 rounded-xl border transition-colors focus:outline-hidden ${
-                    errors.instagram
-                      ? 'border-rose-300 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
-                      : 'border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20'
+                  className={`w-full pl-9 pr-3 py-2 bg-slate-50 border rounded-md text-sm text-slate-900 focus:bg-white focus:outline-hidden min-h-[40px] transition-colors ${
+                    errors.instagram ? 'border-rose-300' : 'border-slate-200 focus:border-blue-600'
                   }`}
                 />
               </div>
@@ -585,30 +514,27 @@ export default function ProfilePage() {
               )}
             </div>
 
-            {/* Email (Hanya Tampil, Tidak Dapat Diubah di Form Profil) */}
+            {/* Email (Readonly) */}
             <div>
-              <label className="block text-xs font-semibold text-slate-500 mb-1.5">
+              <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
                 Email Terdaftar
               </label>
               <input
                 type="email"
                 disabled
                 value={user.email || ''}
-                className="w-full px-3.5 py-2.5 bg-slate-100 text-sm text-slate-500 rounded-xl border border-slate-200 cursor-not-allowed"
+                className="w-full px-3 py-2 bg-slate-100 text-sm text-slate-500 rounded-md border border-slate-200 cursor-not-allowed min-h-[40px]"
               />
-              <p className="mt-1 text-[11px] text-slate-400">
-                Email bersifat pribadi dan tidak ditampilkan kepada pembeli.
-              </p>
             </div>
           </div>
 
           {/* Submit Button */}
-          <div className="pt-2">
+          <div className="pt-2 border-t border-slate-100">
             <button
               id="btn-submit-profile"
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-blue-400 text-white font-semibold text-sm transition-colors shadow-xs flex items-center justify-center gap-2"
+              className="w-full min-h-[42px] py-2 px-4 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:bg-blue-400 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
             >
               {isSubmitting ? (
                 <>
@@ -622,23 +548,23 @@ export default function ProfilePage() {
           </div>
         </form>
 
-        {/* Danger Zone: Tombol Logout */}
-        <div className="p-5 bg-white border border-slate-200/90 rounded-2xl shadow-xs flex items-center justify-between">
+        {/* Tombol Logout */}
+        <div className="p-3.5 bg-white border border-slate-200 rounded-lg flex items-center justify-between">
           <div>
-            <p className="text-sm font-bold text-slate-900">Keluar dari Akun</p>
-            <p className="text-xs text-slate-500">Sesi login pada perangkat ini akan diakhiri.</p>
+            <p className="text-xs font-semibold text-slate-900">Keluar dari Akun</p>
+            <p className="text-[11px] text-slate-500">Akhiri sesi di perangkat ini</p>
           </div>
           <button
             id="btn-logout-main"
             type="button"
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="px-4 py-2.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold transition-colors min-h-[44px] flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded-md border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold transition-colors min-h-[36px] flex items-center gap-1.5 cursor-pointer"
           >
             {isLoggingOut ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
             ) : (
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-3.5 h-3.5" />
             )}
             <span>Keluar</span>
           </button>

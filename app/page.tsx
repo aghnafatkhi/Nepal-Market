@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowUpDown, X, PlusCircle, AlertCircle } from 'lucide-react';
+import { X, AlertCircle, RefreshCw } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { CategoryBar } from '@/components/CategoryBar';
 import { ProductCard } from '@/components/ProductCard';
@@ -13,8 +13,8 @@ import { QuickViewModal } from '@/components/QuickViewModal';
 import { SellModal } from '@/components/SellModal';
 import { SavedModal } from '@/components/SavedModal';
 import { ProfileModal } from '@/components/ProfileModal';
+import { CodGuideModal } from '@/components/CodGuideModal';
 import { HomeBannerCarousel } from '@/components/HomeBannerCarousel';
-import { INITIAL_PRODUCTS } from '@/data/products';
 import { CategorySlug, Product, SortOption } from '@/types/market';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -35,6 +35,7 @@ export default function HomePage() {
   const [myProducts, setMyProducts] = useState<Product[]>([]);
   const [savedProductIds, setSavedProductIds] = useState<string[]>([]);
   const [hasLoadedFromDb, setHasLoadedFromDb] = useState(!isConfigured);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   
   // State filter & search
   const [searchQuery, setSearchQuery] = useState('');
@@ -53,26 +54,59 @@ export default function HomePage() {
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
   const [isSavedModalOpen, setIsSavedModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isCodGuideModalOpen, setIsCodGuideModalOpen] = useState(false);
   const [activeBottomTab, setActiveBottomTab] = useState<'home' | 'cari' | 'jual' | 'disimpan' | 'profil'>('home');
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Load produk dari Supabase jika configured (page 1)
+  // Handler muat ulang manual (misal saat retry dari tombol)
+  const handleRetryLoad = useCallback(async () => {
+    if (!isConfigured) return;
+
+    setIsLoading(true);
+    setFetchError(null);
+
+    try {
+      const { products: dbProducts, hasMore: more, error } = await fetchActiveProducts({ page: 1, pageSize: 12 });
+      if (error) {
+        setFetchError(error.message || 'Gagal memuat produk dari server.');
+      } else {
+        setProducts(dbProducts);
+        setHasMore(more);
+        setPage(1);
+        setFetchError(null);
+      }
+    } catch {
+      setFetchError('Terjadi kendala jaringan saat memuat produk.');
+    } finally {
+      setHasLoadedFromDb(true);
+      setIsLoading(false);
+    }
+  }, [isConfigured]);
+
+  // Load produk dari Supabase jika configured (page 1) saat mount
   useEffect(() => {
     let isMounted = true;
     if (isConfigured) {
-      fetchActiveProducts({ page: 1, pageSize: 12 }).then(({ products: dbProducts, hasMore: more, error }) => {
-        if (!isMounted) return;
-        if (!error) {
-          setProducts(dbProducts);
-          setHasMore(more);
-          setPage(1);
-        } else {
-          console.warn('Gagal memuat dari Supabase:', error.message);
-        }
-        setHasLoadedFromDb(true);
-        setIsLoading(false);
-      });
+      fetchActiveProducts({ page: 1, pageSize: 12 })
+        .then(({ products: dbProducts, hasMore: more, error }) => {
+          if (!isMounted) return;
+          if (!error) {
+            setProducts(dbProducts);
+            setHasMore(more);
+            setPage(1);
+          } else {
+            setFetchError(error.message || 'Gagal memuat produk dari server.');
+          }
+          setHasLoadedFromDb(true);
+          setIsLoading(false);
+        })
+        .catch(() => {
+          if (!isMounted) return;
+          setFetchError('Terjadi kendala jaringan saat memuat produk.');
+          setHasLoadedFromDb(true);
+          setIsLoading(false);
+        });
     }
     return () => {
       isMounted = false;
@@ -292,116 +326,91 @@ export default function HomePage() {
         {/* Banner Carousel di Bagian Atas Homepage */}
         <HomeBannerCarousel 
           hasActiveProducts={hasActiveProducts}
+          isError={Boolean(fetchError)}
+          isLoading={!hasLoadedFromDb || isLoading}
           onOpenSellModal={() => setIsSellModalOpen(true)} 
+          onOpenCodGuideModal={() => setIsCodGuideModalOpen(true)}
         />
 
-        {/* Section Header: "Baru di Nepal Market" & Kontrol Urutan */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        {/* Section Header: Judul Katalog, Jumlah Produk, dan Filter */}
+        <div className="flex flex-wrap items-center justify-between gap-2.5 mb-3">
           <div className="flex items-center gap-2">
-            <h1 className="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">
-              Barang Terbaru
+            <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+              {selectedCategory === 'semua' ? 'Semua Barang' : `Kategori ${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}`}
             </h1>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-200/80 text-slate-700">
-              {filteredProducts.length}
+            <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+              {filteredProducts.length} barang
             </span>
           </div>
 
-          {/* Baris Filter & Sort */}
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-            {/* Filter Kondisi Cepat */}
-            <div className="flex items-center gap-1.5 text-xs">
-              <span className="text-slate-400 hidden sm:inline">Kondisi:</span>
-              <button
-                type="button"
-                onClick={() => setSelectedCondition('semua')}
-                className={`px-3 py-2 rounded-lg font-medium transition-colors min-h-[44px] ${
-                  selectedCondition === 'semua'
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                Semua
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedCondition('Baru')}
-                className={`px-3 py-2 rounded-lg font-medium transition-colors min-h-[44px] ${
-                  selectedCondition === 'Baru'
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                Baru
-              </button>
-              <button
-                type="button"
-                onClick={() => setSelectedCondition('Bekas - Mulus')}
-                className={`px-3 py-2 rounded-lg font-medium transition-colors min-h-[44px] ${
-                  selectedCondition === 'Bekas - Mulus'
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                Bekas Mulus
-              </button>
-            </div>
+          {/* Kontrol Ringkas: Filter Kondisi & Urutan */}
+          <div className="flex items-center gap-2">
+            <select
+              id="select-condition-filter"
+              aria-label="Filter Kondisi Barang"
+              value={selectedCondition}
+              onChange={(e) => setSelectedCondition(e.target.value)}
+              className="bg-white border border-slate-200 text-xs font-medium text-slate-700 py-1.5 px-2.5 rounded-md focus:outline-hidden focus:border-blue-600 min-h-[38px] cursor-pointer"
+            >
+              <option value="semua">Semua Kondisi</option>
+              <option value="Baru">Baru</option>
+              <option value="Bekas - Seperti Baru">Bekas - Seperti Baru</option>
+              <option value="Bekas - Mulus">Bekas - Mulus</option>
+              <option value="Bekas - Layak">Bekas - Layak</option>
+            </select>
 
-            {/* Pemisah Kecil */}
-            <div className="w-px h-5 bg-slate-200 shrink-0 mx-1" />
-
-            {/* Dropdown Urutkan */}
-            <div className="flex items-center gap-1 relative shrink-0">
-              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
-              <select
-                id="select-sort-products"
-                aria-label="Urutkan produk"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="bg-white border border-slate-200 text-xs font-medium text-slate-700 py-2 px-2.5 rounded-lg focus:outline-hidden focus:border-blue-500 min-h-[44px]"
-              >
-                <option value="terbaru">Terbaru</option>
-                <option value="harga-rendah">Harga Terendah</option>
-                <option value="harga-tinggi">Harga Tertinggi</option>
-              </select>
-            </div>
+            <select
+              id="select-sort-products"
+              aria-label="Urutkan produk"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortOption)}
+              className="bg-white border border-slate-200 text-xs font-medium text-slate-700 py-1.5 px-2.5 rounded-md focus:outline-hidden focus:border-blue-600 min-h-[38px] cursor-pointer"
+            >
+              <option value="terbaru">Terbaru</option>
+              <option value="harga-rendah">Harga Terendah</option>
+              <option value="harga-tinggi">Harga Tertinggi</option>
+            </select>
           </div>
         </div>
 
         {/* Info filter aktif */}
         {(selectedCategory !== 'semua' || searchQuery || selectedCondition !== 'semua') && (
-          <div className="flex items-center gap-2 mb-4 text-xs text-slate-600 flex-wrap">
-            <span>Menampilkan hasil:</span>
+          <div className="flex items-center gap-2 mb-3 text-xs text-slate-600 flex-wrap">
+            <span>Filter aktif:</span>
             {selectedCategory !== 'semua' && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md font-medium">
-                Kategori: {selectedCategory}
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-blue-700 rounded-md font-medium">
+                {selectedCategory}
                 <button 
                   type="button" 
                   onClick={() => setSelectedCategory('semua')} 
                   className="hover:text-blue-900 ml-0.5"
+                  aria-label="Hapus filter kategori"
                 >
                   <X className="w-3 h-3" />
                 </button>
               </span>
             )}
             {searchQuery && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md font-medium">
-                Kata kunci: &ldquo;{searchQuery}&rdquo;
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-blue-700 rounded-md font-medium">
+                &ldquo;{searchQuery}&rdquo;
                 <button 
                   type="button" 
                   onClick={() => setSearchQuery('')} 
                   className="hover:text-blue-900 ml-0.5"
+                  aria-label="Hapus kata kunci"
                 >
                   <X className="w-3 h-3" />
                 </button>
               </span>
             )}
             {selectedCondition !== 'semua' && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-md font-medium">
-                Kondisi: {selectedCondition}
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-blue-700 rounded-md font-medium">
+                {selectedCondition}
                 <button 
                   type="button" 
                   onClick={() => setSelectedCondition('semua')} 
                   className="hover:text-blue-900 ml-0.5"
+                  aria-label="Hapus filter kondisi"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -410,16 +419,37 @@ export default function HomePage() {
             <button
               type="button"
               onClick={handleResetFilters}
-              className="text-blue-600 hover:underline font-medium text-xs ml-1"
+              className="text-blue-600 hover:underline font-medium text-xs ml-1 cursor-pointer"
             >
-              Hapus Semua Filter
+              Reset Filter
             </button>
           </div>
         )}
 
-        {/* Product Grid / Empty State */}
+        {/* Product Grid / Error State / Empty State */}
         {isLoading ? (
           <ProductSkeleton count={10} />
+        ) : fetchError ? (
+          <div id="catalog-error-state" className="flex flex-col items-center justify-center py-10 px-4 text-center bg-white rounded-lg border border-slate-200 max-w-lg mx-auto my-4">
+            <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center mb-3">
+              <AlertCircle className="w-6 h-6 text-slate-500" />
+            </div>
+            <h2 className="text-base font-bold text-slate-900">
+              Katalog Belum Dapat Dimuat
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 mt-1.5 max-w-sm leading-relaxed">
+              Terjadi kendala saat memuat produk dari server. Silakan coba muat ulang halaman atau periksa koneksi internet kamu.
+            </p>
+            <button
+              type="button"
+              id="btn-retry-fetch-catalog"
+              onClick={handleRetryLoad}
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-medium transition-colors min-h-[44px] cursor-pointer focus:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span>Coba Muat Ulang</span>
+            </button>
+          </div>
         ) : filteredProducts.length > 0 ? (
           <div className="space-y-6">
             <div 
@@ -445,7 +475,7 @@ export default function HomePage() {
                   type="button"
                   onClick={handleLoadMore}
                   disabled={isLoadingMore}
-                  className="px-6 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-700 font-semibold text-sm rounded-xl shadow-xs transition-colors flex items-center gap-2 min-h-[44px] disabled:opacity-60"
+                  className="px-5 py-2 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 text-slate-700 font-medium text-sm rounded-md transition-colors flex items-center gap-2 min-h-[44px] cursor-pointer disabled:opacity-60"
                 >
                   {isLoadingMore ? (
                     <>
@@ -476,12 +506,12 @@ export default function HomePage() {
       </main>
 
       {/* Footer Ringan Komunitas */}
-      <footer className="mt-16 border-t border-slate-200/80 bg-white py-8 text-center text-xs text-slate-500">
+      <footer className="mt-14 border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="text-left">
-              <span className="font-bold text-slate-800 text-sm">Nepal Market</span>
-              <p className="mt-0.5 text-slate-400">
+              <span className="font-bold text-slate-900 text-sm">Nepal Market</span>
+              <p className="mt-0.5 text-slate-500">
                 Platform jual beli langsung (COD) untuk warga komunitas Nepal.
               </p>
             </div>
@@ -535,6 +565,12 @@ export default function HomePage() {
         onOpenSavedModal={() => setIsSavedModalOpen(true)}
         onMarkProductSold={handleMarkProductSold}
         onDeleteProduct={handleDeleteProduct}
+      />
+
+      {/* Modal Panduan Transaksi COD */}
+      <CodGuideModal
+        isOpen={isCodGuideModalOpen}
+        onClose={() => setIsCodGuideModalOpen(false)}
       />
 
     </div>

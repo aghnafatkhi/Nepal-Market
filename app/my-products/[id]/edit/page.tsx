@@ -266,7 +266,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   if (isUnauthorized) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 text-center space-y-4 shadow-sm">
+        <div className="max-w-md w-full bg-white rounded-lg p-6 sm:p-8 border border-slate-200 text-center space-y-4">
           <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto">
             <ShieldAlert className="w-6 h-6" />
           </div>
@@ -276,7 +276,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           </p>
           <Link
             href="/my-products"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium transition-colors min-h-[44px]"
           >
             <span>Kembali ke Produk Saya</span>
           </Link>
@@ -289,7 +289,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   if (fetchError) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 text-center space-y-4 shadow-sm">
+        <div className="max-w-md w-full bg-white rounded-lg p-6 sm:p-8 border border-slate-200 text-center space-y-4">
           <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
             <AlertCircle className="w-6 h-6" />
           </div>
@@ -297,7 +297,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           <p className="text-xs sm:text-sm text-slate-500">{fetchError}</p>
           <Link
             href="/my-products"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition-colors"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-medium transition-colors min-h-[44px]"
           >
             <span>Kembali ke Produk Saya</span>
           </Link>
@@ -309,7 +309,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   return (
     <div className="min-h-screen bg-slate-50 pb-28 sm:pb-16">
       {/* Top Bar Navigation */}
-      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-200/90">
+      <div className="sticky top-0 z-20 bg-white border-b border-slate-200">
         <div className="max-w-2xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
           <Link
             href="/my-products"
@@ -343,7 +343,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         {generalError && (
           <div
             role="alert"
-            className="mb-5 p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-xs sm:text-sm text-rose-800 shadow-xs"
+            className="mb-5 p-3.5 bg-rose-50 border border-rose-200 rounded-md flex items-start gap-2.5 text-xs sm:text-sm text-rose-800"
           >
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
             <div className="flex-1 font-medium">{generalError}</div>
@@ -352,7 +352,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Status Switcher Box */}
-          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs">
+          <div className="bg-white rounded-lg p-4 sm:p-5 border border-slate-200">
             <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
               Status Iklan Barang
             </label>
@@ -360,10 +360,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               <button
                 type="button"
                 onClick={() => setStatus('active')}
-                className={`py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-semibold transition-all min-h-[44px] flex items-center justify-center gap-1.5 ${
+                className={`py-2 px-3 rounded-md border text-xs sm:text-sm font-medium transition-colors min-h-[44px] flex items-center justify-center gap-1.5 cursor-pointer ${
                   status === 'active'
-                    ? 'border-blue-600 bg-blue-50 text-blue-700 ring-1 ring-blue-600'
-                    : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                    ? 'border-blue-600 bg-blue-50 text-blue-700 font-semibold'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 <span>Aktif</span>
@@ -371,10 +371,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               <button
                 type="button"
                 onClick={() => setStatus('sold')}
-                className={`py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-semibold transition-all min-h-[44px] flex items-center justify-center gap-1.5 ${
+                className={`py-2 px-3 rounded-md border text-xs sm:text-sm font-medium transition-colors min-h-[44px] flex items-center justify-center gap-1.5 cursor-pointer ${
                   status === 'sold'
-                    ? 'border-emerald-600 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600'
-                    : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                    ? 'border-emerald-600 bg-emerald-50 text-emerald-700 font-semibold'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 <span>Terjual</span>
@@ -382,10 +382,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
               <button
                 type="button"
                 onClick={() => setStatus('draft')}
-                className={`py-2.5 px-3 rounded-xl border text-xs sm:text-sm font-semibold transition-all min-h-[44px] flex items-center justify-center gap-1.5 ${
+                className={`py-2 px-3 rounded-md border text-xs sm:text-sm font-medium transition-colors min-h-[44px] flex items-center justify-center gap-1.5 cursor-pointer ${
                   status === 'draft'
-                    ? 'border-amber-600 bg-amber-50 text-amber-700 ring-1 ring-amber-600'
-                    : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                    ? 'border-amber-600 bg-amber-50 text-amber-700 font-semibold'
+                    : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
               >
                 <span>Draft</span>
@@ -397,7 +397,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           </div>
 
           {/* 1. KOTAK FOTO */}
-          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs">
+          <div className="bg-white rounded-lg p-4 sm:p-5 border border-slate-200">
             <ProductPhotoPicker
               items={photoItems}
               onItemsChange={(newItems) => {
@@ -411,7 +411,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           </div>
 
           {/* 2. DETAIL INFORMASI BARANG */}
-          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs space-y-4">
+          <div className="bg-white rounded-lg p-4 sm:p-5 border border-slate-200 space-y-4">
             <h2 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-2.5 flex items-center gap-2">
               <ShoppingBag className="w-4 h-4 text-blue-600" />
               <span>Informasi Barang</span>
@@ -437,8 +437,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                   setTitle(e.target.value);
                   if (errors.title) setErrors((prev) => ({ ...prev, title: '' }));
                 }}
-                className={`w-full px-3.5 py-3 bg-slate-50 border rounded-xl text-base text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-hidden min-h-[46px] transition-colors ${
-                  errors.title ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-500'
+                className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-md text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-hidden min-h-[44px] transition-colors ${
+                  errors.title ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-600'
                 }`}
               />
               {errors.title && (
@@ -462,8 +462,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                   placeholder="Contoh: Rp 75.000"
                   value={displayPrice}
                   onChange={handlePriceChange}
-                  className={`w-full px-3.5 py-3 bg-slate-50 border rounded-xl text-base font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:outline-hidden min-h-[46px] transition-colors ${
-                    errors.price ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-500'
+                  className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-md text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal focus:bg-white focus:outline-hidden min-h-[44px] transition-colors ${
+                    errors.price ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-600'
                   }`}
                 />
                 {errors.price && (
@@ -485,8 +485,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     setCategory(e.target.value as CategorySlug);
                     if (errors.category) setErrors((prev) => ({ ...prev, category: '' }));
                   }}
-                  className={`w-full px-3.5 py-3 bg-slate-50 border rounded-xl text-base text-slate-900 focus:bg-white focus:outline-hidden min-h-[46px] transition-colors ${
-                    errors.category ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-500'
+                  className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-md text-sm text-slate-900 focus:bg-white focus:outline-hidden min-h-[44px] transition-colors ${
+                    errors.category ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-600'
                   }`}
                 >
                   {CATEGORIES.filter((c) => c.slug !== 'semua').map((cat) => (
@@ -519,10 +519,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                         setCondition(cond.value);
                         if (errors.condition) setErrors((prev) => ({ ...prev, condition: '' }));
                       }}
-                      className={`text-left p-3 rounded-xl border transition-all min-h-[52px] ${
+                      className={`text-left p-3 rounded-md border transition-colors min-h-[44px] cursor-pointer ${
                         isSelected
-                          ? 'border-blue-600 bg-blue-50/60 ring-1 ring-blue-600'
-                          : 'border-slate-200 bg-slate-50 hover:bg-slate-100/80 text-slate-700'
+                          ? 'border-blue-600 bg-blue-50/60'
+                          : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
                       }`}
                     >
                       <div className="flex items-center justify-between">
@@ -562,7 +562,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 placeholder="Contoh: Kantin Utama / Gedung B"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full px-3.5 py-3 bg-slate-50 border border-slate-200 rounded-xl text-base text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-500 focus:outline-hidden min-h-[46px]"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-600 focus:outline-hidden min-h-[44px]"
               />
             </div>
 
@@ -585,8 +585,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                   setDescription(e.target.value);
                   if (errors.description) setErrors((prev) => ({ ...prev, description: '' }));
                 }}
-                className={`w-full px-3.5 py-3 bg-slate-50 border rounded-xl text-base text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-hidden transition-colors ${
-                  errors.description ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-500'
+                className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-md text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-hidden transition-colors ${
+                  errors.description ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-600'
                 }`}
               />
               {errors.description && (
@@ -598,7 +598,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           </div>
 
           {/* 3. KONTAK PENJUAL */}
-          <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs space-y-3.5">
+          <div className="bg-white rounded-lg p-4 sm:p-5 border border-slate-200 space-y-3.5">
             <div>
               <h2 className="text-sm font-bold text-slate-900">
                 Kontak Penjual
@@ -609,7 +609,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             </div>
 
             {errors.contact && (
-              <p role="alert" className="text-xs font-semibold text-rose-600 p-2.5 bg-rose-50 rounded-lg border border-rose-200">
+              <p role="alert" className="text-xs font-medium text-rose-600 p-2.5 bg-rose-50 rounded-md border border-rose-200">
                 {errors.contact}
               </p>
             )}
@@ -631,8 +631,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                     if (errors.whatsapp) setErrors((prev) => ({ ...prev, whatsapp: '' }));
                     if (errors.contact) setErrors((prev) => ({ ...prev, contact: '' }));
                   }}
-                  className={`w-full px-3.5 py-3 bg-slate-50 border rounded-xl text-base text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-hidden min-h-[46px] transition-colors ${
-                    errors.whatsapp ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-500'
+                  className={`w-full px-3.5 py-2.5 bg-slate-50 border rounded-md text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-hidden min-h-[44px] transition-colors ${
+                    errors.whatsapp ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-600'
                   }`}
                 />
                 {errors.whatsapp && (
@@ -661,8 +661,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                       if (errors.instagram) setErrors((prev) => ({ ...prev, instagram: '' }));
                       if (errors.contact) setErrors((prev) => ({ ...prev, contact: '' }));
                     }}
-                    className={`w-full pl-8 pr-3.5 py-3 bg-slate-50 border rounded-xl text-base text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-hidden min-h-[46px] transition-colors ${
-                      errors.instagram ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-500'
+                    className={`w-full pl-8 pr-3.5 py-2.5 bg-slate-50 border rounded-md text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-hidden min-h-[44px] transition-colors ${
+                      errors.instagram ? 'border-rose-300 focus:border-rose-500 bg-rose-50/20' : 'border-slate-200 focus:border-blue-600'
                     }`}
                   />
                 </div>
@@ -679,14 +679,14 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           <div className="hidden sm:flex items-center justify-end gap-3 pt-2">
             <Link
               href="/my-products"
-              className="px-5 py-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-colors min-h-[48px] flex items-center justify-center"
+              className="px-5 py-2.5 rounded-md border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium text-sm transition-colors min-h-[44px] flex items-center justify-center cursor-pointer"
             >
               Batal
             </Link>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-7 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm shadow-xs transition-colors min-h-[48px] flex items-center justify-center gap-2 disabled:opacity-60"
+              className="px-6 py-2.5 rounded-md bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-sm transition-colors min-h-[44px] flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
             >
               {isSubmitting ? (
                 <>
@@ -705,11 +705,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       </main>
 
       {/* Sticky Bottom Action Bar di Layar HP */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/90 p-3 pb-[max(12px,env(safe-area-inset-bottom))] shadow-lg">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-slate-200 p-3 pb-[max(12px,env(safe-area-inset-bottom))]">
         <div className="max-w-2xl mx-auto flex items-center gap-2">
           <Link
             href="/my-products"
-            className="w-1/3 min-h-[48px] py-3 px-2 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs rounded-xl transition-colors text-center flex items-center justify-center"
+            className="w-1/3 min-h-[44px] py-2.5 px-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs rounded-md transition-colors text-center flex items-center justify-center cursor-pointer"
           >
             Batal
           </Link>
@@ -717,7 +717,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             type="button"
             disabled={isSubmitting}
             onClick={handleSubmit}
-            className="flex-1 min-h-[48px] py-3 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm rounded-xl transition-colors shadow-xs flex items-center justify-center gap-2 disabled:opacity-60"
+            className="flex-1 min-h-[44px] py-2.5 px-4 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium text-sm rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
           >
             {isSubmitting ? (
               <>
