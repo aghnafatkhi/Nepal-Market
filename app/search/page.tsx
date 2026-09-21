@@ -766,12 +766,13 @@ function SearchPageContent() {
                   id="search-results-grid"
                   className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4"
                 >
-                  {searchResults.map((product) => (
+                  {searchResults.map((product, index) => (
                     <ProductCard
                       key={product.id}
                       product={product}
                       isSaved={savedProductIds.includes(product.id)}
                       onToggleSave={handleToggleSave}
+                      imagePriority={index === 0}
                     />
                   ))}
                 </div>

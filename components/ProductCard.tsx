@@ -12,12 +12,14 @@ interface ProductCardProps {
   isSaved: boolean;
   onToggleSave: (productId: string) => void;
   onOpenDetail?: (product: Product) => void;
+  imagePriority?: boolean;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
   product,
   isSaved,
   onToggleSave,
+  imagePriority = false,
 }) => {
   const isSold = Boolean(product.isSold || !product.isAvailable);
   const [imgError, setImgError] = useState(false);
@@ -48,7 +50,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 isSold ? 'opacity-70 grayscale-[0.4]' : 'group-hover:scale-[1.02]'
               }`}
               referrerPolicy="no-referrer"
-              priority={false}
+              priority={imagePriority}
               onError={() => setImgError(true)}
             />
           ) : (

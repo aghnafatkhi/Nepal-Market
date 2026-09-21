@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { X, Check, LogIn, Loader2, AlertCircle } from 'lucide-react';
 import { CategorySlug, Product, ProductCondition } from '@/types/market';
@@ -40,7 +40,6 @@ export const SellModal: React.FC<SellModalProps> = ({
   const whatsapp = customWhatsapp !== null ? customWhatsapp : defaultWhatsapp;
 
   const [photos, setPhotos] = useState<File[]>([]);
-  const [firstPhotoPreview, setFirstPhotoPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -58,15 +57,20 @@ export const SellModal: React.FC<SellModalProps> = ({
   }, [isOpen, onClose]);
 
   // Thumbnail preview
-  useEffect(() => {
+  const firstPhotoPreview = useMemo(() => {
     if (photos.length > 0) {
-      const url = URL.createObjectURL(photos[0]);
-      setFirstPhotoPreview(url);
-      return () => URL.revokeObjectURL(url);
-    } else {
-      setFirstPhotoPreview(null);
+      return URL.createObjectURL(photos[0]);
     }
+    return null;
   }, [photos]);
+
+  useEffect(() => {
+    return () => {
+      if (firstPhotoPreview) {
+        URL.revokeObjectURL(firstPhotoPreview);
+      }
+    };
+  }, [firstPhotoPreview]);
 
   if (!isOpen) return null;
 

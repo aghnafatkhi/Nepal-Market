@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, AlertCircle, ShoppingBag, Sparkles } from 'lucide-react';
@@ -37,20 +37,21 @@ export default function SellPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [firstPhotoPreview, setFirstPhotoPreview] = useState<string | null>(null);
-
   // Generate thumbnail preview dari foto pertama
-  useEffect(() => {
+  const firstPhotoPreview = useMemo(() => {
     if (photos.length > 0) {
-      const url = URL.createObjectURL(photos[0]);
-      setFirstPhotoPreview(url);
-      return () => {
-        URL.revokeObjectURL(url);
-      };
-    } else {
-      setFirstPhotoPreview(null);
+      return URL.createObjectURL(photos[0]);
     }
+    return null;
   }, [photos]);
+
+  useEffect(() => {
+    return () => {
+      if (firstPhotoPreview) {
+        URL.revokeObjectURL(firstPhotoPreview);
+      }
+    };
+  }, [firstPhotoPreview]);
 
   // Initialize contact info from logged in user
   useEffect(() => {
