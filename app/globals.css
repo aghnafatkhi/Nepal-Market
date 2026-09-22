@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-blue-50: #eef4ff;
+  --color-blue-100: #dbe8ff;
+  --color-blue-600: #155eef;
+  --color-blue-700: #004eeb;
+  --color-blue-800: #00359e;
+  --color-blue-950: #102a56;
+}
+
+:root {
+  --nm-brand: #155eef;
+  --nm-accent: #ff6b35;
+  --nm-ink: #171717;
+  --nm-canvas: #f7f7f5;
+  --nm-line: #e5e5e2;
+}
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -17,9 +36,51 @@ html, body {
 }
 
 body {
-  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  background: var(--nm-canvas);
+  color: var(--nm-ink);
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+button, a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nm-mark {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--nm-brand);
+  color: white;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.16);
+}
+
+.nm-mark::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: -3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--nm-accent);
+}
+
+.nm-surface {
+  background: #fff;
+  border: 1px solid var(--nm-line);
+  box-shadow: 0 1px 2px rgb(23 23 23 / 0.03);
+}
+
+::placeholder {
+  color: #a3a3a3;
 }
 
 /* Respect user preferences for reduced motion */
