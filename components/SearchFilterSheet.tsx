@@ -131,7 +131,7 @@ const SearchFilterSheetContent: React.FC<SearchFilterSheetProps> = ({
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
               {[
-                { id: 'semua', label: 'Semua Kondisi' },
+                { id: 'semua', label: 'Semua kondisi' },
                 { id: 'baru', label: 'Baru' },
                 { id: 'seperti-baru', label: 'Seperti Baru' },
                 { id: 'bekas', label: 'Bekas' },
