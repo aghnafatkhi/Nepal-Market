@@ -1,13 +1,19 @@
 import type {Metadata} from 'next';
-import { Inter } from 'next/font/google';
+import { Geist, Geist_Mono } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 
-const inter = Inter({
+const geist = Geist({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter',
+  variable: '--font-geist-sans',
+});
+
+const geistMono = Geist_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-geist-mono',
 });
 
 export const metadata: Metadata = {
@@ -55,8 +61,8 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
   };
 
   return (
-    <html lang="id" className={inter.variable}>
-      <body className="min-h-screen bg-[#F8FAFC] text-[#1E293B] antialiased selection:bg-blue-100 selection:text-blue-900" suppressHydrationWarning>
+    <html lang="id" className={`${geist.variable} ${geistMono.variable}`}>
+      <body className="min-h-screen bg-[#f7f7f5] text-[#171717] antialiased selection:bg-blue-100 selection:text-blue-950" suppressHydrationWarning>
         <Script
           id="nepal-market-structured-data"
           type="application/ld+json"
