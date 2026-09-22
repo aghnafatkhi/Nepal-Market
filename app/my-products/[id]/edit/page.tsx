@@ -11,10 +11,10 @@ import { fetchProductById, updateProductInDb, EditPhotoEntry } from '@/lib/supab
 import { ProductPhotoPicker, PhotoPickerItem } from '@/components/ProductPhotoPicker';
 
 const CONDITIONS: { value: ProductCondition; label: string; desc: string }[] = [
-  { value: 'Baru', label: 'Baru', desc: 'Belum pernah dipakai / masih segel' },
-  { value: 'Bekas - Seperti Baru', label: 'Seperti Baru', desc: 'Kondisi 98%+, nyaris tanpa minus' },
-  { value: 'Bekas - Mulus', label: 'Bekas - Mulus', desc: 'Pemakaian normal, fungsi normal' },
-  { value: 'Bekas - Layak', label: 'Bekas - Layak', desc: 'Ada lecet / minus wajar, harga hemat' },
+  { value: 'Baru', label: 'Baru', desc: 'Belum pernah dipakai' },
+  { value: 'Bekas - Seperti Baru', label: 'Seperti baru', desc: 'Hampir tidak ada bekas pemakaian' },
+  { value: 'Bekas - Mulus', label: 'Bekas terawat', desc: 'Ada bekas ringan, fungsi normal' },
+  { value: 'Bekas - Layak', label: 'Ada kekurangan', desc: 'Ada lecet atau kekurangan yang perlu dijelaskan' },
 ];
 
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
