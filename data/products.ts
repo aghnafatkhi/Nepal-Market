@@ -1,4 +1,11 @@
-import { CategoryItem, Product } from '@/types/market';
+import { CategoryItem, Product, ProductCondition } from '@/types/market';
+
+export function formatConditionLabel(condition: ProductCondition): string {
+  if (condition === 'Baru') return 'Baru';
+  if (condition === 'Bekas - Seperti Baru') return 'Seperti baru';
+  if (condition === 'Bekas - Mulus') return 'Bekas terawat';
+  return 'Bekas, ada kekurangan';
+}
 
 export const CATEGORIES: CategoryItem[] = [
   { slug: 'semua', label: 'Semua', iconName: 'LayoutGrid' },
