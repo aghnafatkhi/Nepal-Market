@@ -133,7 +133,6 @@ const SearchFilterSheetContent: React.FC<SearchFilterSheetProps> = ({
               {[
                 { id: 'semua', label: 'Semua kondisi' },
                 { id: 'baru', label: 'Baru' },
-                { id: 'seperti-baru', label: 'Seperti Baru' },
                 { id: 'bekas', label: 'Bekas' },
               ].map((cond) => {
                 const isActive = localCondition === cond.id;
