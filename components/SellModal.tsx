@@ -249,10 +249,10 @@ export const SellModal: React.FC<SellModalProps> = ({
                 onChange={(e) => setCondition(e.target.value as ProductCondition)}
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-hidden min-h-[40px]"
               >
-                <option value="Baru">Baru</option>
-                <option value="Bekas - Seperti Baru">Bekas - Seperti Baru</option>
-                <option value="Bekas - Mulus">Bekas - Mulus</option>
-                <option value="Bekas - Layak">Bekas - Layak</option>
+                <option value="Baru">Baru — belum pernah dipakai</option>
+                <option value="Bekas - Seperti Baru">Seperti baru — nyaris tanpa bekas</option>
+                <option value="Bekas - Mulus">Bekas terawat — fungsi normal</option>
+                <option value="Bekas - Layak">Ada kekurangan — baca deskripsi</option>
               </select>
             </div>
 
