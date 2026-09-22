@@ -594,9 +594,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                         <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                       )}
                     </div>
-                    <div className="text-[11px] text-slate-500 truncate">
-                      {seller?.location || product.location || 'Komunitas Nepal'}
-                    </div>
                   </div>
                 </div>
 
