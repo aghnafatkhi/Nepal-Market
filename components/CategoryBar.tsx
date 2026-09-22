@@ -38,10 +38,10 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({
     <nav 
       id="category-navigation" 
       aria-label="Kategori Barang"
-      className="w-full bg-white border-b border-slate-200 relative sm:sticky sm:top-[60px] z-20"
+      className="w-full bg-white border-b border-black/5 relative sm:sticky sm:top-16 z-20"
     >
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-        <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar scroll-smooth -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth -mx-4 px-4 py-2 sm:mx-0 sm:px-0">
           {CATEGORIES.map((cat) => {
             const isSelected = selectedCategory === cat.slug;
             return (
@@ -50,13 +50,13 @@ export const CategoryBar: React.FC<CategoryBarProps> = ({
                 id={`cat-btn-${cat.slug}`}
                 type="button"
                 onClick={() => onSelectCategory(cat.slug)}
-                className={`flex items-center gap-1.5 px-3 py-2.5 text-xs sm:text-sm whitespace-nowrap transition-colors shrink-0 select-none cursor-pointer border-b-2 min-h-[42px] ${
+                className={`flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap transition-colors shrink-0 select-none cursor-pointer rounded-full border min-h-[38px] ${
                   isSelected
-                    ? 'border-blue-600 text-blue-600 font-semibold'
-                    : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300 font-medium'
+                    ? 'border-slate-950 bg-slate-950 text-white font-medium'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-950 font-medium'
                 }`}
               >
-                <span className={isSelected ? 'text-blue-600' : 'text-slate-400'}>
+                <span className={isSelected ? 'text-white' : 'text-slate-400'}>
                   {ICON_MAP[cat.iconName]}
                 </span>
                 <span>{cat.label}</span>
