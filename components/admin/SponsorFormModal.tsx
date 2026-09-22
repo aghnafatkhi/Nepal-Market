@@ -215,21 +215,21 @@ export const SponsorFormModal: React.FC<SponsorFormModalProps> = ({
   return (
     <div
       id="sponsor-form-modal-portal"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/60 p-0 sm:items-center sm:p-4"
       onClick={() => !isSubmitting && onClose()}
     >
       <div
         id="sponsor-form-modal-content"
-        className="w-full max-w-2xl bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-150"
+        className="w-full max-w-2xl bg-white rounded-t-2xl sm:rounded-xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[95dvh] sm:max-h-[92vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 bg-slate-50/90">
+        <div className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-4 border-b border-slate-200 bg-white">
           <div>
             <h2 className="text-sm font-bold text-slate-900">
               {sponsorToEdit ? 'Edit Banner Sponsor' : 'Tambah Banner Sponsor Baru'}
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="hidden text-xs text-slate-500 sm:block">
               Gunakan satu gambar untuk seluruh ukuran layar, lalu atur jadwal tayangnya.
             </p>
           </div>
@@ -245,7 +245,7 @@ export const SponsorFormModal: React.FC<SponsorFormModalProps> = ({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto p-5 space-y-6 flex-1">
+        <form onSubmit={handleSubmit} className="overflow-y-auto p-4 sm:p-5 space-y-5 flex-1">
           {formError && (
             <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg flex items-start gap-2.5 text-rose-800 text-xs">
               <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
