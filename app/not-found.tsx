@@ -4,7 +4,7 @@ import { ShoppingBag, ArrowLeft, Search, Home } from 'lucide-react';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between text-slate-800">
+    <div className="min-h-screen bg-[#f7f7f5] flex flex-col justify-between text-neutral-800">
       {/* Header */}
       <header className="bg-white border-b border-slate-200/80">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-15 sm:h-16 flex items-center justify-between">
