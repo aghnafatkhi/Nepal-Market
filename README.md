@@ -89,7 +89,7 @@ Untuk memberikan hak akses admin kepada akun tertentu, jalankan perintah SQL ber
 UPDATE public.profiles
 SET role = 'admin'
 WHERE id IN (
-  SELECT id FROM auth.users WHERE email = 'aghna1011@gmail.com'
+  SELECT id FROM auth.users WHERE email = 'admin@example.com'
 );
 ```
 

@@ -393,5 +393,5 @@ WITH CHECK (
 -- ==============================================================================
 -- PANDUAN PEMBERIAN HAK AKSES ADMIN:
 -- Jalankan query ini di SQL Editor Supabase untuk menetapkan akun menjadi Admin:
--- UPDATE public.profiles SET role = 'admin' WHERE email = 'aghna1011@gmail.com';
+-- UPDATE public.profiles SET role = 'admin' WHERE email = 'admin@example.com';
 -- ==============================================================================

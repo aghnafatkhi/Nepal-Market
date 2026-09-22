@@ -75,7 +75,7 @@ export interface AdminReportItem {
 }
 
 // In-memory fallback untuk preview mode (bila Supabase belum terhubung)
-let localReports: AdminReportItem[] = [
+const localReports: AdminReportItem[] = [
   {
     id: 'rep-demo-1',
     reporter_id: 'user-demo-reporter',
@@ -122,7 +122,7 @@ let localReports: AdminReportItem[] = [
   },
 ];
 
-let localModerationLogs: DbModerationLog[] = [
+const localModerationLogs: DbModerationLog[] = [
   {
     id: 'log-demo-1',
     admin_id: 'admin-1',
@@ -318,6 +318,8 @@ export async function fetchAdminDashboardData(): Promise<{
       console.warn('Gagal memuat reports admin dari Supabase:', reportsErr.message);
     }
 
+    // Supabase's generated nested relation shape is not represented in the local DB types.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const formattedReports: AdminReportItem[] = (rawReports || []).map((r: any) => {
       const p = r.product;
       const productUi = p ? mapDbProductToUi(p) : null;
