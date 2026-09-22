@@ -304,12 +304,8 @@ function SearchPageContent() {
         if (selectedCondition === 'baru' && product.condition !== 'Baru') {
           return false;
         }
-        if (selectedCondition === 'seperti-baru' && product.condition !== 'Bekas - Seperti Baru') {
-          return false;
-        }
         if (selectedCondition === 'bekas') {
-          // 'Bekas' covers all used states (Bekas - Seperti Baru, Bekas - Mulus, Bekas - Layak)
-          if (!product.condition.startsWith('Bekas')) {
+          if (product.condition === 'Baru') {
             return false;
           }
         }
@@ -555,7 +551,6 @@ function SearchPageContent() {
                 {[
                   { id: 'semua', label: 'Semua' },
                   { id: 'baru', label: 'Baru' },
-                  { id: 'seperti-baru', label: 'Spt. Baru' },
                   { id: 'bekas', label: 'Bekas' },
                 ].map((cond) => {
                   const isSelected = selectedCondition === cond.id;
