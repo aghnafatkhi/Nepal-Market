@@ -96,14 +96,14 @@ export const SponsorPreviewModal: React.FC<SponsorPreviewModalProps> = ({
             </div>
           </div>
 
-          {/* Desktop Preview */}
+          {/* Preview yang sama untuk seluruh ukuran layar */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-xs">
               <span className="font-semibold text-slate-700 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                Banner Desktop (Rasio 5:1 — Rekomendasi 1500 × 300)
+                Banner Semua Layar (Rasio 5:1 — Rekomendasi 1500 × 300)
               </span>
-              <span className="text-[11px] text-slate-400">Tablet & Desktop</span>
+              <span className="text-[11px] text-slate-400">Desktop, tablet, dan mobile</span>
             </div>
             <div className="relative w-full aspect-[5/1] bg-slate-100 rounded-lg border border-slate-300 overflow-hidden shadow-xs">
               <Image
@@ -115,30 +115,6 @@ export const SponsorPreviewModal: React.FC<SponsorPreviewModalProps> = ({
                 referrerPolicy="no-referrer"
               />
               <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-black/60 text-white text-[9px] font-medium tracking-wide">
-                Iklan
-              </div>
-            </div>
-          </div>
-
-          {/* Mobile Preview */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-semibold text-slate-700 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-                Banner Mobile (Rasio 8:3 — Rekomendasi 1200 × 450)
-              </span>
-              <span className="text-[11px] text-slate-400">Smartphone</span>
-            </div>
-            <div className="relative w-full max-w-sm aspect-[8/3] bg-slate-100 rounded-lg border border-slate-300 overflow-hidden shadow-xs">
-              <Image
-                src={banner.mobile_image_url}
-                alt={banner.alt_text || banner.sponsor_name}
-                fill
-                sizes="380px"
-                className="object-cover"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/60 text-white text-[9px] font-medium tracking-wide">
                 Iklan
               </div>
             </div>
