@@ -301,7 +301,7 @@ export default function HomePage() {
   }, [products, savedProductIds]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] pb-24 sm:pb-12 text-[#1E293B]">
+    <div className="min-h-screen flex flex-col bg-[#f7f7f5] pb-24 sm:pb-12 text-neutral-900">
       {/* Header Utama */}
       <Header
         searchQuery={searchQuery}
@@ -321,30 +321,28 @@ export default function HomePage() {
       />
 
       {/* Main Content Area */}
-      <main id="main-content" className="flex-grow max-w-[1200px] w-full mx-auto px-4 sm:px-6 pt-3 sm:pt-5">
+      <main id="main-content" className="flex-grow max-w-[1200px] w-full mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
         
         {/* Slot Iklan Banner Sponsor di Bagian Atas Halaman Utama */}
         <HomeBannerCarousel />
 
         {/* Section Header: Judul Katalog, Jumlah Produk, dan Filter */}
-        <div className="flex flex-wrap items-center justify-between gap-2.5 mb-3">
-          <div className="flex items-center gap-2">
-            <h1 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-4 sm:mb-5">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-semibold text-neutral-950 tracking-[-0.025em]">
               {selectedCategory === 'semua' ? 'Semua Barang' : `Kategori ${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}`}
             </h1>
-            <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-              {filteredProducts.length} barang
-            </span>
+            <p className="mt-1 text-sm text-neutral-500">{filteredProducts.length} barang tersedia</p>
           </div>
 
           {/* Kontrol Ringkas: Filter Kondisi & Urutan */}
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
             <select
               id="select-condition-filter"
               aria-label="Filter Kondisi Barang"
               value={selectedCondition}
               onChange={(e) => setSelectedCondition(e.target.value)}
-              className="bg-white border border-slate-200 text-xs font-medium text-slate-700 py-1.5 px-2.5 rounded-md focus:outline-hidden focus:border-blue-600 min-h-[38px] cursor-pointer"
+              className="min-h-11 rounded-xl border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 outline-none transition focus:border-blue-500 focus:ring-3 focus:ring-blue-100 cursor-pointer"
             >
               <option value="semua">Semua Kondisi</option>
               <option value="Baru">Baru</option>
@@ -358,7 +356,7 @@ export default function HomePage() {
               aria-label="Urutkan produk"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="bg-white border border-slate-200 text-xs font-medium text-slate-700 py-1.5 px-2.5 rounded-md focus:outline-hidden focus:border-blue-600 min-h-[38px] cursor-pointer"
+              className="min-h-11 rounded-xl border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 outline-none transition focus:border-blue-500 focus:ring-3 focus:ring-blue-100 cursor-pointer"
             >
               <option value="terbaru">Terbaru</option>
               <option value="harga-rendah">Harga Terendah</option>
@@ -369,10 +367,10 @@ export default function HomePage() {
 
         {/* Info filter aktif */}
         {(selectedCategory !== 'semua' || searchQuery || selectedCondition !== 'semua') && (
-          <div className="flex items-center gap-2 mb-3 text-xs text-slate-600 flex-wrap">
-            <span>Filter aktif:</span>
+          <div className="flex items-center gap-2 mb-4 text-xs text-neutral-600 flex-wrap">
+            <span className="sr-only">Filter aktif:</span>
             {selectedCategory !== 'semua' && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-blue-700 rounded-md font-medium">
+              <span className="inline-flex min-h-8 items-center gap-1 rounded-lg bg-blue-50 px-2.5 text-blue-700 font-medium">
                 {selectedCategory}
                 <button 
                   type="button" 
@@ -385,7 +383,7 @@ export default function HomePage() {
               </span>
             )}
             {searchQuery && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-blue-700 rounded-md font-medium">
+              <span className="inline-flex min-h-8 items-center gap-1 rounded-lg bg-blue-50 px-2.5 text-blue-700 font-medium">
                 &ldquo;{searchQuery}&rdquo;
                 <button 
                   type="button" 
@@ -398,7 +396,7 @@ export default function HomePage() {
               </span>
             )}
             {selectedCondition !== 'semua' && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-50 text-blue-700 rounded-md font-medium">
+              <span className="inline-flex min-h-8 items-center gap-1 rounded-lg bg-blue-50 px-2.5 text-blue-700 font-medium">
                 {selectedCondition}
                 <button 
                   type="button" 
@@ -413,7 +411,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={handleResetFilters}
-              className="text-blue-600 hover:underline font-medium text-xs ml-1 cursor-pointer"
+              className="min-h-8 text-blue-700 hover:text-blue-900 font-semibold text-xs ml-1 cursor-pointer"
             >
               Reset Filter
             </button>
@@ -424,8 +422,8 @@ export default function HomePage() {
         {isLoading ? (
           <ProductSkeleton count={10} />
         ) : fetchError ? (
-          <div id="catalog-error-state" className="flex flex-col items-center justify-center py-10 px-4 text-center bg-white rounded-lg border border-slate-200 max-w-lg mx-auto my-4">
-            <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center mb-3">
+          <div id="catalog-error-state" className="flex flex-col items-center justify-center py-14 px-4 text-center max-w-lg mx-auto my-4">
+            <div className="w-11 h-11 rounded-xl bg-neutral-200/70 text-neutral-600 flex items-center justify-center mb-4">
               <AlertCircle className="w-6 h-6 text-slate-500" />
             </div>
             <h2 className="text-base font-bold text-slate-900">
@@ -438,7 +436,7 @@ export default function HomePage() {
               type="button"
               id="btn-retry-fetch-catalog"
               onClick={handleRetryLoad}
-              className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-medium transition-colors min-h-[44px] cursor-pointer focus:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-900"
+              className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-neutral-950 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition-colors min-h-[44px] cursor-pointer focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600"
             >
               <RefreshCw className="w-4 h-4" />
               <span>Coba Muat Ulang</span>
@@ -448,7 +446,7 @@ export default function HomePage() {
           <div className="space-y-6">
             <div 
               id="product-grid" 
-              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4"
+              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 sm:gap-5"
             >
               {filteredProducts.map((product, index) => (
                 <ProductCard
@@ -470,7 +468,7 @@ export default function HomePage() {
                   type="button"
                   onClick={handleLoadMore}
                   disabled={isLoadingMore}
-                  className="px-5 py-2 bg-white border border-slate-300 hover:bg-slate-50 hover:border-slate-400 text-slate-700 font-medium text-sm rounded-md transition-colors flex items-center gap-2 min-h-[44px] cursor-pointer disabled:opacity-60"
+                  className="px-5 py-2 bg-white border border-neutral-200 hover:border-neutral-400 text-neutral-800 font-semibold text-sm rounded-xl transition-colors flex items-center gap-2 min-h-[44px] cursor-pointer disabled:opacity-60"
                 >
                   {isLoadingMore ? (
                     <>
@@ -501,17 +499,15 @@ export default function HomePage() {
       </main>
 
       {/* Footer Ringan Komunitas */}
-      <footer className="mt-14 border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500">
+      <footer className="mt-16 border-t border-neutral-200 py-7 text-center text-xs text-neutral-500">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="text-left">
-              <span className="font-bold text-slate-900 text-sm">Nepal Market</span>
-              <p className="mt-0.5 text-slate-500">
-                Platform jual beli langsung (COD) untuk warga komunitas Nepal.
-              </p>
+              <span className="font-semibold text-neutral-950 text-sm tracking-tight">Nepal Market</span>
+              <p className="mt-0.5 text-neutral-500">Pasar lokal untuk jual beli langsung.</p>
             </div>
-            <div className="text-xs text-slate-400">
-              © {new Date().getFullYear()} Nepal Market • Jual beli praktis sistem COD
+            <div className="text-xs text-neutral-400">
+              © {new Date().getFullYear()} Nepal Market
             </div>
           </div>
         </div>
