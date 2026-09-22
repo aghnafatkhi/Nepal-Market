@@ -252,7 +252,7 @@ export default function ProfilePage() {
 
   if (authLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-[#f7f7f5]">
         <Loader2 className="w-7 h-7 animate-spin text-blue-600" />
       </div>
     );
@@ -261,7 +261,7 @@ export default function ProfilePage() {
   const currentDisplayAvatar = avatarPreview || avatarUrl;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-20 sm:pb-12">
+    <div className="min-h-screen bg-[#f7f7f5] text-neutral-900 pb-20 sm:pb-12">
       {/* Top Header Navigation */}
       <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
         <div className="max-w-2xl mx-auto px-4 h-14 sm:h-15 flex items-center justify-between">
