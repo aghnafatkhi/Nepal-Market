@@ -20,8 +20,8 @@ interface PublicProductMetadata {
 
 const conditionLabels: Record<PublicProductMetadata['condition'], string> = {
   new: 'Baru',
-  like_new: 'Bekas - Seperti Baru',
-  used: 'Bekas - Mulus',
+  like_new: 'Bekas',
+  used: 'Bekas',
 };
 
 const getPublicProductMetadata = cache(async (id: string): Promise<PublicProductMetadata | null> => {
