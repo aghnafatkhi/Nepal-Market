@@ -126,14 +126,14 @@ export default function MyProductsPage() {
 
   if (authLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-[#f7f7f5]">
         <Loader2 className="w-7 h-7 animate-spin text-blue-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-[#f7f7f5] pb-20">
       {/* Top Bar Navigation */}
       <div className="sticky top-0 z-20 bg-white border-b border-slate-200">
         <div className="max-w-4xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
