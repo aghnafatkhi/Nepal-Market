@@ -1,10 +1,7 @@
 import { CategoryItem, Product, ProductCondition } from '@/types/market';
 
 export function formatConditionLabel(condition: ProductCondition): string {
-  if (condition === 'Baru') return 'Baru';
-  if (condition === 'Bekas - Seperti Baru') return 'Seperti baru';
-  if (condition === 'Bekas - Mulus') return 'Bekas terawat';
-  return 'Bekas, ada kekurangan';
+  return condition === 'Baru' ? 'Baru' : 'Bekas';
 }
 
 export const CATEGORIES: CategoryItem[] = [
