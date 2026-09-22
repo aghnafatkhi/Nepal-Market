@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Bookmark, ImageIcon } from 'lucide-react';
 import { Product } from '@/types/market';
-import { formatRupiah } from '@/data/products';
+import { formatConditionLabel, formatRupiah } from '@/data/products';
 
 interface ProductCardProps {
   product: Product;
@@ -23,6 +23,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const isSold = Boolean(product.isSold || !product.isAvailable);
   const [imgError, setImgError] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
 
   const hasImage = Boolean(product.imageUrl && product.imageUrl.trim().length > 0 && !imgError);
 
@@ -109,7 +110,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               {formatRupiah(product.price)}
             </span>
             <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium shrink-0">
-              {product.condition}
+              {formatConditionLabel(product.condition)}
             </span>
           </div>
 
@@ -126,8 +127,23 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <span className="truncate text-slate-600 font-medium">
             {product.location || 'Lokasi COD'}
           </span>
-          <span className="truncate text-slate-400 text-right shrink-0 max-w-[45%]">
-            {product.seller?.name || 'Penjual'}
+          <span className="flex min-w-0 max-w-[48%] items-center gap-1.5 text-slate-400">
+            <span className="relative flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-200 text-[9px] font-semibold text-neutral-600">
+              {product.seller?.avatar && !avatarError ? (
+                <Image
+                  src={product.seller.avatar}
+                  alt=""
+                  fill
+                  sizes="20px"
+                  className="object-cover"
+                  referrerPolicy="no-referrer"
+                  onError={() => setAvatarError(true)}
+                />
+              ) : (
+                (product.seller?.name || 'P').charAt(0).toUpperCase()
+              )}
+            </span>
+            <span className="truncate">{product.seller?.name || 'Penjual'}</span>
           </span>
         </div>
       </Link>
