@@ -1189,7 +1189,7 @@ export default function AdminDashboardPage() {
                             </div>
                           </div>
 
-                          {/* Desktop & Mobile Previews */}
+                          {/* Satu preview untuk seluruh layar */}
                           <div className="space-y-2">
                             <div
                               onClick={() => setPreviewSponsor(banner)}
@@ -1204,24 +1204,7 @@ export default function AdminDashboardPage() {
                                 referrerPolicy="no-referrer"
                               />
                               <div className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/60 text-white text-[9px] font-medium">
-                                Desktop 5:1
-                              </div>
-                            </div>
-
-                            <div
-                              onClick={() => setPreviewSponsor(banner)}
-                              className="relative w-full max-w-[220px] aspect-[8/3] bg-slate-100 rounded-lg border border-slate-300 overflow-hidden cursor-pointer"
-                            >
-                              <Image
-                                src={banner.mobile_image_url}
-                                alt={banner.alt_text || banner.sponsor_name}
-                                fill
-                                sizes="220px"
-                                className="object-cover"
-                                referrerPolicy="no-referrer"
-                              />
-                              <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-black/60 text-white text-[8px] font-medium">
-                                Mobile 8:3
+                                Semua layar · 5:1
                               </div>
                             </div>
                           </div>
@@ -2440,7 +2423,7 @@ export default function AdminDashboardPage() {
         onSave={handleSaveSponsor}
       />
 
-      {/* 5. Sponsor Preview Modal (Desktop & Mobile) */}
+      {/* 5. Sponsor Preview Modal */}
       <SponsorPreviewModal
         banner={previewSponsor}
         onClose={() => setPreviewSponsor(null)}
