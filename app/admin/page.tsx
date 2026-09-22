@@ -818,7 +818,7 @@ export default function AdminDashboardPage() {
         />
 
         {/* Dynamic Main Body */}
-        <main className="flex-1 p-4 sm:p-6 max-w-6xl w-full mx-auto space-y-5">
+        <main className="flex-1 p-3 sm:p-6 max-w-6xl w-full mx-auto space-y-5">
           {/* Flash Alert Banner */}
           {actionSuccessMessage && (
             <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 text-xs font-medium flex items-center justify-between gap-2 shadow-2xs animate-in fade-in duration-150">
