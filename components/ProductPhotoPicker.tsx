@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { UploadCloud, X, ArrowLeft, ArrowRight, Star, Loader2 } from 'lucide-react';
 import { compressImage, ACCEPTED_IMAGE_TYPES, MAX_FILE_SIZE_BYTES } from '@/lib/utils/imageCompression';
+import { ProductImageCropModal } from '@/components/ProductImageCropModal';
 
 export interface PhotoPickerItem {
   id: string;
@@ -35,6 +36,7 @@ export const ProductPhotoPicker: React.FC<ProductPhotoPickerProps> = ({
 }) => {
   const [internalError, setInternalError] = useState<string | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
+  const [cropQueue, setCropQueue] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Jika parent menggunakan mode `files`, turunkan dari prop dengan useMemo
@@ -99,30 +101,33 @@ export const ProductPhotoPicker: React.FC<ProductPhotoPickerProps> = ({
       }
     }
 
+    setCropQueue(filesToProcess);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleCropConfirm = async (croppedFile: File) => {
     setIsCompressing(true);
     try {
-      const processedItems: PhotoPickerItem[] = [];
-      for (let i = 0; i < filesToProcess.length; i++) {
-        const rawFile = filesToProcess[i];
-        // Kompresi otomatis di sisi browser
-        const optimizedFile = await compressImage(rawFile, 1600, 1600, 0.85);
-        processedItems.push({
-          id: `f-${Date.now()}-${i}-${Math.random().toString(36).substring(2, 6)}`,
-          type: 'file',
-          file: optimizedFile,
-          url: URL.createObjectURL(optimizedFile),
-        });
-      }
-
-      updateItems([...currentItems, ...processedItems]);
+      const optimizedFile = await compressImage(croppedFile, 1400, 1400, 0.88);
+      const newItem: PhotoPickerItem = {
+        id: `f-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        type: 'file',
+        file: optimizedFile,
+        url: URL.createObjectURL(optimizedFile),
+      };
+      updateItems([...currentItems, newItem]);
+      setCropQueue((queue) => queue.slice(1));
     } catch {
       setInternalError('Terjadi kendala saat memproses foto. Silakan coba lagi.');
     } finally {
       setIsCompressing(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
+  };
+
+  const handleCropCancel = () => {
+    setCropQueue((queue) => queue.slice(1));
   };
 
   const handleRemove = (index: number) => {
@@ -164,6 +169,7 @@ export const ProductPhotoPicker: React.FC<ProductPhotoPickerProps> = ({
 
   return (
     <div className="space-y-2">
+      <ProductImageCropModal file={cropQueue[0] || null} onCancel={handleCropCancel} onConfirm={handleCropConfirm} />
       <div className="flex items-center justify-between">
         <label htmlFor="product-photo-upload" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
           {label} *
