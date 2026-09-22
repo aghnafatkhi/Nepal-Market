@@ -28,7 +28,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           <button
             type="button"
             onClick={onOpenMobileMenu}
-            className="md:hidden p-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+            className="md:hidden h-10 w-10 flex items-center justify-center rounded-md border border-slate-200 text-slate-700 hover:bg-slate-50"
             aria-label="Buka menu navigasi"
           >
             <Menu className="w-5 h-5" />
@@ -49,7 +49,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
             type="button"
             onClick={onRefresh}
             disabled={isLoading}
-            className="p-2 hover:bg-slate-100 border border-slate-200 rounded-md text-slate-600 cursor-pointer disabled:opacity-50"
+            className="h-10 w-10 flex items-center justify-center hover:bg-slate-100 border border-slate-200 rounded-md text-slate-600 cursor-pointer disabled:opacity-50"
             title="Perbarui Data"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${isLoading ? 'animate-spin' : ''}`} />
@@ -58,7 +58,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           <Link
             href="/"
             target="_blank"
-            className="p-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md"
+            className="h-10 w-10 flex items-center justify-center bg-slate-900 hover:bg-slate-800 text-white rounded-md"
           >
             <ExternalLink className="w-3.5 h-3.5 text-slate-300" />
           </Link>
