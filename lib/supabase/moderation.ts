@@ -318,9 +318,23 @@ export async function fetchAdminDashboardData(): Promise<{
       console.warn('Gagal memuat reports admin dari Supabase:', reportsErr.message);
     }
 
-    // Supabase's generated nested relation shape is not represented in the local DB types.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const formattedReports: AdminReportItem[] = (rawReports || []).map((r: any) => {
+    // Supabase's generated nested relation shape mapped safely to AdminReportItem
+    const formattedReports: AdminReportItem[] = (rawReports as unknown as Array<{
+      id: string;
+      reporter_id: string;
+      product_id: string;
+      reason: string;
+      description: string | null;
+      status: DbReportStatus;
+      created_at: string;
+      reporter?: {
+        id: string;
+        name: string;
+        username: string;
+        avatar_url: string | null;
+      } | null;
+      product?: Parameters<typeof mapDbProductToUi>[0];
+    }> || []).map((r) => {
       const p = r.product;
       const productUi = p ? mapDbProductToUi(p) : null;
       const seller = p?.seller || null;

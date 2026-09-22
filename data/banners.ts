@@ -1,130 +1,74 @@
-export interface PromoBanner {
+export interface SponsorBanner {
   id: string;
-  badge?: string;
-  badgeIcon?: 'Sparkles' | 'ShoppingBag' | 'Handshake';
-  title: string;
-  description: string;
-  ctaText: string;
-  ctaHref: string;
-  ctaAction?: 'sell_modal' | 'navigate' | 'cod_guide_modal';
-  theme: {
-    containerBg: string;
-    titleColor: string;
-    descriptionColor: string;
-    ctaStyle: string;
-  };
+  sponsorName: string;
+  desktopImage: string;
+  mobileImage: string;
+  targetUrl: string;
+  alt: string;
+  active: boolean;
+  startsAt?: string;
+  endsAt?: string;
 }
 
 /**
- * Banner promosi saat katalog BELUM memiliki produk aktif.
+ * Daftar slot iklan sponsor Nepal Market.
+ * Banner difilter berdasarkan status active serta jadwal tayang startsAt & endsAt (jika ada).
  */
-export const EMPTY_CATALOG_BANNERS: PromoBanner[] = [
+export const SPONSOR_BANNERS: SponsorBanner[] = [
   {
-    id: 'banner-empty-jual',
-    title: 'Pasang Iklan Barang Bekas',
-    description: 'Punya buku, pakaian, atau perlengkapan yang masih layak? Pasang iklan sekarang.',
-    ctaText: 'Pasang Iklan',
-    ctaHref: '/sell',
-    ctaAction: 'sell_modal',
-    theme: {
-      containerBg: 'bg-slate-100',
-      titleColor: 'text-slate-900',
-      descriptionColor: 'text-slate-600',
-      ctaStyle: 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white',
-    },
+    id: 'sponsor-utama-01',
+    sponsorName: 'Ruang Iklan Mitra Nepal 1',
+    desktopImage: '/ads/contoh-sponsor-desktop.svg',
+    mobileImage: '/ads/contoh-sponsor-mobile.svg',
+    targetUrl: 'https://example.com/sponsor-1',
+    alt: 'Slot Iklan Sponsor Resmi Nepal Market',
+    active: true,
   },
   {
-    id: 'banner-empty-cod',
-    title: 'Panduan Transaksi COD',
-    description: 'Janjian di titik temu yang ramai dan pastikan barang sudah diperiksa sebelum bayar.',
-    ctaText: 'Lihat Panduan COD',
-    ctaHref: '#',
-    ctaAction: 'cod_guide_modal',
-    theme: {
-      containerBg: 'bg-blue-50/70',
-      titleColor: 'text-slate-900',
-      descriptionColor: 'text-slate-600',
-      ctaStyle: 'bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white',
-    },
+    id: 'sponsor-utama-02',
+    sponsorName: 'Ruang Iklan Mitra Nepal 2',
+    desktopImage: '/ads/contoh-sponsor-desktop.svg',
+    mobileImage: '/ads/contoh-sponsor-mobile.svg',
+    targetUrl: 'https://example.com/sponsor-2',
+    alt: 'Slot Iklan Sponsor Resmi Nepal Market 2',
+    active: true,
   },
 ];
 
 /**
- * Banner promosi saat ADA produk aktif di katalog.
+ * Memeriksa apakah suatu banner sponsor memenuhi syarat tayang saat ini.
  */
-export const ACTIVE_CATALOG_BANNERS: PromoBanner[] = [
-  {
-    id: 'banner-active-jual',
-    title: 'Jual Barang yang Jarang Terpakai',
-    description: 'Tawarkan barang layak pakai langsung ke sesama warga sekitar tanpa potongan biaya.',
-    ctaText: 'Pasang Iklan',
-    ctaHref: '/sell',
-    ctaAction: 'sell_modal',
-    theme: {
-      containerBg: 'bg-slate-100',
-      titleColor: 'text-slate-900',
-      descriptionColor: 'text-slate-600',
-      ctaStyle: 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white',
-    },
-  },
-  {
-    id: 'banner-active-cod',
-    title: 'Panduan Transaksi COD',
-    description: 'Janjian di titik temu yang ramai dan pastikan barang sudah diperiksa sebelum bayar.',
-    ctaText: 'Lihat Panduan COD',
-    ctaHref: '#',
-    ctaAction: 'cod_guide_modal',
-    theme: {
-      containerBg: 'bg-blue-50/70',
-      titleColor: 'text-slate-900',
-      descriptionColor: 'text-slate-600',
-      ctaStyle: 'bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white',
-    },
-  },
-];
+export function isSponsorBannerActive(banner: SponsorBanner, now: number = Date.now()): boolean {
+  if (!banner.active) return false;
 
-/**
- * Banner netral ketika terjadi kendala memuat data dari database.
- */
-export const NEUTRAL_FALLBACK_BANNERS: PromoBanner[] = [
-  {
-    id: 'banner-neutral-cod',
-    title: 'Panduan Transaksi COD',
-    description: 'Janjian di titik temu yang ramai dan pastikan barang sudah diperiksa sebelum bayar.',
-    ctaText: 'Lihat Panduan COD',
-    ctaHref: '#',
-    ctaAction: 'cod_guide_modal',
-    theme: {
-      containerBg: 'bg-blue-50/70',
-      titleColor: 'text-slate-900',
-      descriptionColor: 'text-slate-600',
-      ctaStyle: 'bg-slate-900 hover:bg-slate-800 active:bg-slate-950 text-white',
-    },
-  },
-  {
-    id: 'banner-neutral-jual',
-    title: 'Pasang Iklan Barang Bekas',
-    description: 'Punya buku, pakaian, atau perlengkapan yang masih layak? Pasang iklan sekarang.',
-    ctaText: 'Pasang Iklan',
-    ctaHref: '/sell',
-    ctaAction: 'sell_modal',
-    theme: {
-      containerBg: 'bg-slate-100',
-      titleColor: 'text-slate-900',
-      descriptionColor: 'text-slate-600',
-      ctaStyle: 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white',
-    },
-  },
-];
-
-/**
- * Mendapatkan banner yang sesuai dengan kondisi katalog aktual.
- */
-export function getPromoBanners(hasActiveProducts: boolean, isError = false): PromoBanner[] {
-  if (isError) {
-    return NEUTRAL_FALLBACK_BANNERS;
+  if (banner.startsAt) {
+    const startTime = new Date(banner.startsAt).getTime();
+    if (!isNaN(startTime) && now < startTime) {
+      return false;
+    }
   }
-  return hasActiveProducts ? ACTIVE_CATALOG_BANNERS : EMPTY_CATALOG_BANNERS;
+
+  if (banner.endsAt) {
+    const endTime = new Date(banner.endsAt).getTime();
+    if (!isNaN(endTime) && now > endTime) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
-export const PROMO_BANNERS: PromoBanner[] = EMPTY_CATALOG_BANNERS;
+/**
+ * Mengambil seluruh banner sponsor aktif yang memenuhi jadwal tayang saat ini.
+ */
+export function getActiveSponsorBanners(now: number = Date.now()): SponsorBanner[] {
+  return SPONSOR_BANNERS.filter((b) => isSponsorBannerActive(b, now));
+}
+
+/**
+ * Mengambil satu banner sponsor aktif pertama (fallback single-banner).
+ */
+export function getActiveSponsorBanner(now: number = Date.now()): SponsorBanner | null {
+  const activeBanners = getActiveSponsorBanners(now);
+  return activeBanners.length > 0 ? activeBanners[0] : null;
+}

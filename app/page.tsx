@@ -323,14 +323,8 @@ export default function HomePage() {
       {/* Main Content Area */}
       <main id="main-content" className="flex-grow max-w-[1200px] w-full mx-auto px-4 sm:px-6 pt-3 sm:pt-5">
         
-        {/* Banner Carousel di Bagian Atas Homepage */}
-        <HomeBannerCarousel 
-          hasActiveProducts={hasActiveProducts}
-          isError={Boolean(fetchError)}
-          isLoading={!hasLoadedFromDb || isLoading}
-          onOpenSellModal={() => setIsSellModalOpen(true)} 
-          onOpenCodGuideModal={() => setIsCodGuideModalOpen(true)}
-        />
+        {/* Slot Iklan Banner Sponsor di Bagian Atas Halaman Utama */}
+        <HomeBannerCarousel />
 
         {/* Section Header: Judul Katalog, Jumlah Produk, dan Filter */}
         <div className="flex flex-wrap items-center justify-between gap-2.5 mb-3">

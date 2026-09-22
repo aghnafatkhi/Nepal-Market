@@ -1,325 +1,258 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef, useSyncExternalStore } from 'react';
-import { useRouter } from 'next/navigation';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  ArrowRight 
-} from 'lucide-react';
-import { getPromoBanners, PromoBanner } from '@/data/banners';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
+import { getActiveSponsorBanners, SponsorBanner } from '@/data/banners';
 
 interface HomeBannerCarouselProps {
-  onOpenSellModal?: () => void;
-  onOpenCodGuideModal?: () => void;
-  banners?: PromoBanner[];
-  hasActiveProducts?: boolean;
-  isError?: boolean;
-  isLoading?: boolean;
-  autoSlideInterval?: number;
+  banners?: SponsorBanner[];
+  className?: string;
 }
 
-// External store for prefers-reduced-motion (SSR-safe, React 19 recommended)
-const subscribeReducedMotion = (callback: () => void) => {
-  if (typeof window === 'undefined') return () => {};
-  const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-  mediaQuery.addEventListener('change', callback);
-  return () => mediaQuery.removeEventListener('change', callback);
-};
-
-const getReducedMotionSnapshot = () => {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-};
-
-const getReducedMotionServerSnapshot = () => false;
-
+/**
+ * Komponen Slot Iklan Sponsor di Bagian Atas Halaman Utama Nepal Market.
+ * Mendukung banner tunggal maupun carousel otomatis jika terdapat lebih dari 1 iklan sponsor aktif.
+ */
 export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
-  onOpenSellModal,
-  onOpenCodGuideModal,
   banners: propBanners,
-  hasActiveProducts = false,
-  isError = false,
-  isLoading = false,
-  autoSlideInterval = 5000,
+  className = '',
 }) => {
-  const router = useRouter();
-  
-  // Dapatkan daftar banner sesuai ketersediaan produk aktif jika banners tidak dioper eksplisit
-  const banners = propBanners || getPromoBanners(hasActiveProducts, isError);
-  const count = banners.length;
+  // Ambil data banner sponsor aktif
+  const [banners, setBanners] = useState<SponsorBanner[]>(() => {
+    return propBanners !== undefined ? propBanners : getActiveSponsorBanners();
+  });
 
+  // Re-evaluasi banner jika prop berubah
+  useEffect(() => {
+    if (propBanners !== undefined) {
+      setBanners(propBanners);
+    } else {
+      setBanners(getActiveSponsorBanners());
+    }
+  }, [propBanners]);
+
+  const count = banners.length;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [timerKey, setTimerKey] = useState(0);
 
-  // Indeks aktif yang aman saat jumlah banner atau status katalog berubah
-  const activeIndex = currentIndex < count ? currentIndex : 0;
+  // Touch swipe handling
+  const touchStartX = useRef<number | null>(null);
+  const touchCurrentX = useRef<number | null>(null);
 
-  // Subscribed reduced-motion preference
-  const prefersReducedMotion = useSyncExternalStore(
-    subscribeReducedMotion,
-    getReducedMotionSnapshot,
-    getReducedMotionServerSnapshot
-  );
-
-  // Touch swipe coordinates
-  const touchStartXRef = useRef<number | null>(null);
-  const touchStartYRef = useRef<number | null>(null);
-  const touchCurrentXRef = useRef<number | null>(null);
-  const touchCurrentYRef = useRef<number | null>(null);
-
-  // Handlers for next and prev with timer reset
-  const handleNext = useCallback(() => {
+  const nextSlide = useCallback(() => {
     if (count <= 1) return;
     setCurrentIndex((prev) => (prev + 1) % count);
   }, [count]);
 
-  const handlePrev = useCallback(() => {
+  const prevSlide = useCallback(() => {
     if (count <= 1) return;
     setCurrentIndex((prev) => (prev - 1 + count) % count);
   }, [count]);
 
-  const handleManualNext = useCallback(() => {
-    handleNext();
-    setTimerKey((k) => k + 1);
-  }, [handleNext]);
-
-  const handleManualPrev = useCallback(() => {
-    handlePrev();
-    setTimerKey((k) => k + 1);
-  }, [handlePrev]);
-
-  const handleSelectSlide = useCallback((index: number) => {
-    setCurrentIndex(index);
-    setTimerKey((k) => k + 1);
-  }, []);
-
-  // Keyboard navigation on indicators or buttons (Left / Right Arrow)
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      handleManualPrev();
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      handleManualNext();
-    }
-  };
-
-  // Auto-advance timer (every ~5 seconds), paused during interaction or reduced motion
+  // Rotasi otomatis setiap 5 detik jika ada > 1 iklan aktif dan tidak sedang di-hover/touch
   useEffect(() => {
-    if (isLoading || count <= 1 || isPaused || prefersReducedMotion) return;
+    if (count <= 1 || isPaused) return;
 
-    const timer = setInterval(() => {
-      handleNext();
-    }, autoSlideInterval);
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 5000);
 
-    return () => clearInterval(timer);
-  }, [count, isPaused, prefersReducedMotion, autoSlideInterval, handleNext, timerKey, isLoading]);
+    return () => clearInterval(interval);
+  }, [count, isPaused, nextSlide]);
 
-  // Handle CTA Click
-  const handleCtaClick = (banner: PromoBanner) => {
-    if (banner.ctaAction === 'cod_guide_modal' && onOpenCodGuideModal) {
-      onOpenCodGuideModal();
-    } else if (banner.ctaAction === 'sell_modal' && onOpenSellModal) {
-      onOpenSellModal();
-    } else if (banner.ctaHref && banner.ctaHref !== '#') {
-      router.push(banner.ctaHref);
+  // Reset index jika count berkurang
+  useEffect(() => {
+    if (currentIndex >= count && count > 0) {
+      setCurrentIndex(0);
     }
-  };
+  }, [count, currentIndex]);
 
-  // Touch Event Handlers for Mobile Swipe
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    setIsPaused(true);
-    touchStartXRef.current = e.touches[0].clientX;
-    touchStartYRef.current = e.touches[0].clientY;
-    touchCurrentXRef.current = e.touches[0].clientX;
-    touchCurrentYRef.current = e.touches[0].clientY;
-  };
+  // Jika tidak ada banner aktif, sembunyikan seluruh area tanpa menyisakan ruang kosong
+  if (count === 0) {
+    return null;
+  }
 
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    touchCurrentXRef.current = e.touches[0].clientX;
-    touchCurrentYRef.current = e.touches[0].clientY;
-  };
-
-  const handleTouchEnd = () => {
-    if (
-      touchStartXRef.current !== null &&
-      touchCurrentXRef.current !== null &&
-      touchStartYRef.current !== null &&
-      touchCurrentYRef.current !== null
-    ) {
-      const deltaX = touchStartXRef.current - touchCurrentXRef.current;
-      const deltaY = Math.abs(touchStartYRef.current - touchCurrentYRef.current);
-
-      // Trigger swipe if horizontal displacement is dominant and exceeds 40px
-      if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > deltaY * 1.1) {
-        if (deltaX > 0) {
-          handleManualNext();
-        } else {
-          handleManualPrev();
-        }
-      }
-    }
-
-    // Reset touch coordinates
-    touchStartXRef.current = null;
-    touchStartYRef.current = null;
-    touchCurrentXRef.current = null;
-    touchCurrentYRef.current = null;
-
-    // Small delay before resuming auto-advance
-    setTimeout(() => {
-      setIsPaused(false);
-    }, 400);
-  };
-
-  // Tampilkan Skeleton Banner saat data katalog masih dimuat dari database
-  if (isLoading) {
+  // JIKA HANYA ADA 1 BANNER AKTIF: Tampilkan sebagai banner biasa tanpa kontrol carousel
+  if (count === 1) {
+    const singleBanner = banners[0];
     return (
-      <section
-        id="home-banner-skeleton"
-        aria-busy="true"
-        aria-label="Memuat banner promosi"
-        className="relative w-full mb-4 select-none"
+      <aside 
+        id="sponsor-banner-slot" 
+        aria-label={`Iklan Sponsor: ${singleBanner.sponsorName}`} 
+        className="w-full mb-4"
       >
-        <div className="relative overflow-hidden rounded-lg border border-slate-200 bg-slate-100 px-4 sm:px-6 py-3.5 sm:py-4 min-h-[105px] sm:min-h-[115px] flex flex-col justify-between animate-pulse">
-          <div className="max-w-xl space-y-1.5">
-            <div className="h-5 w-1/2 sm:w-1/3 rounded bg-slate-300" />
-            <div className="h-3.5 w-3/4 sm:w-2/3 rounded bg-slate-200" />
+        <a
+          id={`sponsor-banner-link-${singleBanner.id}`}
+          href={singleBanner.targetUrl || '#'}
+          target="_blank"
+          rel="noopener noreferrer sponsored"
+          aria-label={`Kunjungi sponsor: ${singleBanner.sponsorName}`}
+          className={`group relative block w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-100 transition-opacity hover:opacity-95 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 ${className}`}
+        >
+          {/* Label Kecil "Iklan" */}
+          <span 
+            id={`badge-sponsor-label-${singleBanner.id}`}
+            className="absolute top-2 right-2 z-10 px-1.5 py-0.5 text-[10px] font-medium tracking-wide bg-slate-900/60 text-white rounded backdrop-blur-xs select-none pointer-events-none"
+          >
+            Iklan
+          </span>
+
+          {/* Desktop & Tablet Image (Aspect 5:1 / 1500x300) */}
+          <div className="hidden sm:block relative w-full aspect-[5/1] overflow-hidden">
+            <Image
+              src={singleBanner.desktopImage}
+              alt={singleBanner.alt || `Iklan Sponsor ${singleBanner.sponsorName}`}
+              fill
+              sizes="(max-width: 1200px) 100vw, 1200px"
+              priority
+              className="object-cover"
+              referrerPolicy="no-referrer"
+            />
           </div>
-          <div className="flex items-center justify-between gap-3 mt-2">
-            <div className="h-8 w-28 sm:w-32 rounded-md bg-slate-300" />
+
+          {/* Mobile Image (Aspect 8:3 / 1200x450) */}
+          <div className="block sm:hidden relative w-full aspect-[8/3] overflow-hidden">
+            <Image
+              src={singleBanner.mobileImage}
+              alt={singleBanner.alt || `Iklan Sponsor ${singleBanner.sponsorName}`}
+              fill
+              sizes="100vw"
+              priority
+              className="object-cover"
+              referrerPolicy="no-referrer"
+            />
           </div>
-        </div>
-      </section>
+        </a>
+      </aside>
     );
   }
 
+  // JIKA ADA LEBIH DARI 1 BANNER AKTIF: Carousel Gambar Otomatis + Swipe + Indikator Titik
+  const currentBanner = banners[currentIndex];
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchCurrentX.current = e.touches[0].clientX;
+    setIsPaused(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchCurrentX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current !== null && touchCurrentX.current !== null) {
+      const diff = touchStartX.current - touchCurrentX.current;
+      const threshold = 40; // minimum jarak swipe (px)
+      if (diff > threshold) {
+        nextSlide();
+      } else if (diff < -threshold) {
+        prevSlide();
+      }
+    }
+    touchStartX.current = null;
+    touchCurrentX.current = null;
+    setIsPaused(false);
+  };
+
   return (
-    <section 
-      id="home-banner-carousel"
-      aria-roledescription="carousel"
-      aria-label="Promosi dan Panduan Nepal Market"
-      className="relative w-full mb-4 select-none"
+    <aside
+      id="sponsor-banner-carousel"
+      aria-label="Carousel Iklan Sponsor Nepal Market"
+      className="w-full mb-4"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      onFocusCapture={() => setIsPaused(true)}
-      onBlurCapture={() => setIsPaused(false)}
-      onKeyDown={handleKeyDown}
+      onFocus={() => setIsPaused(true)}
+      onBlur={() => setIsPaused(false)}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
-      {/* Outer Card Container */}
-      <div 
-        className="relative overflow-hidden rounded-lg border border-slate-200"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {/* Slides Track */}
-        <div 
-          className={`flex w-full ${prefersReducedMotion ? 'transition-none' : 'transition-transform duration-500 ease-out'}`}
-          style={{ transform: `translateX(-${activeIndex * 100}%)` }}
+      <div className={`relative w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-100 ${className}`}>
+        {/* Label Kecil "Iklan" */}
+        <span
+          id="badge-carousel-sponsor-label"
+          className="absolute top-2 right-2 z-20 px-1.5 py-0.5 text-[10px] font-medium tracking-wide bg-slate-900/60 text-white rounded backdrop-blur-xs select-none pointer-events-none"
         >
-          {banners.map((banner, index) => {
-            const isActive = index === activeIndex;
+          Iklan
+        </span>
 
-            return (
-              <div
-                key={banner.id}
-                id={`carousel-slide-${index}`}
-                role="group"
-                aria-roledescription="slide"
-                aria-label={`Slide ${index + 1} dari ${count}: ${banner.title}`}
-                aria-hidden={!isActive}
-                inert={!isActive ? true : undefined}
-                className={`w-full shrink-0 relative flex flex-col justify-between ${banner.theme.containerBg} px-4 sm:px-6 py-3.5 sm:py-4 min-h-[105px] sm:min-h-[115px]`}
+        {/* Carousel Track Slider */}
+        <div
+          id="sponsor-carousel-track"
+          className="flex w-full transition-transform duration-500 ease-out"
+          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+        >
+          {banners.map((banner, index) => (
+            <div
+              key={banner.id}
+              className="w-full shrink-0 grow-0 basis-full"
+              aria-hidden={index !== currentIndex}
+            >
+              <a
+                id={`sponsor-banner-link-${banner.id}`}
+                href={banner.targetUrl || '#'}
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                aria-label={`Kunjungi sponsor: ${banner.sponsorName}`}
+                tabIndex={index === currentIndex ? 0 : -1}
+                className="group relative block w-full focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 transition-opacity hover:opacity-95"
               >
-                {/* Banner Content (Title + Subtitle) */}
-                <div className="relative z-10 max-w-xl">
-                  <h2 className={`text-sm sm:text-base font-bold ${banner.theme.titleColor} tracking-tight leading-snug`}>
-                    {banner.title}
-                  </h2>
-                  <p className={`mt-0.5 text-xs sm:text-sm ${banner.theme.descriptionColor} leading-relaxed line-clamp-1 sm:line-clamp-2`}>
-                    {banner.description}
-                  </p>
+                {/* Desktop & Tablet Image (Aspect 5:1 / 1500x300) */}
+                <div className="hidden sm:block relative w-full aspect-[5/1] overflow-hidden">
+                  <Image
+                    src={banner.desktopImage}
+                    alt={banner.alt || `Iklan Sponsor ${banner.sponsorName}`}
+                    fill
+                    sizes="(max-width: 1200px) 100vw, 1200px"
+                    priority={index === 0}
+                    className="object-cover"
+                    referrerPolicy="no-referrer"
+                  />
                 </div>
 
-                {/* Banner Action Row */}
-                <div className="relative z-10 flex items-center justify-between gap-3 mt-2.5 pr-20 sm:pr-24">
-                  <button
-                    type="button"
-                    id={`btn-carousel-cta-${banner.id}`}
-                    onClick={() => handleCtaClick(banner)}
-                    tabIndex={isActive ? 0 : -1}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-colors cursor-pointer ${banner.theme.ctaStyle} min-h-[38px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 active:scale-98`}
-                  >
-                    <span>{banner.ctaText}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                {/* Mobile Image (Aspect 8:3 / 1200x450) */}
+                <div className="block sm:hidden relative w-full aspect-[8/3] overflow-hidden">
+                  <Image
+                    src={banner.mobileImage}
+                    alt={banner.alt || `Iklan Sponsor ${banner.sponsorName}`}
+                    fill
+                    sizes="100vw"
+                    priority={index === 0}
+                    className="object-cover"
+                    referrerPolicy="no-referrer"
+                  />
                 </div>
-              </div>
+              </a>
+            </div>
+          ))}
+        </div>
+
+        {/* Indikator Titik Kecil di Bagian Bawah Banner */}
+        <div
+          id="sponsor-carousel-dots"
+          className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-2 py-1 rounded-full bg-slate-900/40 backdrop-blur-xs select-none"
+        >
+          {banners.map((banner, idx) => {
+            const isActive = idx === currentIndex;
+            return (
+              <button
+                key={`dot-${banner.id}`}
+                id={`btn-dot-banner-${idx}`}
+                type="button"
+                onClick={() => setCurrentIndex(idx)}
+                aria-label={`Pindah ke banner sponsor ${idx + 1}: ${banner.sponsorName}`}
+                aria-current={isActive ? 'true' : undefined}
+                className={`transition-all duration-300 rounded-full cursor-pointer focus:outline-hidden focus-visible:ring-1 focus-visible:ring-white ${
+                  isActive
+                    ? 'w-4 h-1.5 bg-white'
+                    : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'
+                }`}
+              />
             );
           })}
         </div>
-
-        {/* Unified Single Tablist for Slide Indicators */}
-        {count > 1 && (
-          <div 
-            className="absolute bottom-2.5 right-3 sm:right-4 z-20 flex items-center gap-1.5 px-2 py-1 rounded-md bg-white/80 border border-slate-200"
-            role="tablist"
-            aria-label="Pilih slide banner"
-          >
-            {banners.map((b, idx) => {
-              const isDotActive = idx === activeIndex;
-              return (
-                <button
-                  key={`dot-${b.id}`}
-                  id={`btn-carousel-indicator-${idx}`}
-                  type="button"
-                  role="tab"
-                  aria-selected={isDotActive}
-                  aria-label={`Lihat banner ${idx + 1}: ${b.title}`}
-                  tabIndex={0}
-                  onClick={() => handleSelectSlide(idx)}
-                  className={`h-1.5 transition-all duration-200 rounded-full cursor-pointer focus:outline-hidden focus-visible:ring-1 focus-visible:ring-blue-600 ${
-                    isDotActive 
-                      ? 'w-4 bg-blue-600' 
-                      : 'w-1.5 bg-slate-300 hover:bg-slate-400'
-                  }`}
-                />
-              );
-            })}
-          </div>
-        )}
-
-        {/* Previous Button (Desktop only, mobile uses touch swipe & indicators) */}
-        {count > 1 && (
-          <button
-            type="button"
-            id="btn-carousel-prev"
-            onClick={handleManualPrev}
-            aria-label="Tampilkan banner sebelumnya"
-            tabIndex={0}
-            className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white hover:bg-slate-50 text-slate-700 items-center justify-center border border-slate-200 transition-colors cursor-pointer min-h-[36px] min-w-[36px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-        )}
-
-        {/* Next Button (Desktop only, mobile uses touch swipe & indicators) */}
-        {count > 1 && (
-          <button
-            type="button"
-            id="btn-carousel-next"
-            onClick={handleManualNext}
-            aria-label="Tampilkan banner selanjutnya"
-            tabIndex={0}
-            className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white hover:bg-slate-50 text-slate-700 items-center justify-center border border-slate-200 transition-colors cursor-pointer min-h-[36px] min-w-[36px] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        )}
       </div>
-    </section>
+    </aside>
   );
 };
