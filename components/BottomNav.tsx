@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Home, Search, PlusCircle, Bookmark, User } from 'lucide-react';
+import { Home, Search, Plus, Bookmark, User } from 'lucide-react';
 
 interface BottomNavProps {
   activeTab: 'home' | 'cari' | 'jual' | 'disimpan' | 'profil';
@@ -18,9 +18,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     <nav
       id="mobile-bottom-nav"
       aria-label="Navigasi Utama Mobile"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 pb-[env(safe-area-inset-bottom)]"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-neutral-200/80 bg-white/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)]"
     >
-      <div className="grid grid-cols-5 h-15 max-w-lg mx-auto items-center px-1">
+      <div className="grid grid-cols-5 h-16 max-w-lg mx-auto items-center px-2">
         
         {/* Home */}
         <button
@@ -29,7 +29,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           aria-label="Beranda"
           onClick={() => onSelectTab('home')}
           className={`flex flex-col items-center justify-center w-full h-full min-h-[44px] min-w-[44px] transition-colors ${
-            activeTab === 'home' ? 'text-blue-600 font-semibold' : 'text-slate-500 hover:text-slate-800'
+            activeTab === 'home' ? 'text-blue-700 font-semibold' : 'text-neutral-500 hover:text-neutral-900'
           }`}
         >
           <Home className="w-5 h-5" />
@@ -43,7 +43,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           aria-label="Cari Barang"
           onClick={() => onSelectTab('cari')}
           className={`flex flex-col items-center justify-center w-full h-full min-h-[44px] min-w-[44px] transition-colors ${
-            activeTab === 'cari' ? 'text-blue-600 font-semibold' : 'text-slate-500 hover:text-slate-800'
+            activeTab === 'cari' ? 'text-blue-700 font-semibold' : 'text-neutral-500 hover:text-neutral-900'
           }`}
         >
           <Search className="w-5 h-5" />
@@ -56,12 +56,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           type="button"
           aria-label="Pasang Iklan Jual Barang"
           onClick={() => onSelectTab('jual')}
-          className="flex flex-col items-center justify-center w-full h-full min-h-[44px] min-w-[44px] text-blue-600 group active:scale-95 transition-transform"
+          className="flex flex-col items-center justify-center w-full h-full min-h-[44px] min-w-[44px] text-neutral-950 group active:scale-95 transition-transform"
         >
-          <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xs group-hover:bg-blue-700 transition-colors">
-            <PlusCircle className="w-5 h-5" />
+          <div className="w-8 h-8 rounded-xl bg-neutral-950 text-white flex items-center justify-center group-hover:bg-blue-700 transition-colors">
+            <Plus className="w-4 h-4" strokeWidth={2.4} />
           </div>
-          <span className="text-[10px] font-semibold mt-0.5 leading-none text-blue-600">Jual</span>
+          <span className="text-[10px] font-semibold mt-1 leading-none">Jual</span>
         </button>
 
         {/* Disimpan */}
@@ -71,13 +71,13 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           aria-label="Barang Disimpan"
           onClick={() => onSelectTab('disimpan')}
           className={`relative flex flex-col items-center justify-center w-full h-full min-h-[44px] min-w-[44px] transition-colors ${
-            activeTab === 'disimpan' ? 'text-blue-600 font-semibold' : 'text-slate-500 hover:text-slate-800'
+            activeTab === 'disimpan' ? 'text-blue-700 font-semibold' : 'text-neutral-500 hover:text-neutral-900'
           }`}
         >
           <div className="relative">
             <Bookmark className="w-5 h-5" />
             {savedCount > 0 && (
-              <span className="absolute -top-1.5 -right-2 min-w-[15px] h-[15px] px-1 bg-blue-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+              <span className="absolute -top-1.5 -right-2 min-w-[15px] h-[15px] px-1 bg-[#ff6b35] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                 {savedCount}
               </span>
             )}
@@ -92,7 +92,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           aria-label="Profil Pengguna"
           onClick={() => onSelectTab('profil')}
           className={`flex flex-col items-center justify-center w-full h-full min-h-[44px] min-w-[44px] transition-colors ${
-            activeTab === 'profil' ? 'text-blue-600 font-semibold' : 'text-slate-500 hover:text-slate-800'
+            activeTab === 'profil' ? 'text-blue-700 font-semibold' : 'text-neutral-500 hover:text-neutral-900'
           }`}
         >
           <User className="w-5 h-5" />
