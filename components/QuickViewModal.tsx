@@ -14,7 +14,7 @@ import {
   ImageIcon
 } from 'lucide-react';
 import { Product } from '@/types/market';
-import { formatRupiah } from '@/data/products';
+import { formatConditionLabel, formatRupiah } from '@/data/products';
 
 interface QuickViewModalProps {
   product: Product | null;
@@ -106,7 +106,7 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
           {/* Badge Status */}
           <div className="absolute bottom-2.5 left-2.5 flex items-center gap-1.5">
             <span className="inline-block bg-slate-900/85 text-white text-xs font-medium px-2 py-0.5 rounded-sm">
-              {product.condition}
+              {formatConditionLabel(product.condition)}
             </span>
             {isSold && (
               <span className="inline-block bg-slate-900 text-white text-xs font-semibold px-2 py-0.5 rounded-sm uppercase tracking-wide">
