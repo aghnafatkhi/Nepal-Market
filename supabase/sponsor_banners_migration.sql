@@ -37,7 +37,7 @@ GRANT EXECUTE ON FUNCTION nepal_private.is_admin() TO authenticated;
 -- 2. TRIGGER HELPER UNTUK UPDATED_AT (IDEMPOTENT)
 -- ------------------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
-RETURNS trigger LANGUAGE plpgsql AS $$
+RETURNS trigger LANGUAGE plpgsql SET search_path = '' AS $$
 BEGIN
   NEW.updated_at = now();
   RETURN NEW;
@@ -103,26 +103,36 @@ REVOKE ALL ON public.sponsor_banners FROM public, anon, authenticated;
 GRANT SELECT ON public.sponsor_banners TO anon, authenticated;
 GRANT INSERT, UPDATE, DELETE ON public.sponsor_banners TO authenticated;
 
--- Policy 1: Pengguna Publik & Login (Anon & Authenticated) HANYA dapat membaca
--- banner aktif yang sudah memasuki jadwal tayang dan belum kedaluwarsa.
+-- Policy 1: Pengunjung anonim HANYA dapat membaca banner aktif dalam jadwal.
 DROP POLICY IF EXISTS "Public and users can view active scheduled sponsor banners" ON public.sponsor_banners;
+DROP POLICY IF EXISTS "Anonymous visitors can view active scheduled sponsor banners" ON public.sponsor_banners;
 CREATE POLICY "Public and users can view active scheduled sponsor banners"
   ON public.sponsor_banners
   FOR SELECT
-  TO anon, authenticated
+  TO anon
   USING (
     status = 'active'
     AND (starts_at IS NULL OR starts_at <= now())
     AND (ends_at IS NULL OR ends_at >= now())
   );
 
--- Policy 2: Hanya Admin yang dapat melihat SELURUH sponsor banner (draft, inactive, expired)
+-- Policy 2: Pengguna login biasa hanya melihat banner aktif dalam jadwal;
+-- admin dapat melihat seluruh banner. Satu policy untuk role authenticated
+-- menghindari policy permisif ganda pada query admin.
 DROP POLICY IF EXISTS "Admin can view all sponsor banners" ON public.sponsor_banners;
-CREATE POLICY "Admin can view all sponsor banners"
+DROP POLICY IF EXISTS "Authenticated users can view scheduled banners and admins can view all" ON public.sponsor_banners;
+CREATE POLICY "Authenticated users can view scheduled banners and admins can view all"
   ON public.sponsor_banners
   FOR SELECT
   TO authenticated
-  USING ((SELECT nepal_private.is_admin()));
+  USING (
+    (
+      status = 'active'
+      AND (starts_at IS NULL OR starts_at <= now())
+      AND (ends_at IS NULL OR ends_at >= now())
+    )
+    OR (SELECT nepal_private.is_admin())
+  );
 
 -- Policy 3: Hanya Admin yang dapat membuat (INSERT) data sponsor
 DROP POLICY IF EXISTS "Admin can insert sponsor banners" ON public.sponsor_banners;
