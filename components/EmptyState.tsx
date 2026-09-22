@@ -21,14 +21,14 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     return (
       <div 
         id="empty-state-catalog-empty"
-        className="w-full py-8 sm:py-10 px-4 flex flex-col items-center justify-center text-center bg-white border border-slate-200 rounded-lg max-w-md mx-auto my-4"
+        className="w-full py-14 sm:py-16 px-4 flex flex-col items-center justify-center text-center max-w-md mx-auto my-4"
       >
-        <h3 className="text-sm sm:text-base font-semibold text-slate-900">
-          Belum Ada Barang yang Dijual
+        <h3 className="text-base sm:text-lg font-semibold text-neutral-950 tracking-tight">
+          Katalog masih kosong
         </h3>
         
         <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-xs leading-relaxed">
-          Belum ada iklan barang di katalog. Punya barang layak pakai? Pasang iklan sekarang.
+          Jadilah yang pertama memasang barang di Nepal Market.
         </p>
 
         <div className="mt-3.5">
@@ -37,7 +37,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
               id="btn-empty-sell"
               type="button"
               onClick={onOpenSellModal}
-              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-md bg-blue-600 text-white text-xs sm:text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors min-h-[40px] cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-neutral-950 text-white text-xs sm:text-sm font-semibold hover:bg-blue-700 transition-colors min-h-[44px] cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Pasang Iklan Sekarang</span>
@@ -46,7 +46,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             <Link
               id="btn-empty-sell-link"
               href="/sell"
-              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-md bg-blue-600 text-white text-xs sm:text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors min-h-[40px]"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-neutral-950 text-white text-xs sm:text-sm font-semibold hover:bg-blue-700 transition-colors min-h-[44px]"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Pasang Iklan Sekarang</span>
@@ -60,10 +60,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   return (
     <div 
       id="empty-state-search-empty"
-      className="w-full py-8 sm:py-10 px-4 flex flex-col items-center justify-center text-center bg-white border border-slate-200 rounded-lg max-w-md mx-auto my-4"
+      className="w-full py-14 sm:py-16 px-4 flex flex-col items-center justify-center text-center max-w-md mx-auto my-4"
     >
-      <h3 className="text-sm sm:text-base font-semibold text-slate-900">
-        Barang Tidak Ditemukan
+      <h3 className="text-base sm:text-lg font-semibold text-neutral-950 tracking-tight">
+        Barang tidak ditemukan
       </h3>
       
       <p className="mt-1 text-xs sm:text-sm text-slate-500 max-w-xs leading-relaxed">
@@ -78,7 +78,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         id="btn-empty-reset"
         type="button"
         onClick={onReset}
-        className="mt-3.5 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-medium transition-colors min-h-[40px] cursor-pointer"
+        className="mt-4 inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-neutral-950 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold transition-colors min-h-[44px] cursor-pointer"
       >
         <RotateCcw className="w-3.5 h-3.5" />
         <span>Reset Filter</span>
