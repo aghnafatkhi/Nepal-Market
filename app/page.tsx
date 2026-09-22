@@ -342,9 +342,7 @@ export default function HomePage() {
             >
               <option value="semua">Semua kondisi</option>
               <option value="Baru">Baru</option>
-              <option value="Bekas - Seperti Baru">Seperti baru</option>
-              <option value="Bekas - Mulus">Bekas terawat</option>
-              <option value="Bekas - Layak">Ada kekurangan</option>
+              <option value="Bekas">Bekas</option>
             </select>
 
             <select
