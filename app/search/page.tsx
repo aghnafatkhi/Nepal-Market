@@ -366,7 +366,7 @@ function SearchPageContent() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-28 md:pb-12">
+    <div className="min-h-screen bg-[#f7f7f5] text-neutral-900 pb-28 md:pb-12">
       {/* Top Sticky Header */}
       <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
@@ -908,7 +908,7 @@ function SearchPageContent() {
 export default function SearchPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#f7f7f5] flex items-center justify-center p-4">
         <div className="flex items-center gap-2 text-sm text-slate-500">
           <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
           <span>Memuat pencarian...</span>
