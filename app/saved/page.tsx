@@ -82,14 +82,14 @@ export default function SavedProductsPage() {
 
   if (authLoading || (!user && isLoading)) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f7f7f5] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-28 md:pb-16">
+    <div className="min-h-screen bg-[#f7f7f5] text-neutral-900 pb-28 md:pb-16">
       {/* Top Navigation Bar */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-xs">
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 h-15 sm:h-16 flex items-center justify-between">
