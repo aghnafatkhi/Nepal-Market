@@ -99,8 +99,8 @@ const CATEGORY_LABELS: Record<string, string> = {
 // Label kondisi terstandarisasi
 const CONDITION_LABELS: Record<string, string> = {
   new: 'Baru',
-  like_new: 'Bekas - Seperti Baru',
-  used: 'Bekas - Layak Pakai',
+  like_new: 'Bekas',
+  used: 'Bekas',
 };
 
 /**
