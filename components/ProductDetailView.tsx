@@ -163,7 +163,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
   // Loading State
   if (isLoadingProduct) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#f7f7f5] flex items-center justify-center p-4">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2.5" />
           <p className="text-xs text-slate-500 font-medium">Memuat rincian barang...</p>
@@ -175,7 +175,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
   // Error State: Product Not Found
   if (!product) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#f7f7f5] flex items-center justify-center p-4">
         <div className="bg-white border border-slate-200 rounded-lg p-6 sm:p-8 text-center max-w-md w-full">
           <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 text-slate-400">
             <Layers className="w-6 h-6" />
@@ -210,7 +210,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
   const hasCurrentImg = Boolean(currentImg && currentImg.trim().length > 0 && !isCurrentImgError);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-28 md:pb-16">
+    <div className="min-h-screen bg-[#f7f7f5] text-neutral-900 pb-28 md:pb-16">
       {/* Top Header Navigation */}
       <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
         <div className="max-w-[1100px] mx-auto px-4 sm:px-6">
