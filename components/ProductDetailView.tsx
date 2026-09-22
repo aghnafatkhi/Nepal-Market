@@ -25,7 +25,7 @@ import {
   ImageIcon
 } from 'lucide-react';
 import { Product } from '@/types/market';
-import { getProductById, getProductsBySeller, formatRupiah } from '@/data/products';
+import { getProductById, getProductsBySeller, formatConditionLabel, formatRupiah } from '@/data/products';
 import { ProductCard } from '@/components/ProductCard';
 import { ContactSellerModal } from '@/components/ContactSellerModal';
 import { ReportModal } from '@/components/ReportModal';
@@ -62,6 +62,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [imgErrorMap, setImgErrorMap] = useState<Record<number, boolean>>({});
+  const [sellerAvatarError, setSellerAvatarError] = useState(false);
 
   // General Nav Modals
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
@@ -368,7 +369,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                   id="product-badge-condition"
                   className="inline-flex items-center px-2 py-0.5 bg-slate-900/85 text-white text-xs font-medium rounded-sm"
                 >
-                  {product.condition}
+                  {formatConditionLabel(product.condition)}
                 </span>
                 {isSold && (
                   <span 
@@ -464,7 +465,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                   {product.category}
                 </Link>
                 <span>•</span>
-                <span>{product.condition}</span>
+                <span>{formatConditionLabel(product.condition)}</span>
                 <span>•</span>
                 <span className={isSold ? 'text-slate-400 font-medium' : 'text-emerald-600 font-medium'}>
                   {isSold ? 'Sudah terjual' : 'Tersedia'}
@@ -569,8 +570,20 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
               </div>
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-9 h-9 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
-                    {seller?.name ? seller.name.charAt(0).toUpperCase() : 'W'}
+                  <div className="relative w-9 h-9 rounded-full overflow-hidden bg-blue-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                    {seller?.avatar && !sellerAvatarError ? (
+                      <Image
+                        src={seller.avatar}
+                        alt={`Foto profil ${seller.name || 'penjual'}`}
+                        fill
+                        sizes="36px"
+                        className="object-cover"
+                        referrerPolicy="no-referrer"
+                        onError={() => setSellerAvatarError(true)}
+                      />
+                    ) : (
+                      seller?.name ? seller.name.charAt(0).toUpperCase() : 'W'
+                    )}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1">
@@ -592,14 +605,6 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                   <div className="text-slate-400">{seller?.joinedDate || 'Terdaftar'}</div>
                 </div>
               </div>
-            </div>
-
-            {/* Langkah Transaksi COD Ringkas (Bukan klaim keamanan palsu) */}
-            <div className="pt-3 border-t border-slate-100 text-xs text-slate-600 space-y-1 bg-slate-50/70 p-3 rounded-md">
-              <div className="font-semibold text-slate-800">Panduan Transaksi COD:</div>
-              <p>1. Hubungi penjual untuk menyepakati harga dan waktu bertemu.</p>
-              <p>2. Janjian di lokasi umum terdekat yang ramai.</p>
-              <p>3. Periksa kondisi barang secara langsung sebelum membayar.</p>
             </div>
 
             {/* Deskripsi Barang */}
