@@ -48,7 +48,7 @@ export const AdminPagination: React.FC<AdminPaginationProps> = ({
   if (totalItems === 0) return null;
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-white border border-slate-200 rounded-lg shadow-2xs text-xs text-slate-600">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-3 py-3 bg-white border border-slate-200 rounded-lg text-xs text-slate-600">
       {/* Kiri: Informasi jumlah item */}
       <div className="flex items-center gap-2 text-slate-500">
         <span>
@@ -82,7 +82,7 @@ export const AdminPagination: React.FC<AdminPaginationProps> = ({
           type="button"
           onClick={() => onPageChange(1)}
           disabled={safeCurrentPage === 1}
-          className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="hidden sm:inline-flex p-2 rounded border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
           title="Halaman Pertama"
           aria-label="Halaman Pertama"
         >
@@ -94,7 +94,7 @@ export const AdminPagination: React.FC<AdminPaginationProps> = ({
           type="button"
           onClick={() => onPageChange(safeCurrentPage - 1)}
           disabled={safeCurrentPage === 1}
-          className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
           title="Halaman Sebelumnya"
           aria-label="Halaman Sebelumnya"
         >
@@ -102,7 +102,7 @@ export const AdminPagination: React.FC<AdminPaginationProps> = ({
         </button>
 
         {/* Page Numbers */}
-        <div className="flex items-center gap-1 mx-1">
+        <div className="hidden items-center gap-1 mx-1 sm:flex">
           {getPageNumbers().map((p, idx) => {
             if (p === '...') {
               return (
@@ -135,7 +135,7 @@ export const AdminPagination: React.FC<AdminPaginationProps> = ({
           type="button"
           onClick={() => onPageChange(safeCurrentPage + 1)}
           disabled={safeCurrentPage >= totalPages}
-          className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
           title="Halaman Selanjutnya"
           aria-label="Halaman Selanjutnya"
         >
@@ -147,12 +147,15 @@ export const AdminPagination: React.FC<AdminPaginationProps> = ({
           type="button"
           onClick={() => onPageChange(totalPages)}
           disabled={safeCurrentPage >= totalPages}
-          className="p-1.5 rounded border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="hidden sm:inline-flex p-2 rounded border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-40"
           title="Halaman Terakhir"
           aria-label="Halaman Terakhir"
         >
           <ChevronsRight className="w-3.5 h-3.5" />
         </button>
+        <span className="px-3 text-xs font-medium text-slate-600 sm:hidden">
+          {safeCurrentPage} / {totalPages}
+        </span>
       </div>
     </div>
   );
