@@ -124,8 +124,8 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
             Iklan
           </span>
 
-          {/* Desktop & Tablet Image (Aspect 5:1 / 1500x300) */}
-          <div className="hidden sm:block relative w-full aspect-[5/1] overflow-hidden">
+          {/* Satu gambar dan rasio yang sama untuk seluruh ukuran layar */}
+          <div className="relative w-full aspect-[5/1] overflow-hidden">
             <Image
               src={singleBanner.desktop_image_url}
               alt={singleBanner.alt_text || `Iklan Sponsor ${singleBanner.sponsor_name}`}
@@ -137,18 +137,6 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
             />
           </div>
 
-          {/* Mobile Image (Aspect 8:3 / 1200x450) */}
-          <div className="block sm:hidden relative w-full aspect-[8/3] overflow-hidden">
-            <Image
-              src={singleBanner.mobile_image_url}
-              alt={singleBanner.alt_text || `Iklan Sponsor ${singleBanner.sponsor_name}`}
-              fill
-              sizes="100vw"
-              priority
-              className="object-cover"
-              referrerPolicy="no-referrer"
-            />
-          </div>
         </a>
       </aside>
     );
@@ -225,8 +213,8 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
                 tabIndex={index === currentIndex ? 0 : -1}
                 className="group relative block w-full focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 transition-opacity hover:opacity-95"
               >
-                {/* Desktop & Tablet Image (Aspect 5:1 / 1500x300) */}
-                <div className="hidden sm:block relative w-full aspect-[5/1] overflow-hidden">
+                {/* Satu gambar dan rasio yang sama untuk seluruh ukuran layar */}
+                <div className="relative w-full aspect-[5/1] overflow-hidden">
                   <Image
                     src={banner.desktop_image_url}
                     alt={banner.alt_text || `Iklan Sponsor ${banner.sponsor_name}`}
@@ -238,18 +226,6 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
                   />
                 </div>
 
-                {/* Mobile Image (Aspect 8:3 / 1200x450) */}
-                <div className="block sm:hidden relative w-full aspect-[8/3] overflow-hidden">
-                  <Image
-                    src={banner.mobile_image_url}
-                    alt={banner.alt_text || `Iklan Sponsor ${banner.sponsor_name}`}
-                    fill
-                    sizes="100vw"
-                    priority={index === 0}
-                    className="object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
               </a>
             </div>
           ))}
