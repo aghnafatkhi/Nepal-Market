@@ -10,11 +10,13 @@ export type CategorySlug =
 
 export type ProductCondition = 
   | 'Baru'
+  | 'Bekas'
+  // Nilai lama dipertahankan agar data/seed lama tetap dapat dibaca.
   | 'Bekas - Seperti Baru'
   | 'Bekas - Mulus'
   | 'Bekas - Layak';
 
-export type ConditionFilter = 'semua' | 'baru' | 'seperti-baru' | 'bekas';
+export type ConditionFilter = 'semua' | 'baru' | 'bekas';
 
 export interface Seller {
   id?: string;
