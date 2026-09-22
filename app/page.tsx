@@ -194,14 +194,10 @@ export default function HomePage() {
     });
   }, [products, selectedCategory, selectedCondition, searchQuery, sortBy]);
 
-  // Efek simulasi loading saat kategori diubah
+  // Filter kategori berjalan lokal; skeleton tidak diperlukan.
   const handleSelectCategory = (cat: CategorySlug) => {
     if (cat === selectedCategory) return;
-    setIsLoading(true);
     setSelectedCategory(cat);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 150);
   };
 
   // Toggle simpan barang (wishlist)
@@ -344,11 +340,11 @@ export default function HomePage() {
               onChange={(e) => setSelectedCondition(e.target.value)}
               className="min-h-11 rounded-xl border border-neutral-200 bg-white px-3 text-sm font-medium text-neutral-700 outline-none transition focus:border-blue-500 focus:ring-3 focus:ring-blue-100 cursor-pointer"
             >
-              <option value="semua">Semua Kondisi</option>
+              <option value="semua">Semua kondisi</option>
               <option value="Baru">Baru</option>
-              <option value="Bekas - Seperti Baru">Bekas - Seperti Baru</option>
-              <option value="Bekas - Mulus">Bekas - Mulus</option>
-              <option value="Bekas - Layak">Bekas - Layak</option>
+              <option value="Bekas - Seperti Baru">Seperti baru</option>
+              <option value="Bekas - Mulus">Bekas terawat</option>
+              <option value="Bekas - Layak">Ada kekurangan</option>
             </select>
 
             <select
