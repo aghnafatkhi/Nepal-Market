@@ -51,17 +51,12 @@ export const SponsorFormModal: React.FC<SponsorFormModalProps> = ({
   const [desktopPreview, setDesktopPreview] = useState<string>('');
   const [desktopProgress, setDesktopProgress] = useState<number>(0);
 
-  const [mobileFile, setMobileFile] = useState<File | null>(null);
-  const [mobilePreview, setMobilePreview] = useState<string>('');
-  const [mobileProgress, setMobileProgress] = useState<number>(0);
-
   // Submit & validation states
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   // File input refs
   const desktopInputRef = useRef<HTMLInputElement>(null);
-  const mobileInputRef = useRef<HTMLInputElement>(null);
 
   // Reset or Populate form on open/change
   useEffect(() => {
@@ -82,9 +77,6 @@ export const SponsorFormModal: React.FC<SponsorFormModalProps> = ({
       setDesktopPreview(sponsorToEdit.desktop_image_url || '');
       setDesktopProgress(0);
 
-      setMobileFile(null);
-      setMobilePreview(sponsorToEdit.mobile_image_url || '');
-      setMobileProgress(0);
     } else {
       setSponsorName('');
       setTargetUrl('https://');
@@ -98,9 +90,6 @@ export const SponsorFormModal: React.FC<SponsorFormModalProps> = ({
       setDesktopPreview('');
       setDesktopProgress(0);
 
-      setMobileFile(null);
-      setMobilePreview('');
-      setMobileProgress(0);
     }
 
     setFormError(null);
@@ -113,11 +102,8 @@ export const SponsorFormModal: React.FC<SponsorFormModalProps> = ({
       if (desktopPreview && desktopPreview.startsWith('blob:')) {
         URL.revokeObjectURL(desktopPreview);
       }
-      if (mobilePreview && mobilePreview.startsWith('blob:')) {
-        URL.revokeObjectURL(mobilePreview);
-      }
     };
-  }, [desktopPreview, mobilePreview]);
+  }, [desktopPreview]);
 
   if (!isOpen) return null;
 
@@ -136,23 +122,6 @@ export const SponsorFormModal: React.FC<SponsorFormModalProps> = ({
     setDesktopFile(file);
     const objectUrl = URL.createObjectURL(file);
     setDesktopPreview(objectUrl);
-  };
-
-  // Handle Mobile File Pick
-  const handleMobileFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const validation = validateSponsorImageFile(file);
-    if (!validation.valid) {
-      setFormError(validation.error || 'File mobile tidak valid.');
-      return;
-    }
-
-    setFormError(null);
-    setMobileFile(file);
-    const objectUrl = URL.createObjectURL(file);
-    setMobilePreview(objectUrl);
   };
 
   // Submit Handler
@@ -190,24 +159,15 @@ export const SponsorFormModal: React.FC<SponsorFormModalProps> = ({
 
     // Periksa gambar
     let finalDesktopUrl = desktopPreview;
-    let finalMobileUrl = mobilePreview;
 
     if (!sponsorToEdit) {
       if (!desktopFile) {
         setFormError('Silakan pilih file gambar banner desktop.');
         return;
       }
-      if (!mobileFile) {
-        setFormError('Silakan pilih file gambar banner mobile.');
-        return;
-      }
     } else {
       if (!finalDesktopUrl) {
         setFormError('Gambar banner desktop tidak boleh kosong.');
-        return;
-      }
-      if (!finalMobileUrl) {
-        setFormError('Gambar banner mobile tidak boleh kosong.');
         return;
       }
     }
@@ -228,19 +188,6 @@ export const SponsorFormModal: React.FC<SponsorFormModalProps> = ({
         finalDesktopUrl = uploadRes.url;
       }
 
-      // Upload mobile image jika ada file baru yang dipilih
-      if (mobileFile) {
-        setMobileProgress(10);
-        const uploadRes = await uploadSponsorBannerImage(mobileFile, 'mobile', (pct) => {
-          setMobileProgress(pct);
-        });
-
-        if (uploadRes.error || !uploadRes.url) {
-          throw new Error(uploadRes.error?.message || 'Gagal mengunggah banner mobile.');
-        }
-        finalMobileUrl = uploadRes.url;
-      }
-
       // Payload final
       const payload: CreateSponsorBannerInput = {
         sponsor_name: sponsorName.trim(),
@@ -251,7 +198,7 @@ export const SponsorFormModal: React.FC<SponsorFormModalProps> = ({
         starts_at: startsAt ? new Date(startsAt).toISOString() : null,
         ends_at: endsAt ? new Date(endsAt).toISOString() : null,
         desktop_image_url: finalDesktopUrl,
-        mobile_image_url: finalMobileUrl,
+        mobile_image_url: finalDesktopUrl,
       };
 
       const success = await onSave(payload, sponsorToEdit?.id);
@@ -283,7 +230,7 @@ export const SponsorFormModal: React.FC<SponsorFormModalProps> = ({
               {sponsorToEdit ? 'Edit Banner Sponsor' : 'Tambah Banner Sponsor Baru'}
             </h2>
             <p className="text-xs text-slate-500">
-              Lengkapi informasi sponsor, unggah aset banner desktop & mobile, dan atur jadwal tayang.
+              Gunakan satu gambar untuk seluruh ukuran layar, lalu atur jadwal tayangnya.
             </p>
           </div>
           <button
@@ -381,7 +328,7 @@ export const SponsorFormModal: React.FC<SponsorFormModalProps> = ({
                   2
                 </span>
                 <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Banner Layar Desktop & Tablet
+                  Gambar Banner Semua Layar
                 </h3>
               </div>
               <span className="text-[11px] font-mono text-slate-500">
@@ -415,11 +362,11 @@ export const SponsorFormModal: React.FC<SponsorFormModalProps> = ({
                       onClick={() => desktopInputRef.current?.click()}
                       className="px-3 py-1.5 rounded-md bg-white text-slate-900 text-xs font-semibold shadow-sm hover:bg-slate-100"
                     >
-                      Ganti Gambar Desktop
+                      Ganti Gambar Banner
                     </button>
                   </div>
                   <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-black/60 text-white text-[9px] font-medium">
-                    Desktop 5:1
+                    Semua layar · 5:1
                   </div>
                 </div>
               ) : (
@@ -429,7 +376,7 @@ export const SponsorFormModal: React.FC<SponsorFormModalProps> = ({
                 >
                   <Upload className="w-5 h-5 text-slate-400 mb-1" />
                   <p className="text-xs font-semibold text-slate-700">
-                    Klik untuk pilih gambar Desktop
+                    Klik untuk pilih gambar banner
                   </p>
                   <p className="text-[10px] text-slate-400">
                     JPG, PNG, WebP, AVIF — Maksimal 5 MB
@@ -449,89 +396,12 @@ export const SponsorFormModal: React.FC<SponsorFormModalProps> = ({
           </div>
 
           {/* ========================================================= */}
-          {/* SECTION 3: GAMBAR BANNER MOBILE */}
-          {/* ========================================================= */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between pb-1 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center">
-                  3
-                </span>
-                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Banner Layar Mobile
-                </h3>
-              </div>
-              <span className="text-[11px] font-mono text-slate-500">
-                Rasio 8:3 (Rekomendasi 1200 × 450)
-              </span>
-            </div>
-
-            <div className="space-y-2">
-              <input
-                type="file"
-                ref={mobileInputRef}
-                accept=".jpg,.jpeg,.png,.webp,.avif"
-                onChange={handleMobileFileChange}
-                className="hidden"
-              />
-
-              {/* Preview Box */}
-              {mobilePreview ? (
-                <div className="relative w-full max-w-xs aspect-[8/3] bg-slate-100 rounded-lg border border-slate-300 overflow-hidden group">
-                  <Image
-                    src={mobilePreview}
-                    alt="Preview Mobile"
-                    fill
-                    sizes="320px"
-                    className="object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => mobileInputRef.current?.click()}
-                      className="px-2.5 py-1.5 rounded-md bg-white text-slate-900 text-[11px] font-semibold shadow-sm hover:bg-slate-100"
-                    >
-                      Ganti Gambar Mobile
-                    </button>
-                  </div>
-                  <div className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/60 text-white text-[9px] font-medium">
-                    Mobile 8:3
-                  </div>
-                </div>
-              ) : (
-                <div
-                  onClick={() => mobileInputRef.current?.click()}
-                  className="w-full max-w-xs aspect-[8/3] border-2 border-dashed border-slate-300 rounded-lg flex flex-col items-center justify-center p-3 hover:border-blue-500 hover:bg-blue-50/30 cursor-pointer transition-colors"
-                >
-                  <Upload className="w-5 h-5 text-slate-400 mb-1" />
-                  <p className="text-xs font-semibold text-slate-700">
-                    Klik untuk pilih gambar Mobile
-                  </p>
-                  <p className="text-[10px] text-slate-400">
-                    JPG, PNG, WebP, AVIF — Maksimal 5 MB
-                  </p>
-                </div>
-              )}
-
-              {mobileProgress > 0 && mobileProgress < 100 && (
-                <div className="w-full max-w-xs bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                  <div
-                    className="bg-blue-600 h-full transition-all duration-200"
-                    style={{ width: `${mobileProgress}%` }}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* ========================================================= */}
           {/* SECTION 4: STATUS, URUTAN, & JADWAL */}
           {/* ========================================================= */}
           <div className="space-y-3">
             <div className="flex items-center gap-2 pb-1 border-b border-slate-100">
               <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center">
-                4
+                3
               </span>
               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                 Status, Urutan, & Jadwal Tayang
