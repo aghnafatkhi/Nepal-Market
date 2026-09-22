@@ -65,16 +65,16 @@ export const AdminConfirmDialog: React.FC<AdminConfirmDialogProps> = ({
   return (
     <div
       id="admin-action-dialog-portal"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/60 p-0 sm:items-center sm:p-4"
       onClick={() => !isExecuting && onClose()}
     >
       <div
         id="admin-action-dialog-content"
-        className="w-full max-w-md bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden animate-in zoom-in-95 duration-150"
+        className="w-full max-w-md max-h-[94dvh] overflow-y-auto rounded-t-2xl border border-slate-200 bg-white shadow-xl sm:rounded-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Dialog */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white px-4 py-3 sm:px-5 sm:py-4">
           <div className="flex items-center gap-2.5">
             <div
               className={`w-8 h-8 rounded-lg flex items-center justify-center ${
@@ -97,7 +97,7 @@ export const AdminConfirmDialog: React.FC<AdminConfirmDialogProps> = ({
         </div>
 
         {/* Body Dialog */}
-        <div className="p-5 space-y-3.5 text-xs">
+        <div className="p-4 sm:p-5 space-y-3.5 text-xs">
           <p className="text-slate-600 leading-relaxed">
             {action.description}
           </p>
@@ -220,12 +220,12 @@ export const AdminConfirmDialog: React.FC<AdminConfirmDialogProps> = ({
           )}
 
           {/* Action Buttons */}
-          <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
+          <div className="sticky bottom-0 -mx-4 -mb-4 flex items-center gap-2 border-t border-slate-200 bg-white p-4 sm:static sm:mx-0 sm:mb-0 sm:justify-end sm:p-0 sm:pt-2">
             <button
               type="button"
               onClick={onClose}
               disabled={isExecuting}
-              className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-md min-h-[36px] cursor-pointer"
+              className="h-11 flex-1 px-3 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-md sm:h-9 sm:flex-none"
             >
               Batal
             </button>
@@ -233,7 +233,7 @@ export const AdminConfirmDialog: React.FC<AdminConfirmDialogProps> = ({
               type="button"
               onClick={onConfirm}
               disabled={isExecuting || !isLayeredValid || (action.requireReason !== false && !adminReason.trim())}
-              className={`px-4 py-1.5 text-white text-xs font-semibold rounded-md min-h-[36px] flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer ${
+              className={`h-11 flex-1 justify-center px-4 text-white text-xs font-semibold rounded-md flex items-center gap-1.5 disabled:opacity-50 sm:h-9 sm:flex-none ${
                 action.isDestructive
                   ? 'bg-rose-600 hover:bg-rose-700'
                   : 'bg-blue-600 hover:bg-blue-700'
