@@ -123,7 +123,7 @@ export const PublicSellerProfileView: React.FC<PublicSellerProfileViewProps> = (
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-[#f7f7f5] flex flex-col items-center justify-center p-4">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-3" />
         <p className="text-sm font-medium text-slate-500">Memuat profil penjual...</p>
       </div>
@@ -132,7 +132,7 @@ export const PublicSellerProfileView: React.FC<PublicSellerProfileViewProps> = (
 
   if (notFound || !profile) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 text-center">
+      <div className="min-h-screen bg-[#f7f7f5] flex flex-col items-center justify-center p-4 text-center">
         <div className="w-14 h-14 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 mb-4">
           <User className="w-7 h-7" />
         </div>
@@ -152,7 +152,7 @@ export const PublicSellerProfileView: React.FC<PublicSellerProfileViewProps> = (
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-24 sm:pb-16">
+    <div className="min-h-screen bg-[#f7f7f5] text-neutral-900 pb-24 sm:pb-16">
       {/* Sticky Header Bar */}
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-xs">
         <div className="max-w-4xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between">
