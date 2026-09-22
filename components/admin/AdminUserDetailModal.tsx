@@ -88,12 +88,12 @@ export const AdminUserDetailModal: React.FC<AdminUserDetailModalProps> = ({
   return (
     <div
       id="admin-user-detail-modal-portal"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/60 p-0 sm:items-center sm:p-4"
       onClick={onClose}
     >
       <div
         id="admin-user-detail-modal-content"
-        className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150"
+        className="w-full max-w-2xl bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[95dvh] sm:max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Modal */}
