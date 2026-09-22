@@ -5,15 +5,12 @@ import { Product, ProductCondition, CategorySlug, SortOption } from '@/types/mar
 // Map antara UI condition dan DB condition
 export function mapUiConditionToDb(condition: ProductCondition): DbCondition {
   if (condition === 'Baru') return 'new';
-  if (condition === 'Bekas - Seperti Baru') return 'like_new';
   return 'used';
 }
 
 export function mapDbConditionToUi(condition: string): ProductCondition {
   if (condition === 'new') return 'Baru';
-  if (condition === 'like_new') return 'Bekas - Seperti Baru';
-  if (condition === 'used') return 'Bekas - Mulus';
-  return 'Bekas - Mulus';
+  return 'Bekas';
 }
 
 // Format waktu relatif (misal: "5 menit lalu", "2 jam lalu", "Kemarin")
@@ -140,10 +137,8 @@ export async function fetchActiveProducts(options: FetchProductsOptions = {}): P
     if (condition && condition !== 'semua') {
       if (condition === 'baru' || condition === 'Baru') {
         query = query.eq('condition', 'new');
-      } else if (condition === 'seperti_baru' || condition === 'seperti-baru' || condition === 'Bekas - Seperti Baru') {
-        query = query.eq('condition', 'like_new');
-      } else if (condition === 'Bekas - Mulus' || condition === 'used') {
-        query = query.eq('condition', 'used');
+      } else if (condition === 'Bekas' || condition === 'bekas' || condition === 'used') {
+        query = query.in('condition', ['used', 'like_new']);
       }
     }
 
