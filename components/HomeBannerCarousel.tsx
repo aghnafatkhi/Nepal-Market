@@ -2,40 +2,64 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { getActiveSponsorBanners, SponsorBanner } from '@/data/banners';
+import { DbSponsorBanner } from '@/lib/supabase/types';
+import { fetchActivePublicSponsorBanners } from '@/lib/supabase/sponsors';
 
 interface HomeBannerCarouselProps {
-  banners?: SponsorBanner[];
+  banners?: DbSponsorBanner[];
   className?: string;
 }
 
 /**
  * Komponen Slot Iklan Sponsor di Bagian Atas Halaman Utama Nepal Market.
+ * Mengambil data banner langsung dari tabel Supabase `sponsor_banners` (hanya status 'active' & valid jadwal).
  * Mendukung banner tunggal maupun carousel otomatis jika terdapat lebih dari 1 iklan sponsor aktif.
  */
 export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
   banners: propBanners,
   className = '',
 }) => {
-  // Ambil data banner sponsor aktif
-  const [banners, setBanners] = useState<SponsorBanner[]>(() => {
-    return propBanners !== undefined ? propBanners : getActiveSponsorBanners();
-  });
+  const [banners, setBanners] = useState<DbSponsorBanner[]>(propBanners || []);
+  const [isLoaded, setIsLoaded] = useState<boolean>(propBanners !== undefined);
 
-  // Re-evaluasi banner jika prop berubah
+  // Ambil data dari tabel Supabase sponsor_banners jika tidak dipassing dari props
   useEffect(() => {
     if (propBanners !== undefined) {
       setBanners(propBanners);
-    } else {
-      setBanners(getActiveSponsorBanners());
+      setIsLoaded(true);
+      return;
     }
+
+    let isMounted = true;
+    fetchActivePublicSponsorBanners()
+      .then(({ data, error }) => {
+        if (!isMounted) return;
+        if (error) {
+          // Log error secara aman tanpa membuat homepage error
+          console.warn('Gagal memuat sponsor banner homepage:', error.message);
+          setBanners([]);
+        } else {
+          setBanners(data || []);
+        }
+        setIsLoaded(true);
+      })
+      .catch((err) => {
+        console.warn('Kendala koneksi sponsor banner homepage:', err);
+        if (!isMounted) return;
+        setBanners([]);
+        setIsLoaded(true);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, [propBanners]);
 
   const count = banners.length;
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
-  // Touch swipe handling
+  // Touch swipe handling untuk perangkat mobile
   const touchStartX = useRef<number | null>(null);
   const touchCurrentX = useRef<number | null>(null);
 
@@ -67,26 +91,29 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
     }
   }, [count, currentIndex]);
 
-  // Jika tidak ada banner aktif, sembunyikan seluruh area tanpa menyisakan ruang kosong
-  if (count === 0) {
+  // Jika belum selesai load atau tidak ada sponsor aktif sama sekali:
+  // Sembunyikan seluruh bagian banner tanpa menyisakan ruang kosong
+  if (!isLoaded || count === 0) {
     return null;
   }
 
-  // JIKA HANYA ADA 1 BANNER AKTIF: Tampilkan sebagai banner biasa tanpa kontrol carousel
+  // ==============================================================================
+  // JIKA HANYA ADA 1 SPONSOR AKTIF: Tampilkan banner biasa tanpa kontrol carousel
+  // ==============================================================================
   if (count === 1) {
     const singleBanner = banners[0];
     return (
       <aside 
         id="sponsor-banner-slot" 
-        aria-label={`Iklan Sponsor: ${singleBanner.sponsorName}`} 
+        aria-label={`Iklan Sponsor: ${singleBanner.sponsor_name}`} 
         className="w-full mb-4"
       >
         <a
           id={`sponsor-banner-link-${singleBanner.id}`}
-          href={singleBanner.targetUrl || '#'}
+          href={singleBanner.target_url || '#'}
           target="_blank"
           rel="noopener noreferrer sponsored"
-          aria-label={`Kunjungi sponsor: ${singleBanner.sponsorName}`}
+          aria-label={`Kunjungi sponsor: ${singleBanner.sponsor_name}`}
           className={`group relative block w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-100 transition-opacity hover:opacity-95 focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 ${className}`}
         >
           {/* Label Kecil "Iklan" */}
@@ -100,8 +127,8 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
           {/* Desktop & Tablet Image (Aspect 5:1 / 1500x300) */}
           <div className="hidden sm:block relative w-full aspect-[5/1] overflow-hidden">
             <Image
-              src={singleBanner.desktopImage}
-              alt={singleBanner.alt || `Iklan Sponsor ${singleBanner.sponsorName}`}
+              src={singleBanner.desktop_image_url}
+              alt={singleBanner.alt_text || `Iklan Sponsor ${singleBanner.sponsor_name}`}
               fill
               sizes="(max-width: 1200px) 100vw, 1200px"
               priority
@@ -113,8 +140,8 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
           {/* Mobile Image (Aspect 8:3 / 1200x450) */}
           <div className="block sm:hidden relative w-full aspect-[8/3] overflow-hidden">
             <Image
-              src={singleBanner.mobileImage}
-              alt={singleBanner.alt || `Iklan Sponsor ${singleBanner.sponsorName}`}
+              src={singleBanner.mobile_image_url}
+              alt={singleBanner.alt_text || `Iklan Sponsor ${singleBanner.sponsor_name}`}
               fill
               sizes="100vw"
               priority
@@ -127,9 +154,9 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
     );
   }
 
-  // JIKA ADA LEBIH DARI 1 BANNER AKTIF: Carousel Gambar Otomatis + Swipe + Indikator Titik
-  const currentBanner = banners[currentIndex];
-
+  // ==============================================================================
+  // JIKA ADA LEBIH DARI 1 SPONSOR AKTIF: Carousel Otomatis + Swipe + Indikator Titik
+  // ==============================================================================
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
     touchCurrentX.current = e.touches[0].clientX;
@@ -191,18 +218,18 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
             >
               <a
                 id={`sponsor-banner-link-${banner.id}`}
-                href={banner.targetUrl || '#'}
+                href={banner.target_url || '#'}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
-                aria-label={`Kunjungi sponsor: ${banner.sponsorName}`}
+                aria-label={`Kunjungi sponsor: ${banner.sponsor_name}`}
                 tabIndex={index === currentIndex ? 0 : -1}
                 className="group relative block w-full focus:outline-hidden focus-visible:ring-2 focus-visible:ring-blue-600 transition-opacity hover:opacity-95"
               >
                 {/* Desktop & Tablet Image (Aspect 5:1 / 1500x300) */}
                 <div className="hidden sm:block relative w-full aspect-[5/1] overflow-hidden">
                   <Image
-                    src={banner.desktopImage}
-                    alt={banner.alt || `Iklan Sponsor ${banner.sponsorName}`}
+                    src={banner.desktop_image_url}
+                    alt={banner.alt_text || `Iklan Sponsor ${banner.sponsor_name}`}
                     fill
                     sizes="(max-width: 1200px) 100vw, 1200px"
                     priority={index === 0}
@@ -214,8 +241,8 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
                 {/* Mobile Image (Aspect 8:3 / 1200x450) */}
                 <div className="block sm:hidden relative w-full aspect-[8/3] overflow-hidden">
                   <Image
-                    src={banner.mobileImage}
-                    alt={banner.alt || `Iklan Sponsor ${banner.sponsorName}`}
+                    src={banner.mobile_image_url}
+                    alt={banner.alt_text || `Iklan Sponsor ${banner.sponsor_name}`}
                     fill
                     sizes="100vw"
                     priority={index === 0}
@@ -241,7 +268,7 @@ export const HomeBannerCarousel: React.FC<HomeBannerCarouselProps> = ({
                 id={`btn-dot-banner-${idx}`}
                 type="button"
                 onClick={() => setCurrentIndex(idx)}
-                aria-label={`Pindah ke banner sponsor ${idx + 1}: ${banner.sponsorName}`}
+                aria-label={`Pindah ke banner sponsor ${idx + 1}: ${banner.sponsor_name}`}
                 aria-current={isActive ? 'true' : undefined}
                 className={`transition-all duration-300 rounded-full cursor-pointer focus:outline-hidden focus-visible:ring-1 focus-visible:ring-white ${
                   isActive

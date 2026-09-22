@@ -71,7 +71,11 @@ export type ModerationAction =
   | 'suspend_user'
   | 'unsuspend_user'
   | 'resolve_report'
-  | 'dismiss_report';
+  | 'review_report'
+  | 'dismiss_report'
+  | 'create_sponsor'
+  | 'update_sponsor'
+  | 'delete_sponsor';
 
 export interface DbModerationLog {
   id: string;
@@ -85,3 +89,22 @@ export interface DbModerationLog {
   // Joins
   admin?: DbProfile;
 }
+
+export type DbSponsorBannerStatus = 'draft' | 'active' | 'inactive';
+
+export interface DbSponsorBanner {
+  id: string;
+  sponsor_name: string;
+  desktop_image_url: string;
+  mobile_image_url: string;
+  target_url: string;
+  alt_text: string;
+  status: DbSponsorBannerStatus;
+  starts_at: string | null;
+  ends_at: string | null;
+  sort_order: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+

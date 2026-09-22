@@ -49,6 +49,43 @@ export const REPORT_REASONS = [
 
 export type ReportReasonType = (typeof REPORT_REASONS)[number];
 
+export interface AdminUserItem {
+  id: string;
+  name: string;
+  username: string;
+  email?: string | null;
+  role: string;
+  is_suspended: boolean;
+  suspension_reason?: string | null;
+  avatar_url: string | null;
+  phone?: string | null;
+  created_at: string;
+  products_count?: number;
+  active_products_count?: number;
+}
+
+export interface AdminProductItem {
+  id: string;
+  title: string;
+  price: number;
+  category: string;
+  condition: string;
+  description?: string | null;
+  location?: string | null;
+  status: string;
+  created_at: string;
+  updated_at?: string | null;
+  seller_id: string;
+  seller: {
+    id: string;
+    name: string;
+    username: string;
+    avatar_url: string | null;
+    is_suspended?: boolean;
+  } | null;
+  images: string[];
+}
+
 export interface AdminReportItem {
   id: string;
   reporter_id: string;
@@ -73,6 +110,133 @@ export interface AdminReportItem {
     suspension_reason?: string | null;
   } | null;
 }
+
+// In-memory fallback untuk preview mode (bila Supabase belum terhubung)
+const localUsers: AdminUserItem[] = [
+  {
+    id: 'seller-demo-1',
+    name: 'Bayu Saputra',
+    username: 'bayusaputra',
+    email: 'bayu.saputra@student.nepal.id',
+    role: 'user',
+    is_suspended: false,
+    suspension_reason: null,
+    avatar_url: null,
+    phone: '081299998888',
+    created_at: new Date(Date.now() - 86400 * 1000 * 45).toISOString(),
+  },
+  {
+    id: 'user-demo-reporter',
+    name: 'Rian Perdana',
+    username: 'rian_p',
+    email: 'rian.perdana@student.nepal.id',
+    role: 'user',
+    is_suspended: false,
+    suspension_reason: null,
+    avatar_url: null,
+    phone: '081377776666',
+    created_at: new Date(Date.now() - 86400 * 1000 * 60).toISOString(),
+  },
+  {
+    id: 'user-demo-3',
+    name: 'Gita Maharani',
+    username: 'gitamaharani',
+    email: 'gita.m@student.nepal.id',
+    role: 'user',
+    is_suspended: false,
+    suspension_reason: null,
+    avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+    phone: '085711223344',
+    created_at: new Date(Date.now() - 86400 * 1000 * 90).toISOString(),
+  },
+  {
+    id: 'admin-1',
+    name: 'Tim Moderasi Nepal',
+    username: 'admin_nepal',
+    email: 'admin@nepalmarket.sch.id',
+    role: 'admin',
+    is_suspended: false,
+    suspension_reason: null,
+    avatar_url: null,
+    phone: null,
+    created_at: new Date(Date.now() - 86400 * 1000 * 120).toISOString(),
+  },
+];
+
+const localProducts: AdminProductItem[] = [
+  {
+    id: 'prod-demo-vape',
+    title: 'Pod Vape Caliburn Bekas Pakai',
+    price: 120000,
+    category: 'lainnya',
+    condition: 'Bekas - Mulus',
+    status: 'active',
+    created_at: new Date(Date.now() - 3600 * 1000 * 12).toISOString(),
+    seller_id: 'seller-demo-1',
+    seller: {
+      id: 'seller-demo-1',
+      name: 'Bayu Saputra',
+      username: 'bayusaputra',
+      avatar_url: null,
+      is_suspended: false,
+    },
+    images: ['https://images.unsplash.com/photo-1527661591475-527312dd65f5?auto=format&fit=crop&w=600&q=80'],
+  },
+  {
+    id: 'prod-demo-hoodie',
+    title: 'Hoodie Nepal Angkatan 28 Size L',
+    price: 85000,
+    category: 'fashion',
+    condition: 'Bekas - Seperti Baru',
+    status: 'active',
+    created_at: new Date(Date.now() - 86400 * 1000 * 1).toISOString(),
+    seller_id: 'user-demo-3',
+    seller: {
+      id: 'user-demo-3',
+      name: 'Gita Maharani',
+      username: 'gitamaharani',
+      avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+      is_suspended: false,
+    },
+    images: ['https://images.unsplash.com/photo-1556905055-8f358a7a47b2?w=800&auto=format&fit=crop&q=80'],
+  },
+  {
+    id: 'prod-demo-kalkulator',
+    title: 'Kalkulator Scientific Casio fx-991EX',
+    price: 175000,
+    category: 'elektronik',
+    condition: 'Bekas - Seperti Baru',
+    status: 'active',
+    created_at: new Date(Date.now() - 86400 * 1000 * 3).toISOString(),
+    seller_id: 'seller-demo-1',
+    seller: {
+      id: 'seller-demo-1',
+      name: 'Bayu Saputra',
+      username: 'bayusaputra',
+      avatar_url: null,
+      is_suspended: false,
+    },
+    images: ['https://images.unsplash.com/photo-1587145820266-a5951ee6f620?w=800&auto=format&fit=crop&q=80'],
+  },
+  {
+    id: 'prod-demo-old',
+    title: 'Akun Game Ilegal',
+    price: 50000,
+    category: 'lainnya',
+    condition: 'Bekas - Mulus',
+    status: 'hidden',
+    created_at: new Date(Date.now() - 86400 * 1000 * 5).toISOString(),
+    seller_id: 'seller-demo-1',
+    seller: {
+      id: 'seller-demo-1',
+      name: 'Bayu Saputra',
+      username: 'bayusaputra',
+      avatar_url: null,
+      is_suspended: false,
+    },
+    images: ['https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800&auto=format&fit=crop&q=80'],
+  },
+];
 
 // In-memory fallback untuk preview mode (bila Supabase belum terhubung)
 const localReports: AdminReportItem[] = [
@@ -258,19 +422,23 @@ export async function fetchAdminDashboardData(): Promise<{
   };
   reports: AdminReportItem[];
   logs: DbModerationLog[];
+  products: AdminProductItem[];
+  users: AdminUserItem[];
   error: Error | null;
 }> {
   const supabase = getSupabaseClient();
   if (!supabase) {
     return {
       summary: {
-        totalProducts: 12,
-        totalUsers: 8,
+        totalProducts: localProducts.length,
+        totalUsers: localUsers.length,
         pendingReports: localReports.filter((r) => r.status === 'pending').length,
-        activeProducts: 9,
+        activeProducts: localProducts.filter((p) => p.status === 'active').length,
       },
       reports: localReports,
       logs: localModerationLogs,
+      products: localProducts,
+      users: localUsers,
       error: null,
     };
   }
@@ -376,27 +544,115 @@ export async function fetchAdminDashboardData(): Promise<{
       .order('created_at', { ascending: false })
       .limit(50);
 
+    // 4. Fetch products for management
+    const { data: rawProducts } = await supabase
+      .from('products')
+      .select(`
+        id,
+        seller_id,
+        title,
+        price,
+        category,
+        condition,
+        description,
+        location,
+        status,
+        created_at,
+        updated_at,
+        seller:profiles!seller_id(id, name, username, avatar_url, is_suspended),
+        product_images(image_url, sort_order)
+      `)
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    const formattedProducts: AdminProductItem[] = (rawProducts || []).map((p: any) => ({
+      id: p.id,
+      title: p.title,
+      price: Number(p.price),
+      category: p.category,
+      condition: p.condition,
+      description: p.description || null,
+      location: p.location || null,
+      status: p.status,
+      created_at: p.created_at,
+      updated_at: p.updated_at || null,
+      seller_id: p.seller_id,
+      seller: p.seller ? {
+        id: p.seller.id,
+        name: p.seller.name,
+        username: p.seller.username,
+        avatar_url: p.seller.avatar_url,
+        is_suspended: p.seller.is_suspended,
+      } : null,
+      images: (p.product_images || [])
+        .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
+        .map((img: any) => img.image_url),
+    }));
+
+    // 5. Fetch profiles for user management
+    const { data: rawUsers } = await supabase
+      .from('profiles')
+      .select('id, name, username, email, role, is_suspended, suspension_reason, avatar_url, phone, created_at')
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    // Hitung jumlah produk per pengguna dari daftar produk yang diambil
+    const userProductCounts: Record<string, { total: number; active: number }> = {};
+    for (const p of formattedProducts) {
+      if (p.seller_id) {
+        if (!userProductCounts[p.seller_id]) {
+          userProductCounts[p.seller_id] = { total: 0, active: 0 };
+        }
+        userProductCounts[p.seller_id].total += 1;
+        if (p.status === 'active') {
+          userProductCounts[p.seller_id].active += 1;
+        }
+      }
+    }
+
+    const formattedUsers: AdminUserItem[] = (rawUsers || []).map((u: any) => {
+      const counts = userProductCounts[u.id] || { total: 0, active: 0 };
+      return {
+        id: u.id,
+        name: u.name,
+        username: u.username,
+        email: u.email,
+        role: u.role || 'user',
+        is_suspended: Boolean(u.is_suspended),
+        suspension_reason: u.suspension_reason,
+        avatar_url: u.avatar_url,
+        phone: u.phone,
+        created_at: u.created_at || new Date().toISOString(),
+        products_count: counts.total,
+        active_products_count: counts.active,
+      };
+    });
+
     return {
       summary: {
-        totalProducts: productsCountRes.count ?? 0,
-        totalUsers: usersCountRes.count ?? 0,
-        pendingReports: pendingReportsCountRes.count ?? 0,
-        activeProducts: activeProductsCountRes.count ?? 0,
+        totalProducts: productsCountRes.count ?? formattedProducts.length,
+        totalUsers: usersCountRes.count ?? formattedUsers.length,
+        pendingReports: pendingReportsCountRes.count ?? formattedReports.filter(r => r.status === 'pending').length,
+        activeProducts: activeProductsCountRes.count ?? formattedProducts.filter(p => p.status === 'active').length,
       },
       reports: formattedReports,
       logs: (rawLogs as unknown as DbModerationLog[]) || [],
+      products: formattedProducts,
+      users: formattedUsers,
       error: null,
     };
   } catch (err) {
     return {
       summary: {
-        totalProducts: 0,
-        totalUsers: 0,
-        pendingReports: 0,
-        activeProducts: 0,
+        totalProducts: localProducts.length,
+        totalUsers: localUsers.length,
+        pendingReports: localReports.filter(r => r.status === 'pending').length,
+        activeProducts: localProducts.filter(p => p.status === 'active').length,
       },
-      reports: [],
-      logs: [],
+      reports: localReports,
+      logs: localModerationLogs,
+      products: localProducts,
+      users: localUsers,
       error: err as Error,
     };
   }
@@ -455,6 +711,8 @@ export async function adminHideProduct(
   if (!supabase) {
     const r = localReports.find((item) => item.product?.id === productId);
     if (r && r.product) r.product.status = 'hidden';
+    const lp = localProducts.find((item) => item.id === productId);
+    if (lp) lp.status = 'hidden';
     await recordModerationLog(adminId, 'hide_product', 'product', productId, productTitle, reason);
     return { success: true, error: null };
   }
@@ -487,6 +745,8 @@ export async function adminRemoveProduct(
   if (!supabase) {
     const r = localReports.find((item) => item.product?.id === productId);
     if (r && r.product) r.product.status = 'removed';
+    const lp = localProducts.find((item) => item.id === productId);
+    if (lp) lp.status = 'removed';
     await recordModerationLog(adminId, 'remove_product', 'product', productId, productTitle, reason);
     return { success: true, error: null };
   }
@@ -519,6 +779,8 @@ export async function adminRestoreProduct(
   if (!supabase) {
     const r = localReports.find((item) => item.product?.id === productId);
     if (r && r.product) r.product.status = 'active';
+    const lp = localProducts.find((item) => item.id === productId);
+    if (lp) lp.status = 'active';
     await recordModerationLog(adminId, 'restore_product', 'product', productId, productTitle, reason);
     return { success: true, error: null };
   }
@@ -558,6 +820,11 @@ export async function adminToggleSellerSuspension(
         r.seller.suspension_reason = suspend ? reason : null;
       }
     }
+    const lu = localUsers.find((u) => u.id === sellerId);
+    if (lu) {
+      lu.is_suspended = suspend;
+      lu.suspension_reason = suspend ? reason : null;
+    }
     await recordModerationLog(adminId, action, 'profile', sellerId, sellerName, reason);
     return { success: true, error: null };
   }
@@ -594,9 +861,10 @@ export async function adminUpdateReportStatus(
     const r = localReports.find((item) => item.id === reportId);
     if (r) r.status = newStatus;
     if (actionNotes) {
+      const actionType = newStatus === 'resolved' ? 'resolve_report' : newStatus === 'reviewed' ? 'review_report' : 'dismiss_report';
       await recordModerationLog(
         adminId,
-        newStatus === 'resolved' ? 'resolve_report' : 'dismiss_report',
+        actionType,
         'report',
         reportId,
         `Laporan #${reportId.slice(0, 8)}`,
@@ -615,9 +883,10 @@ export async function adminUpdateReportStatus(
     if (error) return { success: false, error };
 
     if (actionNotes) {
+      const actionType = newStatus === 'resolved' ? 'resolve_report' : newStatus === 'reviewed' ? 'review_report' : 'dismiss_report';
       await recordModerationLog(
         adminId,
-        newStatus === 'resolved' ? 'resolve_report' : 'dismiss_report',
+        actionType,
         'report',
         reportId,
         `Laporan #${reportId.slice(0, 8)}`,
