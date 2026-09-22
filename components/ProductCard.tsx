@@ -23,7 +23,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   const isSold = Boolean(product.isSold || !product.isAvailable);
   const [imgError, setImgError] = useState(false);
-  const [avatarError, setAvatarError] = useState(false);
 
   const hasImage = Boolean(product.imageUrl && product.imageUrl.trim().length > 0 && !imgError);
 
@@ -94,7 +93,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </button>
       </div>
 
-      {/* Rincian Produk: Rapat, Prioritas Harga, Nama, Kondisi, Lokasi, Seller */}
+      {/* Rincian Produk: harga, kondisi, dan nama */}
       <Link
         href={`/product/${product.id}`}
         className="p-3 sm:p-3.5 flex flex-col flex-1 justify-between focus:outline-hidden block text-left"
@@ -122,30 +121,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </h3>
         </div>
 
-        {/* Lokasi & Seller (Ringkas di bagian bawah) */}
-        <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500 gap-1.5">
-          <span className="truncate text-slate-600 font-medium">
-            {product.location || 'Lokasi COD'}
-          </span>
-          <span className="flex min-w-0 max-w-[48%] items-center gap-1.5 text-slate-400">
-            <span className="relative flex h-5 w-5 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-200 text-[9px] font-semibold text-neutral-600">
-              {product.seller?.avatar && !avatarError ? (
-                <Image
-                  src={product.seller.avatar}
-                  alt=""
-                  fill
-                  sizes="20px"
-                  className="object-cover"
-                  referrerPolicy="no-referrer"
-                  onError={() => setAvatarError(true)}
-                />
-              ) : (
-                (product.seller?.name || 'P').charAt(0).toUpperCase()
-              )}
-            </span>
-            <span className="truncate">{product.seller?.name || 'Penjual'}</span>
-          </span>
-        </div>
       </Link>
     </article>
   );
