@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Loader2, AlertCircle, ShoppingBag, Sparkles } from 'lucide-react';
+import { ArrowLeft, Loader2, AlertCircle, ShoppingBag } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { CategorySlug, ProductCondition } from '@/types/market';
 import { CATEGORIES } from '@/data/products';
@@ -11,10 +11,10 @@ import { createProductInDb } from '@/lib/supabase/products';
 import { ProductPhotoPicker } from '@/components/ProductPhotoPicker';
 
 const CONDITIONS: { value: ProductCondition; label: string; desc: string }[] = [
-  { value: 'Baru', label: 'Baru', desc: 'Belum pernah dipakai / masih segel' },
-  { value: 'Bekas - Seperti Baru', label: 'Seperti Baru', desc: 'Kondisi 98%+, nyaris tanpa minus' },
-  { value: 'Bekas - Mulus', label: 'Bekas - Mulus', desc: 'Pemakaian normal, fungsi normal' },
-  { value: 'Bekas - Layak', label: 'Bekas - Layak', desc: 'Ada lecet / minus wajar, harga hemat' },
+  { value: 'Baru', label: 'Baru', desc: 'Belum pernah dipakai' },
+  { value: 'Bekas - Seperti Baru', label: 'Seperti baru', desc: 'Hampir tidak ada bekas pemakaian' },
+  { value: 'Bekas - Mulus', label: 'Bekas terawat', desc: 'Ada bekas ringan, fungsi normal' },
+  { value: 'Bekas - Layak', label: 'Ada kekurangan', desc: 'Ada lecet atau kekurangan yang perlu dijelaskan' },
 ];
 
 export default function SellPage() {
@@ -244,13 +244,7 @@ export default function SellPage() {
       <main className="max-w-2xl mx-auto px-4 pt-4 sm:pt-6">
         {/* Header Title Section */}
         <div className="mb-5">
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <span>Jual Barang</span>
-            <span className="text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-md inline-flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-blue-600" />
-              COD Langsung
-            </span>
-          </h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Jual Barang</h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Tawarkan barang yang masih layak pakai ke sesama warga di sekitar Nepal.
           </p>
@@ -372,13 +366,14 @@ export default function SellPage() {
                       setCondition(cond.value);
                       if (errors.condition) setErrors((prev) => ({ ...prev, condition: '' }));
                     }}
-                    className={`p-2.5 rounded-md border text-center transition-colors min-h-[42px] cursor-pointer flex flex-col items-center justify-center ${
+                    className={`p-2.5 rounded-md border text-left transition-colors min-h-[58px] cursor-pointer flex flex-col justify-center ${
                       isSelected
                         ? 'border-blue-600 bg-blue-50 text-blue-700 font-semibold'
                         : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700'
                     }`}
                   >
-                    <span className="text-xs">{cond.label}</span>
+                    <span className="text-xs font-semibold">{cond.label}</span>
+                    <span className="mt-0.5 text-[10px] leading-snug opacity-75">{cond.desc}</span>
                   </button>
                 );
               })}
