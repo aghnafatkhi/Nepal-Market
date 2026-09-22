@@ -32,10 +32,10 @@ export function AdminTable<T>({
   return (
     <div
       id={id}
-      className={`w-full overflow-x-auto border border-slate-200 rounded-lg bg-white ${className}`}
+      className={`w-full border border-slate-200 rounded-lg bg-white overflow-hidden ${className}`}
     >
-      <table className="w-full text-left text-xs border-collapse">
-        <thead>
+      <table className="block w-full text-left text-xs sm:table">
+        <thead className="hidden sm:table-header-group">
           <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
             {columns.map((col, idx) => (
               <th
@@ -47,16 +47,17 @@ export function AdminTable<T>({
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100 text-slate-700">
+        <tbody className="block divide-y divide-slate-200 text-slate-700 sm:table-row-group sm:divide-y sm:divide-slate-100">
           {data.map((item, index) => (
             <tr
               key={keyExtractor(item, index)}
-              className="hover:bg-slate-50/70 transition-colors"
+              className="block p-3 hover:bg-slate-50/70 sm:table-row sm:p-0"
             >
               {columns.map((col, colIdx) => (
                 <td
                   key={`td-${colIdx}`}
-                  className={`py-3 px-3 sm:px-4 ${col.className || ''}`}
+                  data-label={col.header}
+                  className={`flex min-w-0 items-center justify-between gap-4 px-0 py-2 before:shrink-0 before:text-[10px] before:font-semibold before:uppercase before:tracking-wide before:text-slate-400 before:content-[attr(data-label)] sm:table-cell sm:px-4 sm:py-3 sm:before:hidden ${col.className || ''}`}
                 >
                   {col.render
                     ? col.render(item, index)
