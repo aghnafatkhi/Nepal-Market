@@ -27,7 +27,7 @@ export const SellModal: React.FC<SellModalProps> = ({
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState<CategorySlug>('fashion');
-  const [condition, setCondition] = useState<ProductCondition>('Bekas - Mulus');
+  const [condition, setCondition] = useState<ProductCondition>('Bekas');
   const [location, setLocation] = useState('Kantin Utama');
   const [description, setDescription] = useState('');
   const defaultSellerName = profile?.name || user?.user_metadata?.full_name || (user?.email ? user.email.split('@')[0] : '');
@@ -250,9 +250,7 @@ export const SellModal: React.FC<SellModalProps> = ({
                 className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-sm text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-hidden min-h-[40px]"
               >
                 <option value="Baru">Baru — belum pernah dipakai</option>
-                <option value="Bekas - Seperti Baru">Seperti baru — nyaris tanpa bekas</option>
-                <option value="Bekas - Mulus">Bekas terawat — fungsi normal</option>
-                <option value="Bekas - Layak">Ada kekurangan — baca deskripsi</option>
+                <option value="Bekas">Bekas — sudah pernah dipakai</option>
               </select>
             </div>
 
