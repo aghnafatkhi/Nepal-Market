@@ -42,24 +42,24 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header 
       id="main-header"
-      className="sticky top-0 z-30 w-full bg-white border-b border-slate-200"
+      className="sticky top-0 z-30 w-full border-b border-black/5 bg-white/95 backdrop-blur-xl"
     >
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
         {/* Top Row */}
-        <div className="flex items-center justify-between h-13 sm:h-15 gap-3 sm:gap-6">
+        <div className="flex items-center justify-between h-14 sm:h-16 gap-3 sm:gap-7">
           
           {/* Brand Logo */}
           <Link
             id="brand-wordmark"
             href="/"
             onClick={onResetToHome}
-            className="flex items-center gap-2 focus:outline-hidden shrink-0"
+            className="flex items-center gap-2.5 focus:outline-hidden shrink-0"
           >
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-blue-600 text-white flex items-center justify-center font-bold text-sm sm:text-base">
+            <div className="nm-mark w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] font-semibold text-sm sm:text-base">
               N
             </div>
-            <span className="text-base sm:text-lg font-bold tracking-tight text-slate-900">
-              Nepal<span className="text-blue-600">Market</span>
+            <span className="text-[15px] sm:text-[17px] font-semibold tracking-[-0.035em] text-slate-950">
+              Nepal<span className="text-blue-600"> Market</span>
             </span>
           </Link>
 
@@ -78,8 +78,8 @@ export const Header: React.FC<HeaderProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
-                placeholder="Cari buku, pakaian, elektronik..."
-                className="w-full pl-9 pr-8 py-2 bg-slate-50 focus:bg-white text-sm text-slate-900 placeholder:text-slate-400 rounded-md border border-slate-200 focus:border-blue-600 focus:outline-hidden transition-colors"
+                placeholder="Cari barang..."
+                className="w-full pl-10 pr-8 py-2.5 bg-[#f5f5f3] focus:bg-white text-sm text-slate-950 placeholder:text-slate-400 rounded-xl border border-transparent focus:border-blue-600 focus:outline-hidden transition-colors"
               />
               {searchQuery && (
                 <button
@@ -152,7 +152,7 @@ export const Header: React.FC<HeaderProps> = ({
             <Link
               id="desktop-nav-sell"
               href="/sell"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors min-h-[40px] cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-950 text-white text-sm font-medium hover:bg-blue-600 transition-colors min-h-[42px] cursor-pointer"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Jual Barang</span>
@@ -191,7 +191,7 @@ export const Header: React.FC<HeaderProps> = ({
             <Link
               id="mobile-header-sell"
               href="/sell"
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 active:bg-blue-800 transition-colors min-h-[38px] ml-0.5"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-950 text-white text-xs font-medium hover:bg-blue-600 transition-colors min-h-[40px] ml-0.5"
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>Jual</span>
@@ -211,8 +211,8 @@ export const Header: React.FC<HeaderProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Cari buku, pakaian, elektronik..."
-              className="w-full pl-9 pr-8 py-2 bg-slate-100 focus:bg-white text-sm text-slate-900 placeholder:text-slate-400 rounded-md border border-slate-200 focus:border-blue-600 focus:outline-hidden transition-colors min-h-[40px]"
+              placeholder="Cari barang di Nepal Market..."
+              className="w-full pl-10 pr-8 py-2.5 bg-[#f5f5f3] focus:bg-white text-sm text-slate-950 placeholder:text-slate-400 rounded-xl border border-transparent focus:border-blue-600 focus:outline-hidden transition-colors min-h-[44px]"
             />
             {searchQuery && (
               <button
