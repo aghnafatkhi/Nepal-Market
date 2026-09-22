@@ -12,9 +12,7 @@ import { ProductPhotoPicker } from '@/components/ProductPhotoPicker';
 
 const CONDITIONS: { value: ProductCondition; label: string; desc: string }[] = [
   { value: 'Baru', label: 'Baru', desc: 'Belum pernah dipakai' },
-  { value: 'Bekas - Seperti Baru', label: 'Seperti baru', desc: 'Hampir tidak ada bekas pemakaian' },
-  { value: 'Bekas - Mulus', label: 'Bekas terawat', desc: 'Ada bekas ringan, fungsi normal' },
-  { value: 'Bekas - Layak', label: 'Ada kekurangan', desc: 'Ada lecet atau kekurangan yang perlu dijelaskan' },
+  { value: 'Bekas', label: 'Bekas', desc: 'Sudah pernah dipakai' },
 ];
 
 export default function SellPage() {
@@ -27,7 +25,7 @@ export default function SellPage() {
   const [displayPrice, setDisplayPrice] = useState('');
   const [rawPrice, setRawPrice] = useState<number>(0);
   const [category, setCategory] = useState<CategorySlug>('fashion');
-  const [condition, setCondition] = useState<ProductCondition>('Bekas - Mulus');
+  const [condition, setCondition] = useState<ProductCondition>('Bekas');
   const [location, setLocation] = useState('Kantin Utama');
   const [description, setDescription] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
