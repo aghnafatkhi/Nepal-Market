@@ -213,14 +213,14 @@ export default function SellPage() {
 
   if (authLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-[#f7f7f5]">
         <Loader2 className="w-7 h-7 animate-spin text-blue-600" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-28 sm:pb-16">
+    <div className="min-h-screen bg-[#f7f7f5] pb-28 sm:pb-16">
       {/* Top Bar Navigation */}
       <div className="sticky top-0 z-20 bg-white border-b border-slate-200">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
