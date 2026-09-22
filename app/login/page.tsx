@@ -102,7 +102,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-10 px-4 sm:px-6">
+    <div className="min-h-screen bg-[#f7f7f5] flex flex-col justify-center py-10 px-4 sm:px-6">
       {/* Back button */}
       <div className="max-w-sm w-full mx-auto mb-4">
         <Link
@@ -299,7 +299,7 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+      <div className="min-h-screen flex items-center justify-center bg-[#f7f7f5]">
         <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
       </div>
     }>
