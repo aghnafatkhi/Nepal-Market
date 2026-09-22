@@ -174,13 +174,49 @@ export async function fetchAdminSponsorBanners(): Promise<{
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.warn('Gagal memuat sponsor_banners dari Supabase, menggunakan data cadangan:', error.message);
-      return { data: mockSponsors, error: null };
+      return { data: [], error: new Error(error.message) };
     }
 
     return { data: (data as DbSponsorBanner[]) || [], error: null };
   } catch (err: unknown) {
-    return { data: mockSponsors, error: err as Error };
+    return { data: [], error: err as Error };
+  }
+}
+
+/**
+ * Mengambil banner aktif yang sedang berada dalam jadwal tayang untuk homepage.
+ * Jangan gunakan data mock ketika Supabase sudah dikonfigurasi agar kegagalan
+ * produksi tidak tersamarkan sebagai iklan sungguhan.
+ */
+export async function fetchActivePublicSponsorBanners(): Promise<{
+  data: DbSponsorBanner[];
+  error: Error | null;
+}> {
+  const supabase = getSupabaseClient();
+
+  if (!supabase) {
+    const activeMockSponsors = mockSponsors
+      .filter((banner) => getSponsorScheduleStatus(banner) === 'live')
+      .sort((a, b) => a.sort_order - b.sort_order);
+    return { data: activeMockSponsors, error: null };
+  }
+
+  const now = new Date().toISOString();
+
+  try {
+    const { data, error } = await supabase
+      .from('sponsor_banners')
+      .select('*')
+      .eq('status', 'active')
+      .or(`starts_at.is.null,starts_at.lte.${now}`)
+      .or(`ends_at.is.null,ends_at.gte.${now}`)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: false });
+
+    if (error) return { data: [], error: new Error(error.message) };
+    return { data: (data as DbSponsorBanner[]) || [], error: null };
+  } catch (err: unknown) {
+    return { data: [], error: err as Error };
   }
 }
 
