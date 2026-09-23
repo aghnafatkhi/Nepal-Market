@@ -372,19 +372,24 @@ ALTER TABLE public.product_interactions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Pengguna hanya boleh melihat interaksi miliknya"
 ON public.product_interactions
 FOR SELECT
-USING (auth.uid() = user_id);
+TO authenticated
+USING ((SELECT auth.uid()) = user_id);
 
 CREATE POLICY "Pengguna hanya boleh menambahkan interaksi miliknya"
 ON public.product_interactions
 FOR INSERT
+TO authenticated
 WITH CHECK (
-  auth.uid() IS NOT NULL
-  AND auth.uid() = user_id
+  (SELECT auth.uid()) IS NOT NULL
+  AND (SELECT auth.uid()) = user_id
 );
 
 CREATE POLICY "Pengguna hanya boleh menghapus interaksi miliknya"
 ON public.product_interactions
 FOR DELETE
-USING (auth.uid() = user_id);
+TO authenticated
+USING ((SELECT auth.uid()) = user_id);
+
+GRANT SELECT, INSERT, DELETE ON public.product_interactions TO authenticated;
 
 -- Selesai. Database Nepal Market siap digunakan!
