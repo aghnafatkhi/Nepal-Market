@@ -18,6 +18,7 @@ import { CategorySlug, ConditionFilter, Product, SortOption } from '@/types/mark
 import { ProductCard } from '@/components/ProductCard';
 import { SearchFilterSheet } from '@/components/SearchFilterSheet';
 import { BottomNav } from '@/components/BottomNav';
+import { Footer } from '@/components/Footer';
 import { SellModal } from '@/components/SellModal';
 import { SavedModal } from '@/components/SavedModal';
 import { ProfileModal } from '@/components/ProfileModal';
@@ -830,6 +831,9 @@ function SearchPageContent() {
           </div>
         </div>
       </main>
+
+      {/* Footer Nepal Market */}
+      <Footer className="mt-16" />
 
       {/* Mobile Filter Bottom Sheet */}
       <SearchFilterSheet

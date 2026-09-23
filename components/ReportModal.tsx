@@ -167,9 +167,9 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                 <AlertTriangle className="w-6 h-6" />
               </div>
               <div className="space-y-1 max-w-xs mx-auto">
-                <h4 className="text-base font-bold text-slate-900">Perlu Masuk Akun</h4>
+                <h4 className="text-base font-bold text-slate-900">Perlu Login</h4>
                 <p className="text-xs text-slate-500 leading-relaxed">
-                  Untuk mencegah spam dan menjaga akuntabilitas komunitas, kamu harus login sebelum dapat melaporkan produk.
+                  Kamu harus login sebelum bisa melaporkan barang.
                 </p>
               </div>
               <div className="pt-2">
@@ -180,7 +180,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                   className="w-full min-h-[44px] py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs rounded-md transition-colors inline-flex items-center justify-center gap-2"
                 >
                   <LogIn className="w-4 h-4" />
-                  <span>Masuk Akun Sekarang</span>
+                  <span>Login</span>
                 </Link>
               </div>
             </div>
@@ -195,7 +195,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                   Laporan sudah dikirim.
                 </h4>
                 <p className="text-xs text-slate-500 leading-relaxed max-w-xs mx-auto">
-                  Terima kasih atas partisipasimu. Tim moderasi Nepal Market akan segera meninjau laporan ini.
+                  Terima kasih atas laporannya. Tim moderasi Nepal Market akan segera meninjaunya.
                 </p>
               </div>
             </div>
@@ -212,10 +212,10 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                 <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <h4 className="text-xs font-bold text-amber-900">
-                    Kamu sudah pernah melaporkan barang ini
+                    Laporan sudah dikirim sebelumnya
                   </h4>
                   <p className="text-[12px] text-amber-700 leading-relaxed">
-                    Sistem Nepal Market membatasi satu laporan per pengguna untuk setiap produk demi mencegah duplikasi. Laporanmu sebelumnya telah tersimpan dan sedang diproses oleh moderator.
+                    Kamu sudah pernah mengirim laporan untuk barang ini. Laporanmu sedang diproses oleh tim moderasi.
                   </p>
                 </div>
               </div>
@@ -287,7 +287,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
                 >
                   <div className="flex items-center gap-1.5">
                     <Info className="w-3.5 h-3.5 text-blue-600" />
-                    <span>Lihat Aturan Produk Terlarang Nepal Market</span>
+                    <span>Aturan Barang Terlarang</span>
                   </div>
                   {showGuidelines ? (
                     <ChevronUp className="w-4 h-4 text-slate-400" />

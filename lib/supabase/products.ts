@@ -54,6 +54,7 @@ export function mapDbProductToUi(db: DbProduct): Product {
     images: images,
     location: db.location || 'Kantin Utama',
     postedAt: formatTimeAgo(db.created_at),
+    createdAt: db.created_at,
     seller: {
       id: db.seller?.id || db.seller_id,
       name: db.seller?.name || 'Warga Nepal',

@@ -281,10 +281,10 @@ export default function MyProductsPage() {
                   key={product.id}
                   className="bg-white rounded-lg border border-slate-200 overflow-hidden p-3.5 sm:p-4 flex flex-col sm:flex-row gap-3.5 sm:gap-4 transition-colors hover:border-slate-300"
                 >
-                  {/* Foto Thumbnail */}
+                  {/* Foto Thumbnail (Aspect 1:1 Konsisten) */}
                   <Link
                     href={`/product/${product.id}`}
-                    className="relative w-full sm:w-32 aspect-4/3 sm:aspect-square rounded-md overflow-hidden bg-slate-100 shrink-0 block group"
+                    className="relative w-full sm:w-32 aspect-square rounded-md overflow-hidden bg-slate-100 shrink-0 block group"
                   >
                     <Image
                       src={product.imageUrl}

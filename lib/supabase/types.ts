@@ -108,3 +108,15 @@ export interface DbSponsorBanner {
   updated_at: string;
 }
 
+export type InteractionType = 'view' | 'dwell' | 'save' | 'unsave' | 'contact';
+
+export interface DbProductInteraction {
+  id: string;
+  user_id: string;
+  product_id: string;
+  category: string;
+  interaction_type: InteractionType;
+  score: number;
+  created_at: string;
+}
+

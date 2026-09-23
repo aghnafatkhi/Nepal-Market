@@ -34,6 +34,7 @@ import { SavedModal } from '@/components/SavedModal';
 import { ProfileModal } from '@/components/ProfileModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchProductById, fetchUserFavoriteIds, toggleFavoriteInDb } from '@/lib/supabase/products';
+import { recordProductInteraction } from '@/lib/supabase/recommendations';
 
 interface ProductDetailViewProps {
   productId: string;
@@ -95,6 +96,33 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
     }
   }, [user, productId, isConfigured]);
 
+  // Rekomendasi: Catat sinyal View (+1) saat detail dibuka, dan Dwell (+1) jika melihat minimal 8 detik
+  React.useEffect(() => {
+    if (!product) return;
+
+    // Sinyal: Membuka halaman detail produk: +1 (deduplikasi per sesi browser)
+    recordProductInteraction({
+      productId: product.id,
+      category: product.category,
+      type: 'view',
+      userId: user?.id,
+    });
+
+    // Sinyal: Melihat produk beberapa saat, minimal 8 detik: +1 tambahan
+    const dwellTimer = setTimeout(() => {
+      recordProductInteraction({
+        productId: product.id,
+        category: product.category,
+        type: 'dwell',
+        userId: user?.id,
+      });
+    }, 8000);
+
+    return () => {
+      clearTimeout(dwellTimer);
+    };
+  }, [product, user?.id]);
+
   const handleToggleSave = async () => {
     if (!user) {
       const currentUrl = typeof window !== 'undefined' ? (window.location.pathname + window.location.search) : `/product/${productId}`;
@@ -103,6 +131,17 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
     }
     const nextSaved = !isSaved;
     setIsSaved(nextSaved);
+
+    // Rekomendasi: Menyimpan (+3) atau Membatalkan simpan (-3)
+    if (product) {
+      recordProductInteraction({
+        productId: product.id,
+        category: product.category,
+        type: nextSaved ? 'save' : 'unsave',
+        userId: user.id,
+      });
+    }
+
     if (isConfigured) {
       await toggleFavoriteInDb(user.id, productId, isSaved);
     }
@@ -119,12 +158,26 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
 
   const handleContactWhatsApp = () => {
     if (!hasWhatsApp || !product) return;
+    // Rekomendasi: Menekan tombol hubungi penjual: +4
+    recordProductInteraction({
+      productId: product.id,
+      category: product.category,
+      type: 'contact',
+      userId: user?.id,
+    });
     const msg = `Halo ${seller?.name || 'Penjual'}, saya tertarik dengan barang "${product.title}" (${formatRupiah(product.price)}) di Nepal Market. Apakah masih tersedia?`;
     window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
   };
 
   const handleContactInstagram = () => {
-    if (!instagramUrl) return;
+    if (!instagramUrl || !product) return;
+    // Rekomendasi: Menekan tombol hubungi penjual: +4
+    recordProductInteraction({
+      productId: product.id,
+      category: product.category,
+      type: 'contact',
+      userId: user?.id,
+    });
     window.open(instagramUrl, '_blank', 'noopener,noreferrer');
   };
 
@@ -164,11 +217,41 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
   // Loading State
   if (isLoadingProduct) {
     return (
-      <div className="min-h-screen bg-[#f7f7f5] flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-2.5" />
-          <p className="text-xs text-slate-500 font-medium">Memuat rincian barang...</p>
-        </div>
+      <div className="min-h-screen bg-[#f7f7f5] text-neutral-900 pb-28 md:pb-16 animate-pulse">
+        <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
+          <div className="max-w-[1100px] mx-auto px-4 sm:px-6">
+            <div className="flex items-center justify-between h-14">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-md bg-slate-200" />
+                <div className="h-4 w-36 bg-slate-200 rounded" />
+              </div>
+              <div className="w-8 h-8 rounded-md bg-slate-200" />
+            </div>
+          </div>
+        </header>
+
+        <main className="max-w-[1100px] mx-auto px-4 sm:px-6 pt-4 sm:pt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Foto Skeleton 1:1 Aspect Square */}
+            <div className="lg:col-span-7 flex flex-col gap-2.5">
+              <div className="relative aspect-square w-full bg-slate-200/80 rounded-lg border border-slate-200" />
+              <div className="grid grid-cols-5 gap-2">
+                {[0, 1, 2].map((i) => (
+                  <div key={i} className="aspect-square rounded-md bg-slate-200/60 border border-slate-200" />
+                ))}
+              </div>
+            </div>
+
+            {/* Info Skeleton */}
+            <div className="lg:col-span-5 bg-white border border-slate-200 rounded-lg p-4 sm:p-5 space-y-4">
+              <div className="h-4 w-32 bg-slate-200 rounded" />
+              <div className="h-8 w-48 bg-slate-200 rounded" />
+              <div className="h-6 w-3/4 bg-slate-200 rounded" />
+              <div className="h-24 w-full bg-slate-100 rounded-md" />
+              <div className="h-28 w-full bg-slate-100 rounded-md" />
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
@@ -314,7 +397,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
               </div>
               <div>
                 <p className="text-xs font-bold text-blue-950">
-                  Iklan barang milikmu
+                  Barang jualan kamu
                 </p>
                 <p className="text-[11px] text-blue-700">
                   Status: <span className="font-semibold uppercase">{product.status || (product.isSold ? 'Terjual' : 'Aktif')}</span>
@@ -327,13 +410,13 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                 className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium transition-colors min-h-[38px]"
               >
                 <Edit3 className="w-3.5 h-3.5" />
-                <span>Edit Iklan</span>
+                <span>Edit Barang</span>
               </Link>
               <Link
                 href="/my-products"
                 className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-1.5 rounded-md border border-blue-300 bg-white hover:bg-blue-50 text-blue-800 text-xs font-medium transition-colors min-h-[38px]"
               >
-                <span>Daftar Iklan Saya</span>
+                <span>Produk Saya</span>
               </Link>
             </div>
           </div>
@@ -344,14 +427,14 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
           {/* KOLOM KIRI: Galeri Foto */}
           <div className="lg:col-span-7 flex flex-col gap-2.5">
             {/* Foto Utama */}
-            <div className="relative aspect-4/3 w-full bg-slate-100 rounded-lg overflow-hidden border border-slate-200 group">
+            <div className="relative aspect-square w-full bg-slate-100 rounded-lg overflow-hidden border border-slate-200 group">
               {hasCurrentImg ? (
                 <Image
                   src={currentImg}
                   alt={`${product.title} - Foto ${selectedImageIndex + 1}`}
                   fill
                   priority
-                  sizes="(max-width: 1024px) 100vw, 60vw"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 650px"
                   className={`object-cover ${isSold ? 'opacity-70 grayscale-[0.4]' : ''}`}
                   referrerPolicy="no-referrer"
                   onError={() => setImgErrorMap(prev => ({ ...prev, [selectedImageIndex]: true }))}
@@ -435,7 +518,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                           src={img}
                           alt={`Thumbnail ${idx + 1}`}
                           fill
-                          sizes="100px"
+                          sizes="(max-width: 640px) 20vw, 100px"
                           className="object-cover"
                           referrerPolicy="no-referrer"
                           onError={() => setImgErrorMap(prev => ({ ...prev, [idx]: true }))}
@@ -522,7 +605,7 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
                   className="w-full py-2.5 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs sm:text-sm transition-colors flex items-center justify-center gap-2 min-h-[42px]"
                 >
                   <Edit3 className="w-4 h-4" />
-                  <span>Edit Iklan Barang Ini</span>
+                  <span>Edit Barang</span>
                 </Link>
               ) : hasWhatsApp ? (
                 <div className="flex flex-col gap-2">
@@ -746,6 +829,16 @@ export const ProductDetailView: React.FC<ProductDetailViewProps> = ({ productId 
         isOpen={isContactModalOpen}
         onClose={() => setIsContactModalOpen(false)}
         product={product}
+        onTrackContact={() => {
+          if (product) {
+            recordProductInteraction({
+              productId: product.id,
+              category: product.category,
+              type: 'contact',
+              userId: user?.id,
+            });
+          }
+        }}
       />
 
       <ReportModal

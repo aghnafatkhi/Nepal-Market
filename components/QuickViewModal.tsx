@@ -84,8 +84,8 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({
           <X className="w-4 h-4" />
         </button>
 
-        {/* Gambar Produk */}
-        <div className="relative w-full aspect-4/3 bg-slate-100">
+        {/* Gambar Produk (Aspect 1:1 Konsisten) */}
+        <div className="relative w-full aspect-square bg-slate-100">
           {hasImage ? (
             <Image
               src={product.imageUrl}

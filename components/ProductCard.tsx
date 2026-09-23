@@ -93,7 +93,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </button>
       </div>
 
-      {/* Rincian Produk: harga, kondisi, dan nama */}
+      {/* Rincian Produk: harga, kondisi, nama, dan penjual */}
       <Link
         href={`/product/${product.id}`}
         className="p-3 sm:p-3.5 flex flex-col flex-1 justify-between focus:outline-hidden block text-left"
@@ -121,6 +121,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           </h3>
         </div>
 
+        {/* Nama Penjual di bagian bawah card */}
+        <p className="mt-2 text-[11px] sm:text-xs text-slate-500 truncate">
+          {product.seller?.name?.trim() ? product.seller.name : 'Penjual'}
+        </p>
       </Link>
     </article>
   );

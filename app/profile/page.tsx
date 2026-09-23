@@ -22,6 +22,7 @@ import {
   Shield
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { Footer } from '@/components/Footer';
 import { updateUserProfile, uploadAvatarImage, checkUsernameAvailable, fetchProfileById } from '@/lib/supabase/profile';
 import { fetchSellerProducts } from '@/lib/supabase/products';
 
@@ -570,6 +571,9 @@ export default function ProfilePage() {
           </button>
         </div>
       </main>
+
+      {/* Footer Nepal Market */}
+      <Footer className="mt-12" />
     </div>
   );
 }

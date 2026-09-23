@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ShoppingBag, ArrowLeft, Search, Home } from 'lucide-react';
+import { Footer } from '@/components/Footer';
 
 export default function NotFound() {
   return (
@@ -64,10 +65,8 @@ export default function NotFound() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-200/80 bg-white py-4 text-center text-xs text-slate-500">
-        <p>© {new Date().getFullYear()} Nepal Market • Pasar Komunitas Lokal</p>
-      </footer>
+      {/* Footer Nepal Market */}
+      <Footer />
     </div>
   );
 }

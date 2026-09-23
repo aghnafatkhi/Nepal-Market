@@ -41,6 +41,7 @@ export interface Product {
   images?: string[]; // Galeri foto maksimal 5 foto
   location: string; // Lokasi ketemuan/COD lokal
   postedAt: string;
+  createdAt?: string;
   seller: Seller;
   description: string;
   isAvailable: boolean;

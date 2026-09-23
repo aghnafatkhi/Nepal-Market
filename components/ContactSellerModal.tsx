@@ -9,12 +9,14 @@ interface ContactSellerModalProps {
   isOpen: boolean;
   onClose: () => void;
   product: Product;
+  onTrackContact?: () => void;
 }
 
 export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
   isOpen,
   onClose,
   product,
+  onTrackContact,
 }) => {
   const [copiedPhone, setCopiedPhone] = useState(false);
 
@@ -30,6 +32,7 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
   const instagramUrl = instagramHandle ? `https://instagram.com/${instagramHandle}` : null;
 
   const handleCopyPhone = () => {
+    onTrackContact?.();
     navigator.clipboard.writeText(rawPhone);
     setCopiedPhone(true);
     setTimeout(() => setCopiedPhone(false), 2000);
@@ -90,6 +93,7 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={onTrackContact}
               className="w-full flex items-center justify-between px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-md font-medium text-sm transition-colors group min-h-[44px]"
             >
               <div className="flex items-center gap-2.5">
@@ -106,6 +110,7 @@ export const ContactSellerModal: React.FC<ContactSellerModalProps> = ({
                 href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={onTrackContact}
                 className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-md font-medium text-sm transition-colors group min-h-[44px]"
               >
                 <div className="flex items-center gap-2.5">

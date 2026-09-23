@@ -6,8 +6,10 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Bookmark, ShoppingBag, Loader2, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchUserSavedProducts, toggleFavoriteInDb } from '@/lib/supabase/products';
+import { recordProductInteraction } from '@/lib/supabase/recommendations';
 import { Product } from '@/types/market';
 import { ProductCard } from '@/components/ProductCard';
+import { Footer } from '@/components/Footer';
 
 export default function SavedProductsPage() {
   const router = useRouter();
@@ -72,8 +74,20 @@ export default function SavedProductsPage() {
   const handleToggleSave = async (productId: string) => {
     if (!user) return;
 
+    const removedProduct = savedProducts.find((item) => item.id === productId);
+
     // Optimistically remove from saved items
     setSavedProducts((prev) => prev.filter((item) => item.id !== productId));
+
+    // Rekomendasi: catat pembatalan simpan (-3)
+    if (removedProduct) {
+      recordProductInteraction({
+        productId,
+        category: removedProduct.category,
+        type: 'unsave',
+        userId: user.id,
+      });
+    }
 
     if (isConfigured) {
       await toggleFavoriteInDb(user.id, productId, true);
@@ -179,6 +193,9 @@ export default function SavedProductsPage() {
           </div>
         )}
       </main>
+
+      {/* Footer Nepal Market */}
+      <Footer className="mt-12" />
     </div>
   );
 }

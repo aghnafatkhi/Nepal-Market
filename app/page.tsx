@@ -14,6 +14,7 @@ import { SellModal } from '@/components/SellModal';
 import { SavedModal } from '@/components/SavedModal';
 import { ProfileModal } from '@/components/ProfileModal';
 import { CodGuideModal } from '@/components/CodGuideModal';
+import { Footer } from '@/components/Footer';
 import { HomeBannerCarousel } from '@/components/HomeBannerCarousel';
 import { CategorySlug, Product, SortOption } from '@/types/market';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,6 +26,12 @@ import {
   updateProductStatusInDb,
   deleteProductFromDb
 } from '@/lib/supabase/products';
+import { 
+  computeUserCategoryAffinity, 
+  rankProductsForHome, 
+  recordProductInteraction, 
+  CategoryAffinityResult 
+} from '@/lib/supabase/recommendations';
 
 export default function HomePage() {
   const router = useRouter();
@@ -36,6 +43,15 @@ export default function HomePage() {
   const [savedProductIds, setSavedProductIds] = useState<string[]>([]);
   const [hasLoadedFromDb, setHasLoadedFromDb] = useState(!isConfigured);
   const [fetchError, setFetchError] = useState<string | null>(null);
+
+  // State preferensi rekomendasi beranda (skor afinitas per kategori)
+  const [userAffinity, setUserAffinity] = useState<CategoryAffinityResult>({
+    categoryScores: {},
+    normalizedAffinity: {},
+    topCategory: null,
+    totalScore: 0,
+    hasSignificantPreference: false,
+  });
   
   // State filter & search
   const [searchQuery, setSearchQuery] = useState('');
@@ -152,47 +168,48 @@ export default function HomePage() {
     };
   }, [user, isConfigured]);
 
-  // Filter & Sort Logic
-  const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      // Jangan tampilkan produk yang sudah terjual di feed utama
-      if (product.isSold || !product.isAvailable) {
-        return false;
-      }
-
-      // Filter kategori
-      if (selectedCategory !== 'semua' && product.category !== selectedCategory) {
-        return false;
-      }
-
-      // Filter kondisi
-      if (selectedCondition !== 'semua' && product.condition !== selectedCondition) {
-        return false;
-      }
-
-      // Filter search query
-      if (searchQuery.trim() !== '') {
-        const query = searchQuery.toLowerCase().trim();
-        const matchesTitle = product.title.toLowerCase().includes(query);
-        const matchesLocation = product.location.toLowerCase().includes(query);
-        const matchesDescription = product.description.toLowerCase().includes(query);
-        const matchesSeller = product.seller.name.toLowerCase().includes(query);
-        if (!matchesTitle && !matchesLocation && !matchesDescription && !matchesSeller) {
-          return false;
+  // Muat preferensi rekomendasi beranda (30 hari terakhir dengan time decay)
+  useEffect(() => {
+    let isMounted = true;
+    computeUserCategoryAffinity(user?.id)
+      .then((affinity) => {
+        if (isMounted) {
+          setUserAffinity(affinity);
         }
-      }
+      })
+      .catch(() => {
+        // Fallback aman jika gagal
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
 
-      return true;
-    }).sort((a, b) => {
-      if (sortBy === 'harga-rendah') {
-        return a.price - b.price;
-      }
-      if (sortBy === 'harga-tinggi') {
-        return b.price - a.price;
-      }
-      return 0;
-    });
-  }, [products, selectedCategory, selectedCondition, searchQuery, sortBy]);
+  // Filter & Multi-Factor Recommendation Ranking Logic:
+  // Menggabungkan 50% kategori, 25% kebaruan, 15% popularitas, 10% variasi
+  // Maksimal ~60% dari kategori minat utama, sisanya untuk discovery produk lain
+  const filteredProducts = useMemo(() => {
+    try {
+      return rankProductsForHome(products, {
+        currentUserId: user?.id,
+        affinity: userAffinity,
+        sortBy,
+        selectedCategory,
+        selectedCondition,
+        searchQuery,
+        maxTopCategoryRatio: 0.60,
+      });
+    } catch {
+      // Fallback aman jika terjadi kendala pada ranking
+      return products.filter((product) => {
+        if (product.isSold || !product.isAvailable) return false;
+        if (user && product.seller?.id === user.id) return false;
+        if (selectedCategory !== 'semua' && product.category !== selectedCategory) return false;
+        if (selectedCondition !== 'semua' && product.condition !== selectedCondition) return false;
+        return true;
+      });
+    }
+  }, [products, userAffinity, user, sortBy, selectedCategory, selectedCondition, searchQuery]);
 
   // Filter kategori berjalan lokal; skeleton tidak diperlukan.
   const handleSelectCategory = (cat: CategorySlug) => {
@@ -208,11 +225,29 @@ export default function HomePage() {
     }
 
     const isCurrentlySaved = savedProductIds.includes(productId);
+    const targetProduct = products.find((p) => p.id === productId);
     
     // Update local UI optimistically
     setSavedProductIds((prev) =>
       isCurrentlySaved ? prev.filter((id) => id !== productId) : [...prev, productId]
     );
+
+    // Rekomendasi: catat save (+3) atau unsave (-3)
+    if (targetProduct) {
+      recordProductInteraction({
+        productId,
+        category: targetProduct.category,
+        type: isCurrentlySaved ? 'unsave' : 'save',
+        userId: user.id,
+      });
+
+      // Segarkan afinitas kategori setelah interaksi
+      computeUserCategoryAffinity(user.id)
+        .then((aff) => {
+          setUserAffinity(aff);
+        })
+        .catch(() => {});
+    }
 
     // Sync ke Supabase jika login
     if (isConfigured) {
@@ -325,9 +360,17 @@ export default function HomePage() {
         {/* Section Header: Judul Katalog, Jumlah Produk, dan Filter */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-4 sm:mb-5">
           <div>
-            <h1 className="text-xl sm:text-2xl font-semibold text-neutral-950 tracking-[-0.025em]">
-              {selectedCategory === 'semua' ? 'Semua Barang' : `Kategori ${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}`}
-            </h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-semibold text-neutral-950 tracking-[-0.025em]">
+                {selectedCategory === 'semua' ? 'Semua Barang' : `Kategori ${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}`}
+              </h1>
+              {selectedCategory === 'semua' && !searchQuery && userAffinity.hasSignificantPreference && userAffinity.topCategory && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                  Rekomendasi minatmu
+                </span>
+              )}
+            </div>
             <p className="mt-1 text-sm text-neutral-500">{filteredProducts.length} barang tersedia</p>
           </div>
 
@@ -492,20 +535,8 @@ export default function HomePage() {
 
       </main>
 
-      {/* Footer Ringan Komunitas */}
-      <footer className="mt-16 border-t border-neutral-200 py-7 text-center text-xs text-neutral-500">
-        <div className="max-w-[1200px] mx-auto px-4 sm:px-6">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="text-left">
-              <span className="font-semibold text-neutral-950 text-sm tracking-tight">Nepal Market</span>
-              <p className="mt-0.5 text-neutral-500">Pasar lokal untuk jual beli langsung.</p>
-            </div>
-            <div className="text-xs text-neutral-400">
-              © {new Date().getFullYear()} Nepal Market
-            </div>
-          </div>
-        </div>
-      </footer>
+      {/* Footer Nepal Market */}
+      <Footer onOpenCodGuide={() => setIsCodGuideModalOpen(true)} className="mt-16" />
 
       {/* Bottom Navigation Mobile */}
       <BottomNav

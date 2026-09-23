@@ -130,7 +130,7 @@ export const AdminProductDetailModal: React.FC<AdminProductDetailModalProps> = (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pb-2">
             {/* Gallery Column */}
             <div className="space-y-2.5">
-              <div className="relative aspect-4/3 w-full bg-slate-100 rounded-xl overflow-hidden border border-slate-200 shadow-2xs">
+              <div className="relative aspect-square w-full bg-slate-100 rounded-xl overflow-hidden border border-slate-200 shadow-2xs">
                 {currentImage ? (
                   <Image
                     src={currentImage}
