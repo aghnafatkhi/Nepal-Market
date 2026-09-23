@@ -36,16 +36,18 @@ DROP POLICY IF EXISTS "Pengguna hanya boleh melihat interaksi miliknya" ON publi
 CREATE POLICY "Pengguna hanya boleh melihat interaksi miliknya"
 ON public.product_interactions
 FOR SELECT
-USING (auth.uid() = user_id);
+TO authenticated
+USING ((SELECT auth.uid()) = user_id);
 
 -- Pengguna hanya boleh mencatat interaksi atas nama user id miliknya sendiri
 DROP POLICY IF EXISTS "Pengguna hanya boleh menambahkan interaksi miliknya" ON public.product_interactions;
 CREATE POLICY "Pengguna hanya boleh menambahkan interaksi miliknya"
 ON public.product_interactions
 FOR INSERT
+TO authenticated
 WITH CHECK (
-  auth.uid() IS NOT NULL
-  AND auth.uid() = user_id
+  (SELECT auth.uid()) IS NOT NULL
+  AND (SELECT auth.uid()) = user_id
 );
 
 -- Pengguna hanya boleh menghapus riwayat miliknya sendiri jika diperlukan
@@ -53,4 +55,7 @@ DROP POLICY IF EXISTS "Pengguna hanya boleh menghapus interaksi miliknya" ON pub
 CREATE POLICY "Pengguna hanya boleh menghapus interaksi miliknya"
 ON public.product_interactions
 FOR DELETE
-USING (auth.uid() = user_id);
+TO authenticated
+USING ((SELECT auth.uid()) = user_id);
+
+GRANT SELECT, INSERT, DELETE ON public.product_interactions TO authenticated;
