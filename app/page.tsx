@@ -332,7 +332,7 @@ export default function HomePage() {
   }, [products, savedProductIds]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f7f7f5] pb-24 sm:pb-12 text-neutral-900">
+    <div className="min-h-screen flex flex-col bg-[#f7f7f5] pb-24 sm:pb-0 text-neutral-900">
       {/* Header Utama */}
       <Header
         searchQuery={searchQuery}
