@@ -14,7 +14,7 @@ const links = [
 export function Footer({ className = '' }: FooterProps) {
   return (
     <footer
-      className={`mt-auto border-t border-slate-200 bg-white pb-[max(6rem,calc(env(safe-area-inset-bottom)+5rem))] pt-7 sm:pb-7 ${className}`}
+      className={`mt-auto hidden border-t border-slate-200 bg-white pt-7 sm:block sm:pb-7 ${className}`}
     >
       <div className="mx-auto flex max-w-[1200px] flex-col gap-6 px-4 sm:px-6">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
