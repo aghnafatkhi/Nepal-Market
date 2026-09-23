@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Loader2, AlertCircle, ShoppingBag } from 'lucide-react';
@@ -532,10 +533,13 @@ export default function SellPage() {
             <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-md flex items-center gap-3.5">
               <div className="w-14 h-14 rounded bg-slate-200 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
                 {firstPhotoPreview ? (
-                  <img
+                  <Image
                     src={firstPhotoPreview}
                     alt="Preview"
-                    className="w-full h-full object-cover"
+                    width={56}
+                    height={56}
+                    unoptimized
+                    className="h-full w-full object-cover"
                   />
                 ) : (
                   <span className="text-[10px] text-slate-400 text-center px-1">Belum ada foto</span>
