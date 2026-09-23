@@ -536,7 +536,7 @@ export default function HomePage() {
       </main>
 
       {/* Footer Nepal Market */}
-      <Footer onOpenCodGuide={() => setIsCodGuideModalOpen(true)} className="mt-16" />
+      <Footer className="mt-16" />
 
       {/* Bottom Navigation Mobile */}
       <BottomNav
