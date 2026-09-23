@@ -362,12 +362,6 @@ export default function HomePage() {
               <h1 className="text-xl sm:text-2xl font-semibold text-neutral-950 tracking-[-0.025em]">
                 {selectedCategory === 'semua' ? 'Semua Barang' : `Kategori ${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}`}
               </h1>
-              {selectedCategory === 'semua' && !searchQuery && userAffinity.hasSignificantPreference && userAffinity.topCategory && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
-                  Rekomendasi minatmu
-                </span>
-              )}
             </div>
             <p className="mt-1 text-sm text-neutral-500">{filteredProducts.length} barang tersedia</p>
           </div>
