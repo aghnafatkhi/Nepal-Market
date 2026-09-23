@@ -280,7 +280,6 @@ export async function computeUserCategoryAffinity(userId?: string | null): Promi
  * - 10% Variasi kategori (diversity bonus untuk discovery)
  */
 export interface RankProductsOptions {
-  currentUserId?: string | null;
   affinity: CategoryAffinityResult;
   sortBy?: SortOption;
   selectedCategory?: CategorySlug;
@@ -294,7 +293,6 @@ export function rankProductsForHome(
   options: RankProductsOptions
 ): Product[] {
   const {
-    currentUserId,
     affinity,
     sortBy = 'terbaru',
     selectedCategory = 'semua',
@@ -306,16 +304,11 @@ export function rankProductsForHome(
   const now = Date.now();
 
   // 1. FILTERING KETAT SESUAI SPESIFIKASI:
-  // - Produk milik pengguna sendiri ditiadakan dari feed rekomendasi
+  // - Semua produk aktif tetap tampil, termasuk iklan milik pengguna sendiri
   // - Produk yang sudah terjual ditiadakan
   // - Produk yang tidak aktif / dihapus ditiadakan
   // - Produk yang ditolak atau bukan status 'active' ditiadakan
   const candidateProducts = products.filter((p) => {
-    // Filter produk milik pengguna sendiri
-    if (currentUserId && p.seller?.id && p.seller.id === currentUserId) {
-      return false;
-    }
-
     // Filter produk terjual / tidak aktif
     if (p.isSold || !p.isAvailable) {
       return false;
