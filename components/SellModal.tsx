@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { X, Check, LogIn, Loader2, AlertCircle } from 'lucide-react';
 import { CategorySlug, Product, ProductCondition } from '@/types/market';
@@ -338,7 +339,14 @@ export const SellModal: React.FC<SellModalProps> = ({
               <div className="mb-3 p-2.5 bg-slate-50 border border-slate-200 rounded-md flex items-center gap-3">
                 <div className="w-10 h-10 rounded bg-slate-200 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
                   {firstPhotoPreview ? (
-                    <img src={firstPhotoPreview} alt="Preview" className="w-full h-full object-cover" />
+                    <Image
+                      src={firstPhotoPreview}
+                      alt="Preview"
+                      width={40}
+                      height={40}
+                      unoptimized
+                      className="h-full w-full object-cover"
+                    />
                   ) : (
                     <span className="text-[9px] text-slate-400">Foto</span>
                   )}
