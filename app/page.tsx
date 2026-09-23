@@ -191,7 +191,6 @@ export default function HomePage() {
   const filteredProducts = useMemo(() => {
     try {
       return rankProductsForHome(products, {
-        currentUserId: user?.id,
         affinity: userAffinity,
         sortBy,
         selectedCategory,
@@ -203,13 +202,12 @@ export default function HomePage() {
       // Fallback aman jika terjadi kendala pada ranking
       return products.filter((product) => {
         if (product.isSold || !product.isAvailable) return false;
-        if (user && product.seller?.id === user.id) return false;
         if (selectedCategory !== 'semua' && product.category !== selectedCategory) return false;
         if (selectedCondition !== 'semua' && product.condition !== selectedCondition) return false;
         return true;
       });
     }
-  }, [products, userAffinity, user, sortBy, selectedCategory, selectedCondition, searchQuery]);
+  }, [products, userAffinity, sortBy, selectedCategory, selectedCondition, searchQuery]);
 
   // Filter kategori berjalan lokal; skeleton tidak diperlukan.
   const handleSelectCategory = (cat: CategorySlug) => {
